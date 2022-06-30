@@ -30,6 +30,9 @@ class fpdsXML:
 
 
 class fpdsElement:
+    """
+    A singular XML tag with cleaned properties extracted from `ElementTree`
+    """
     def __init__(self, elem):
         self.elem = elem
 
@@ -44,7 +47,7 @@ class fpdsElement:
     @property
     def namespace(self):
         """
-        Extracts namesapce from XML element
+        Extracts namesapce from XML element tag attribute
         """
         pattern = re.compile(CURLY_BRACE_REGEX)
         result = pattern.search(self.elem.tag)
@@ -53,10 +56,12 @@ class fpdsElement:
 
     @property
     def text(self):
+        """XML tag text attribute"""
         return self.elem.text
 
     @property
     def attrib(self):
+        """XML tag attributes mapping"""
         return self.elem.attrib
 
 
@@ -82,6 +87,9 @@ class fpdsResources(fpdsXML):
         return metadata
 
     def transformed_xml_resources(self):
+        """
+        Returns a list of XML resources from an FPDS Atom feed result
+        """
         element_metadata = [
             {
                 "namespace": elem.namespace,
