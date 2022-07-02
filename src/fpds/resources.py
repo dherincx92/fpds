@@ -8,7 +8,6 @@ last_updated: 07/01/2022
 import re
 import xml.etree.ElementTree as ET
 from typing import Dict, List
-import warnings
 
 from fpds import fpdsElement, fpdsXML
 
@@ -17,7 +16,7 @@ RESOURCE_XPATH = "ns0:*"
 class fpdsResources(fpdsXML):
     """
     Defines all FPDS XML elements referencing entry to the current XML feed
-    or an external web resource
+    or an external web resource.
     """
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
