@@ -2,7 +2,7 @@
 Class for extracing FPDS XML resource metadata
 
 author: derek663@gmail.com
-last_updated: 06/30/2022
+last_updated: 07/01/2022
 """
 
 import re
