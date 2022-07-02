@@ -4,7 +4,7 @@ from pathlib import Path
 TMP_XML_FOLDER = "fpds"
 TMP_FILE_NAME = "tmp.xml"
 TMP_XML_FILE = Path.home() / TMP_XML_FOLDER / TMP_FILE_NAME
-
+CURLY_BRACE_REGEX = "\{(.*?)\}"
 
 def dump_xml_file(tree):
     """
@@ -22,4 +22,4 @@ def extract_namespace(tag):
     pattern = re.compile(CURLY_BRACE_REGEX)
     result = pattern.search(tag)
     if result:
-        return result.group(0)
+        return result.group(1)

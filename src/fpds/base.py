@@ -2,14 +2,16 @@
 Base classes for FPDS XML elements
 
 author: derek663@gmail.com
-last_updated: 06/30/2022
+last_updated: 07/01/2022
 """
 
 import re
 import xml.etree.ElementTree as ET
 from typing import Dict
+from utils.xml import extract_namespace
 
 CURLY_BRACE_REGEX = "\{(.*?)\}"
+RESOURCE_XPATH = "ns0:*"
 
 class fpdsXML:
     """
@@ -17,11 +19,13 @@ class fpdsXML:
     container and metadata Atom feed elements, as prescribed at
     `https://www.fpds.gov/wiki/index.php/Atom_Feed_Specifications_V_1.5.2`
     """
-    def __init__(self, file):
+    def __init__(self, file) -> "fpdsXML":
         self.file = file
-        self.namespaces = self._get_xml_namespaces()
+        self.tree = ET.parse(self.file)
+        self.root = self.tree.getroot()
 
-    def _get_xml_namespaces(self) -> Dict[str, str]:
+    @property
+    def namespaces(self) -> Dict[str, str]:
         """
         Returns all namepaces existing in an XML file
 
@@ -33,6 +37,7 @@ class fpdsXML:
             node for _, node in ET.iterparse(self.file, events=["start-ns"])
         ])
         return namespaces
+
 
 class fpdsElement:
     """
@@ -57,7 +62,7 @@ class fpdsElement:
         pattern = re.compile(CURLY_BRACE_REGEX)
         result = pattern.search(self.elem.tag)
         if result:
-            return result.group(0)
+            return result.group(1)
 
     @property
     def text(self):
