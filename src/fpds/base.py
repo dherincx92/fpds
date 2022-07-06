@@ -2,24 +2,29 @@
 Base classes for FPDS XML elements
 
 author: derek663@gmail.com
-last_updated: 07/01/2022
+last_updated: 07/06/2022
 """
 
 import re
-import xml.etree.ElementTree as ET
-from typing import Dict
+from typing import Dict, List
 from utils.xml import extract_namespace
+import xml.etree.ElementTree as ET
+from xml.etree.ElementTree import Element
 
 CURLY_BRACE_REGEX = "\{(.*?)\}"
 RESOURCE_XPATH = "ns0:*"
+
 
 class fpdsXML:
     """
     Generic methods for FPDS XML that will be inherited by both the
     container and metadata Atom feed elements, as prescribed at
     `https://www.fpds.gov/wiki/index.php/Atom_Feed_Specifications_V_1.5.2`
+
+    Args:
+      - file (str): Path to a valid XML file
     """
-    def __init__(self, file) -> "fpdsXML":
+    def __init__(self, file: str) -> "fpdsXML":
         self.file = file
         self.tree = ET.parse(self.file)
         self.root = self.tree.getroot()
@@ -31,20 +36,42 @@ class fpdsXML:
 
         Note: Although there is no way to identify a default namespace, all
         python dictionaries are ordered dictionaries so we assume that the
-        order of this method reflects actual XML hierarchy
+        order of the resulting dict reflects actual XML hierarchy
         """
         namespaces = dict([
             node for _, node in ET.iterparse(self.file, events=["start-ns"])
         ])
         return namespaces
 
+    def top_level_elements(self) -> List[Dict[str, str]]:
+        """
+        Returns of top-level XML elements and their attributes (namespace,
+        tag type, text, and attributes)
+        """
+        elements = []
+        for elem in self.root.findall(RESOURCE_XPATH, self.namespaces):
+            elem = fpdsElement(elem)
+            # entry tags contain metadata for each data entry
+            # entries will be parsed as part of :cls:`fpdsEntries`
+            elements.append({
+                "element": elem,
+                "namespace": elem.namespace,
+                "tag": elem.tag_name,
+                "text": elem.text,
+                "attributes": elem.attrib
+            })
+        return elements
 
-class fpdsElement:
+
+class fpdsElement(Element):
     """
-    A singular XML tag with cleaned properties extracted from `ElementTree`
+    A singular XML tag with cleaned properties extracted from `ElementTree`.
     """
     def __init__(self, elem):
         self.elem = elem
+
+    def __repr__(self):
+        return f"<fpdsElement {self.elem.tag}>"
 
     @property
     def tag_name(self):
