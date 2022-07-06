@@ -7,7 +7,6 @@ last_updated: 07/06/2022
 
 import re
 from typing import Dict, List
-from utils.xml import extract_namespace
 import xml.etree.ElementTree as ET
 from xml.etree.ElementTree import Element
 
