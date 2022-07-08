@@ -102,6 +102,11 @@ class fpdsElement(Element):
         return elem_dct
 
     @property
+    def raw_tag(self):
+        """The tag attribute from `ET.Element`, which includes the namespace"""
+        return self.elem.tag
+
+    @property
     def tag_name(self):
         """
         Cleans up the namesapce from an Element class object
