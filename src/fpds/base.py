@@ -10,7 +10,8 @@ from typing import Dict, List
 import xml.etree.ElementTree as ET
 from xml.etree.ElementTree import Element
 
-CURLY_BRACE_REGEX = "\{(.*?)\}"
+CURLY_BRACE_REGEX = r"\{(.*?)\}"
+TRAILING_WHITESPACE_REGEX = r"\n\s+"
 RESOURCE_XPATH = "ns0:*"
 
 
@@ -42,6 +43,26 @@ class fpdsXML:
         ])
         return namespaces
 
+    @property
+    def data_records(self):
+        """
+        Returns all data record elements
+
+        Tags containing record data are labeled as follows: `<entry></entry>`
+        """
+        _data_records = []
+        for elem in self.top_level_elements():
+            if elem.get("tag") == "entry":
+                fpds_elem = fpdsElement(elem.get("element"))
+                _data_records.append(fpds_elem)
+        return _data_records
+
+    @property
+    def record_count(self):
+        """Returns the number of data records contained within the XML"""
+        _record_count = len(self.data_records)
+        return _record_count
+
     def top_level_elements(self) -> List[Dict[str, str]]:
         """
         Returns of top-level XML elements and their attributes (namespace,
@@ -49,28 +70,43 @@ class fpdsXML:
         """
         elements = []
         for elem in self.root.findall(RESOURCE_XPATH, self.namespaces):
-            elem = fpdsElement(elem)
+            elem = fpdsElement(elem)()
             # entry tags contain metadata for each data entry
             # entries will be parsed as part of :cls:`fpdsEntries`
-            elements.append({
-                "element": elem,
-                "namespace": elem.namespace,
-                "tag": elem.tag_name,
-                "text": elem.text,
-                "attributes": elem.attrib
-            })
+            elements.append(elem)
         return elements
 
 
 class fpdsElement(Element):
     """
-    A singular XML tag with cleaned properties extracted from `ElementTree`.
+    A singular XML tag with cleaned properties extracted from `ElementTree`
+
+    Args:
+        - elem (ET.Element): xml Element
     """
-    def __init__(self, elem):
+    def __init__(self, elem: Element):
         self.elem = elem
 
     def __repr__(self):
         return f"<fpdsElement {self.elem.tag}>"
+
+    def __call__(self):
+        """Element metadata should be returned if this class is called"""
+        elem_dct = {
+            "element": self.elem,
+            "namespace": self.namespace,
+            "tag": self.tag_name,
+            "text": self.text,
+            "attributes": self.attrib
+        }
+        return elem_dct
+
+    @staticmethod
+    def clean_trailing_whitespace(string):
+        """
+        Removes trailing whitespace from a string
+        """
+        return re.sub(TRAILING_WHITESPACE_REGEX, "", string)
 
     @property
     def tag_name(self):
@@ -83,7 +119,7 @@ class fpdsElement(Element):
     @property
     def namespace(self):
         """
-        Extracts namesapce from XML element tag attribute
+        Extracts namespace from XML element tag attribute
         """
         pattern = re.compile(CURLY_BRACE_REGEX)
         result = pattern.search(self.elem.tag)
