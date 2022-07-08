@@ -101,13 +101,6 @@ class fpdsElement(Element):
         }
         return elem_dct
 
-    @staticmethod
-    def clean_trailing_whitespace(string):
-        """
-        Removes trailing whitespace from a string
-        """
-        return re.sub(TRAILING_WHITESPACE_REGEX, "", string)
-
     @property
     def tag_name(self):
         """
