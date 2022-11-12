@@ -19,7 +19,7 @@ with open(CONFIG) as file:
 @click.argument("params", nargs=-1)
 def parse(params):
     """
-    Parsing command to retrieve results from the FPDS ATOM feed
+    Parsing command to generate search parameters for the FPDS Atom feed
 
     \b
     Usage:
@@ -32,9 +32,9 @@ def parse(params):
         \b
         Reference the Atom Feed Usage documentation at
         https://www.fpds.gov/wiki/index.php/Atom_Feed_Usage to determine
-        how to format parameters for the CLI. As an example, if a user
+        available parameters. As an example, if a user
         wants to filter for AWARD contract types, the parameter criteria
-        should look like this: 'CONTRACT_TYPE=”AWARD”'. A full CLI command
+        should look like this: 'CONTRACT_TYPE=AWARD'. A full CLI command
         could look like this:
 
         \b
