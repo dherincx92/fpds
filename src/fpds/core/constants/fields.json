@@ -3,7 +3,7 @@
         "description": "Last Modified Date",
         "name": "LAST_MOD_DATE",
         "quotes": false,
-        "regex": "\\[\\d{4}\\/\\d{2}\\/\\d{2},\\d{4}\\/\\d{2}\\/\\d{2}\\]"
+        "regex": "\\[\\d{4}\\/\\d{2}\\/\\d{2}\\s*,\\s*\\d{4}\\/\\d{2}\\/\\d{2}\\]"
     },
     {
         "description": "Agency Code",
