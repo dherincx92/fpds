@@ -116,6 +116,8 @@ class fpdsRequest(fpdsMixin):
             self.content.append(content_tree)
 
     def create_content_iterable(self):
+        """Paginates through response and creates an iterable of XML trees
+        """
         self.send_request()
         tree = fpdsXML(self.content[0])
         params = self.search_params
@@ -198,7 +200,7 @@ class fpdsXML(fpdsMixin):
         record_count = re.search(LAST_PAGE_REGEX, last_link[0].attrib["href"])
         return int(record_count.group(1))
 
-    def pagination_links(self, params):
+    def pagination_links(self, params: str) -> List[str]:
         """FPDS contains an XML tag that provides the last link of the response.
         Within that link is the total number of records contained within the
         response. This method uses that value to build the pagination links
@@ -215,8 +217,8 @@ class fpdsXML(fpdsMixin):
         return page_links
 
 
-    def get_atom_feed_entries(self):
-        """Returns
+    def get_atom_feed_entries(self) -> List[TREE]:
+        """Returns tree entries that contain FPDS record data
         """
         data_entries = self.tree.findall(
             './/ns0:entry',
