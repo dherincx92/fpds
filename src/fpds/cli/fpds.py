@@ -1,3 +1,5 @@
+import json
+import os
 import re
 
 import click
@@ -9,10 +11,8 @@ from src.fpds.core.exceptions.errors import (
 )
 from src.fpds.core.parser import fpdsRequest
 
-# testing purposes
-import json
-
-CONFIG = "/Users/dherincx/projects/git/fpds/src/fpds/core/constants/fields.json"
+CONFIG_DIR = os.path.dirname(os.getcwd())
+CONFIG = os.path.join(CONFIG_DIR, "core", "constants", "fields.json")
 with open(CONFIG) as file:
     cfg = json.load(file)
 
@@ -39,7 +39,7 @@ def parse(params):
         could look like this:
 
         \b
-            fpds parse params "LAST_MODE_DATE=[2022/01/01, 2022/05/01]" "AGENCY_CODE=7504"
+            fpds parse params "LAST_MOD_DATE=[2022/01/01, 2022/05/01]" "AGENCY_CODE=7504"
     """
     params = [param.split("=") for param in params[1:]]
     field_names = [field.get("name") for field in cfg]
