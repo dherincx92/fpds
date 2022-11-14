@@ -12,14 +12,26 @@ from typing import Dict, List
 from xml.etree import ElementTree
 from xml.etree.ElementTree import Element
 
-from .constants.vars 
-
-
 NAMESPACE_REGEX = r"\{(.*)\}"
 DATE_REGEX = r"(\[(.*?)\])"
 TRAILING_WHITESPACE_REGEX = r"\n\s+"
 LAST_PAGE_REGEX = r"start=(.*?)$"
 ATOM_NAMESPACE_FIELDS = ["title", "link", "modified", "content"]
+
+
+class fpdsMixin:
+    def __init__(self, **kwargs):
+        self.__dict__.update(kwargs)
+
+    @property
+    def url_base(self) -> str:
+        return "https://www.fpds.gov/ezsearch/FEEDS/ATOM?FEEDNAME=PUBLIC"
+
+    @property
+    def search_params(self):
+        """Search parameters inputted by user"""
+        _params = [f"{key}:{value}" for key, value in self.__dict__.items()]
+        return " ".join(_params)
 
 
 class _ElementAttributes(Element):
@@ -72,41 +84,27 @@ class _ElementAttributes(Element):
         return _attributes_copy
 
 
-class fpdsRequest:
+class fpdsRequest(fpdsMixin):
     def __init__(self, **kwargs):
-        self.__dict__.update(kwargs)
-
-    @property
-    def url_base(self) -> str:
-        return "https://www.fpds.gov/ezsearch/FEEDS/ATOM?FEEDNAME=PUBLIC"
-
-    @property
-    def search_params(self):
-        _params = [f"{key}: {value}" for key, value in self.__dict__.items()]
-        return " ".join(_params)
+        super().__init__(**kwargs)
 
     def send_request(self):
         response = requests.get(
             url=self.url_base,
-            params=self.search_params()
+            params={"q": self.search_params}
         )
         response.raise_for_status()
         self.content = response.content
-
-    def pagination(self):
-        resp = self.send_request()
-
-
-
-
+        import ipdb; ipdb.set_trace()
 
 # TODO: have class inherit from Logger()
-class fpdsXML:
+class fpdsXML(fpdsMixin):
     def __init__(self, content: bytes, **kwargs) -> "fpdsXML":
         self.content = content
         if self.content:
             self.tree = self.convert_to_lxml_tree()
-        self.kwargs = kwargs
+        self.params = kwargs.keys()
+        super().__init__(**kwargs)
 
     def parse_items(self, element: Element):
         """Returns iteration of `Element` as a generator
@@ -176,9 +174,9 @@ class fpdsXML:
             range(0, self.total_record_count + resp_size, resp_size)
         )
         # need to build request params first
+        for page in page_range:
+            link = f"{self.url_base}&q={self.search_params()}"
 
-    def search_params(self):
-        return None
 
     def get_atom_feed_entries(self):
         """Returns

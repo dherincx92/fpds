@@ -7,6 +7,7 @@ from src.fpds.core.exceptions.errors import (
     InvalidParameter,
     InvalidParameterInput
 )
+from src.fpds.core.parser import fpdsRequest
 
 # testing purposes
 import json
@@ -19,7 +20,7 @@ with open(CONFIG) as file:
 @click.argument("params", nargs=-1)
 def parse(params):
     """
-    Parsing command to generate search parameters for the FPDS Atom feed
+    Parsing command to parse the FPDS Atom feed
 
     \b
     Usage:
@@ -66,5 +67,7 @@ def parse(params):
     params_kwargs = dict(params)
 
     click.echo(f"Params to be used for FPDS search: {params_kwargs}")
+
+    request = fpdsRequest(**params_kwargs)
 
     return params_kwargs
