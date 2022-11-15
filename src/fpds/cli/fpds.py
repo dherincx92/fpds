@@ -43,6 +43,9 @@ def parse(params):
     params = [param.split("=") for param in params[1:]]
     field_names = [field.get("name") for field in cfg]
 
+    if not params:
+        raise ValueError("Please provide parameters for FPDS ATOM feed")
+
     for param_tuple in params:
         # checks that a param is a valid FPDS param
         param_name, param_input = param_tuple
@@ -71,4 +74,4 @@ def parse(params):
     click.echo("Retrieving FPDS records from ATOM feed...")
     records = request()
 
-    return records
+    click.echo(records)

@@ -19,11 +19,8 @@ from xml.etree.ElementTree import Element
 TREE = xml.etree.ElementTree.Element
 
 NAMESPACE_REGEX = r"\{(.*)\}"
-DATE_REGEX = r"(\[(.*?)\])"
 WHITESPACE_REGEX = r"\n\s+"
 LAST_PAGE_REGEX = r"start=(.*?)$"
-ATOM_NAMESPACE_FIELDS = ["title", "link", "modified", "content"]
-
 
 class fpdsMixin:
     def __init__(self, **kwargs):
@@ -60,13 +57,6 @@ class _ElementAttributes(Element):
         PATTERN = "\{(" + namespaces + ")\}"
         clean_tag = re.sub(PATTERN, "", self.element.tag)
         return clean_tag
-
-    # @staticmethod
-    # def empty_string_clean(text):
-    #     pattern = re.compile(WHITESPACE_REGEX)
-    #     result = pattern.match(text)
-    #     if result:
-    #         return None
 
     def _generate_nested_attribute_dict(self) -> Dict[str, str]:
         """Returns all attributes of an Element
