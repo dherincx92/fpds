@@ -11,8 +11,8 @@ from src.fpds.core.exceptions.errors import (
 )
 from src.fpds.core.parser import fpdsRequest
 
-CONFIG_DIR = os.path.dirname(os.getcwd())
-CONFIG = os.path.join(CONFIG_DIR, "core", "constants", "fields.json")
+CONFIG_DIR = os.getcwd()
+CONFIG = os.path.join(CONFIG_DIR, "constants", "fields.json")
 with open(CONFIG) as file:
     cfg = json.load(file)
 

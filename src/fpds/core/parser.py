@@ -18,7 +18,7 @@ TREE = xml.etree.ElementTree.Element
 
 NAMESPACE_REGEX = r"\{(.*)\}"
 DATE_REGEX = r"(\[(.*?)\])"
-TRAILING_WHITESPACE_REGEX = r"\n\s+"
+WHITESPACE_REGEX = r"\n\s+"
 LAST_PAGE_REGEX = r"start=(.*?)$"
 ATOM_NAMESPACE_FIELDS = ["title", "link", "modified", "content"]
 
@@ -59,6 +59,13 @@ class _ElementAttributes(Element):
         clean_tag = re.sub(PATTERN, "", self.element.tag)
         return clean_tag
 
+    # @staticmethod
+    # def empty_string_clean(text):
+    #     pattern = re.compile(WHITESPACE_REGEX)
+    #     result = pattern.match(text)
+    #     if result:
+    #         return None
+
     def _generate_nested_attribute_dict(self) -> Dict[str, str]:
         """Returns all attributes of an Element
 
@@ -87,6 +94,7 @@ class _ElementAttributes(Element):
             nested_key = f"{tag}__{key}"
             _attributes_copy[nested_key] = attributes[key]
             del _attributes_copy[key]
+        _attributes_copy[f"{tag}__value"] = self.element.text
         return _attributes_copy
 
 
@@ -126,6 +134,7 @@ class fpdsRequest(fpdsMixin):
         links.pop(0) # the first link is the first page so we drop it
         for link in links:
             self.send_request(link)
+
 
 # TODO: have class inherit from Logger()
 class fpdsXML(fpdsMixin):
@@ -225,3 +234,17 @@ class fpdsXML(fpdsMixin):
             self.namespace_dict
         )
         return data_entries
+
+    def get_entry_data(self):
+        entries = self.get_atom_feed_entries()
+
+        parsed_records = []
+        for entry in entries:
+            entry_tags = dict()
+            tags = self.parse_items(entry)
+            for tag in tags:
+                elem = _ElementAttributes(tag, self.namespace_dict)
+                entry_tags.update(elem._generate_nested_attribute_dict())
+            parsed_records.append(entry_tags)
+
+        return parsed_records
