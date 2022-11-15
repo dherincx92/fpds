@@ -3,7 +3,6 @@ import os
 import re
 
 import click
-from click import Argument, Choice, Path, UsageError
 
 from src.fpds.core.exceptions.errors import (
     InvalidParameter,
@@ -64,10 +63,12 @@ def parse(params):
         quotes = list(filter(get_field_dict, cfg))[0].get("quotes")
         if quotes:
             param_tuple[1] = f'"{param_input}"'
-    params_kwargs = dict(params)
 
+    params_kwargs = dict(params)
     click.echo(f"Params to be used for FPDS search: {params_kwargs}")
 
     request = fpdsRequest(**params_kwargs)
+    click.echo("Retrieving FPDS records from ATOM feed...")
+    records = request()
 
-    return params_kwargs
+    return records

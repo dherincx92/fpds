@@ -2,14 +2,16 @@
 Base classes for FPDS XML elements
 
 author: derek663@gmail.com
-last_updated: 10/16/2022
+last_updated: 11/14/2022
 """
 
 import re
 import requests
+from itertools import chain
 from typing import Dict, List
 
 import xml
+from tqdm import tqdm
 from xml.etree import ElementTree
 from xml.etree.ElementTree import Element
 
@@ -102,6 +104,10 @@ class fpdsRequest(fpdsMixin):
     def __init__(self, **kwargs):
         self.kwargs = kwargs
 
+    def __call__(self):
+        records = self.parse_content()
+        return records
+
     @property
     def search_params(self):
         """Search parameters inputted by user"""
@@ -110,6 +116,12 @@ class fpdsRequest(fpdsMixin):
 
     def send_request(self, url: str = None):
         """Sends request to FPDS Atom feed
+
+        Parameters
+        ----------
+        url: str, optional
+            A URL to send a GET request to. If not provided, this method
+            will default to using `url_base`
         """
         response = requests.get(
             url=self.url_base if not url else url,
@@ -124,16 +136,27 @@ class fpdsRequest(fpdsMixin):
             self.content.append(content_tree)
 
     def create_content_iterable(self):
-        """Paginates through response and creates an iterable of XML trees
+        """Paginates through response and creates an iterable of XML trees.
+        This method will not have a return but rather, will set the `content`
+        attribute to an iterable of XML ElementTree's
         """
         self.send_request()
-        tree = fpdsXML(self.content[0])
         params = self.search_params
+        tree = fpdsXML(self.content[0])
 
         links = tree.pagination_links(params=params)
         links.pop(0) # the first link is the first page so we drop it
         for link in links:
             self.send_request(link)
+
+    def parse_content(self):
+        self.create_content_iterable()
+
+        records = []
+        for tree in tqdm(self.content):
+            xml = fpdsXML(tree)
+            records.append(xml.get_entry_data())
+        return list(chain.from_iterable(records))
 
 
 # TODO: have class inherit from Logger()
@@ -144,7 +167,6 @@ class fpdsXML(fpdsMixin):
             self.tree = self.convert_to_lxml_tree()
         if isinstance(self.content, TREE):
             self.tree = content
-            print("Content identified as an instance of `ElementTree.Element`")
         if not isinstance(self.content, (bytes, TREE)):
             raise TypeError(
                 "You must provide bytes content or an instance of"
@@ -221,7 +243,7 @@ class fpdsXML(fpdsMixin):
         # need to build request params first
         page_links = []
         for num in page_range:
-            link = f"{self.url_base}&q={params};start={num}"
+            link = f"{self.url_base}&q={params}&start={num}"
             page_links.append(link)
         return page_links
 
