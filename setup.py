@@ -6,7 +6,8 @@ setup(
     py_modules=['fpds'],
     install_requires=[
         'Click',
-        'requests'
+        'requests',
+        'tqdm'
     ],
     entry_points={'console_scripts': ["fpds=src.fpds.cli:cli"]}
 )
