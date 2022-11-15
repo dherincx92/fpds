@@ -1,6 +1,7 @@
 import json
 import os
 import re
+from pathlib import Path
 
 import click
 
@@ -73,5 +74,7 @@ def parse(params):
     request = fpdsRequest(**params_kwargs)
     click.echo("Retrieving FPDS records from ATOM feed...")
     records = request()
+    
+    # dump data here...
 
-    click.echo(records)
+    click.echo("JSON data dumped...")
