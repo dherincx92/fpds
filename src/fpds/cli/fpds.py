@@ -73,8 +73,8 @@ def parse(params):
 
     request = fpdsRequest(**params_kwargs)
     click.echo("Retrieving FPDS records from ATOM feed...")
-    records = request()
-    
-    # dump data here...
+    records, path = request()
 
-    click.echo("JSON data dumped...")
+    # dump data here...
+    click.echo(f"Caller's path is {path}")
+    click.echo(f"{len(records)} records have been dumped into JSON")

@@ -2,7 +2,7 @@
 Base classes for FPDS XML elements
 
 author: derek663@gmail.com
-last_updated: 11/14/2022
+last_updated: 11/15/2022
 """
 
 import re
@@ -51,7 +51,10 @@ class _ElementAttributes(Element):
 
     @property
     def clean_tag(self) -> str:
-        """Tag name without the namespace"""
+        """Tag name without the namespace. A tag like the following:
+        `ns1:productOrServiceInformation` would simply return
+        `productOrServiceInformation`
+        """
         namespaces = "|".join(self.namespace_dict.values())
         # yeah, f-strings don't do well with backslashes
         PATTERN = "\{(" + namespaces + ")\}"
@@ -86,7 +89,7 @@ class _ElementAttributes(Element):
             nested_key = f"{tag}__{key}"
             _attributes_copy[nested_key] = attributes[key]
             del _attributes_copy[key]
-        _attributes_copy[f"{tag}__value"] = self.element.text
+        _attributes_copy[f"{tag}"] = self.element.text
         return _attributes_copy
 
 
@@ -94,9 +97,17 @@ class fpdsRequest(fpdsMixin):
     def __init__(self, **kwargs):
         self.kwargs = kwargs
 
+    def _caller_path(self):
+        # MAGIC! Get the caller's module path.
+        import os, sys
+        frame = sys._getframe()
+        import ipdb; ipdb.set_trace()
+        path = os.path.dirname(frame.f_back.f_back.f_code.co_filename)
+        return path
+
     def __call__(self):
         records = self.parse_content()
-        return records
+        return records, self._caller_path()
 
     @property
     def search_params(self):
@@ -136,10 +147,12 @@ class fpdsRequest(fpdsMixin):
 
         links = tree.pagination_links(params=params)
         links.pop(0) # the first link is the first page so we drop it
-        for link in links:
-            self.send_request(link)
+        # for link in links:
+        #     self.send_request(link)
 
-    def parse_content(self):
+    def parse_content(self) -> List[Dict[str, str]]:
+        """Parses a content iterable and generates a list of records
+        """
         self.create_content_iterable()
 
         records = []
