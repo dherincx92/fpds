@@ -1,5 +1,4 @@
 import json
-import os
 import re
 
 import click
@@ -52,7 +51,7 @@ def parse(params):
         get_field_dict = lambda field: field.get("name") == param_name
         field_regex = list(filter(get_field_dict, FIELDS))[0].get("regex")
 
-        # does the param input match expected regex pattern?
+        # does the param input match the expected regex pattern?
         raw_pattern = fr"{field_regex}".replace("\\\\", "\\")
         LITERAL_PATTERN = re.compile(raw_pattern)
         match = LITERAL_PATTERN.match(param_input)

@@ -159,6 +159,7 @@ class fpdsRequest(fpdsMixin):
         for tree in tqdm(self.content):
             xml = fpdsXML(tree)
             records.append(xml.get_entry_data())
+        import ipdb; ipdb.set_trace()
         return list(chain.from_iterable(records))
 
 
