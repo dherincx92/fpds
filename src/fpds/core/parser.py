@@ -6,14 +6,14 @@ last_updated: 11/15/2022
 """
 
 import re
-import requests
+import xml
 from itertools import chain
 from typing import Dict, List
-
-import xml
-from tqdm import tqdm
 from xml.etree import ElementTree
 from xml.etree.ElementTree import Element
+
+import requests
+from tqdm import tqdm
 
 # types
 TREE = xml.etree.ElementTree.Element
@@ -23,14 +23,12 @@ WHITESPACE_REGEX = r"\n\s+"
 LAST_PAGE_REGEX = r"start=(.*?)$"
 
 class fpdsMixin:
-    def __init__(self, **kwargs):
-        self.__dict__.update(kwargs)
-
     @property
     def url_base(self) -> str:
         return "https://www.fpds.gov/ezsearch/FEEDS/ATOM?FEEDNAME=PUBLIC"
 
-    def convert_to_lxml_tree(self, content):
+    @staticmethod
+    def convert_to_lxml_tree(content):
         """Returns lxml tree element from a bytes response
         """
         tree = ElementTree.fromstring(content)
@@ -99,9 +97,9 @@ class fpdsRequest(fpdsMixin):
 
     def _caller_path(self):
         # MAGIC! Get the caller's module path.
-        import os, sys
+        import os
+        import sys
         frame = sys._getframe()
-        import ipdb; ipdb.set_trace()
         path = os.path.dirname(frame.f_back.f_back.f_code.co_filename)
         return path
 
@@ -159,7 +157,7 @@ class fpdsRequest(fpdsMixin):
         for tree in tqdm(self.content):
             xml = fpdsXML(tree)
             records.append(xml.get_entry_data())
-        import ipdb; ipdb.set_trace()
+        print(f"Path to dump at is {self._caller_path()}")
         return list(chain.from_iterable(records))
 
 

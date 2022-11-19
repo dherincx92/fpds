@@ -3,12 +3,12 @@ import re
 
 import click
 
-from src.fpds.config import FIELDS_FILE_CONFIG as FIELDS
-from src.fpds.core.exceptions.errors import (
+from fpds.config import FIELDS_FILE_CONFIG as FIELDS
+from fpds.core.exceptions import (
     InvalidParameter,
     InvalidParameterInput
 )
-from src.fpds.core.parser import fpdsRequest
+from fpds.core.parser import fpdsRequest
 
 
 @click.command()

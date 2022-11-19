@@ -2,6 +2,7 @@ import click
 
 from .fpds import parse as _parse
 
+
 @click.group()
 def cli():
     """

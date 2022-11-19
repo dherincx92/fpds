@@ -9,7 +9,7 @@ from importlib.resources import files
 from pathlib import Path
 
 FIELDS_FILE = "fields.json"
-FPDS_FIELDS_FILE = files("src.fpds.core.constants").joinpath(FIELDS_FILE)
+FPDS_FIELDS_FILE = files("fpds.constants").joinpath(FIELDS_FILE)
 
 with Path(FPDS_FIELDS_FILE).open(encoding="utf-8") as file:
     FIELDS_FILE_CONFIG = json.load(file)
