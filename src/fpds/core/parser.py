@@ -2,13 +2,14 @@
 Base classes for FPDS XML elements
 
 author: derek663@gmail.com
-last_updated: 11/15/2022
+last_updated: 11/19/2022
 """
 
 import re
 import xml
 from itertools import chain
-from typing import Dict, List
+from pathlib import Path
+from typing import Dict, List, NoReturn
 from xml.etree import ElementTree
 from xml.etree.ElementTree import Element
 
@@ -95,17 +96,9 @@ class fpdsRequest(fpdsMixin):
     def __init__(self, **kwargs):
         self.kwargs = kwargs
 
-    def _caller_path(self):
-        # MAGIC! Get the caller's module path.
-        import os
-        import sys
-        frame = sys._getframe()
-        path = os.path.dirname(frame.f_back.f_back.f_code.co_filename)
-        return path
-
     def __call__(self):
         records = self.parse_content()
-        return records, self._caller_path()
+        return records
 
     @property
     def search_params(self):
@@ -157,8 +150,11 @@ class fpdsRequest(fpdsMixin):
         for tree in tqdm(self.content):
             xml = fpdsXML(tree)
             records.append(xml.get_entry_data())
-        print(f"Path to dump at is {self._caller_path()}")
         return list(chain.from_iterable(records))
+
+    def write_content(self) -> NoReturn:
+        """Writes content to a specified dir
+        """
 
 
 # TODO: have class inherit from Logger()

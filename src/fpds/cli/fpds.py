@@ -1,15 +1,12 @@
 import json
 import re
+from uuid import uuid4
 
 import click
+from click import UsageError, BadArgumentUsage, BadParameter
 
-from fpds.config import FIELDS_FILE_CONFIG as FIELDS
-from fpds.core.exceptions import (
-    InvalidParameter,
-    InvalidParameterInput
-)
-from fpds.core.parser import fpdsRequest
-
+from fpds import fpdsRequest, FPDS_DATA_DATE_DIR
+from fpds.config import FPDS_FIELDS_CONFIG as FIELDS
 
 @click.command()
 @click.argument("params", nargs=-1)
@@ -27,11 +24,11 @@ def parse(params):
 
         \b
         Reference the Atom Feed Usage documentation at
-        https://www.fpds.gov/wiki/index.php/Atom_Feed_Usage to determine
-        available parameters. As an example, if a user
-        wants to filter for AWARD contract types, the parameter criteria
-        should look like this: 'CONTRACT_TYPE=AWARD'. A full CLI command
-        could look like this:
+        https://www.fpds.gov/wiki/index.php/Atom_Feed_Usage
+        to determine available parameters. As an example, if
+        a user wants to filter for AWARD contract types, the
+        parameter criteria should look like this: 'CONTRACT_TYPE=AWARD'.
+        A full CLI command could look like this:
 
         \b
             fpds parse params "LAST_MOD_DATE=[2022/01/01, 2022/05/01]" "AGENCY_CODE=7504"
@@ -40,13 +37,15 @@ def parse(params):
     field_names = [field.get("name") for field in FIELDS]
 
     if not params:
-        raise ValueError("Please provide parameters for FPDS ATOM feed")
+        raise UsageError("Please provide at least one parameter")
 
     for param_tuple in params:
-        # checks that a param is a valid FPDS param
+        # checks that every parameter provided is valid
         param_name, param_input = param_tuple
         if param_name not in field_names:
-            raise InvalidParameter(param=param_name)
+            raise BadParameter(
+                message=f"`{param_name}` is not a valid parameter"
+            )
 
         get_field_dict = lambda field: field.get("name") == param_name
         field_regex = list(filter(get_field_dict, FIELDS))[0].get("regex")
@@ -56,7 +55,9 @@ def parse(params):
         LITERAL_PATTERN = re.compile(raw_pattern)
         match = LITERAL_PATTERN.match(param_input)
         if not match:
-            raise InvalidParameterInput(input=param_input, regex=raw_pattern)
+            raise BadArgumentUsage(
+                message=f"`{param_input}` does not match regex: {raw_pattern}"
+            )
 
         # enclose param value in quotes, if required by the Atom feed
         quotes = list(filter(get_field_dict, FIELDS))[0].get("quotes")
@@ -68,8 +69,11 @@ def parse(params):
 
     request = fpdsRequest(**params_kwargs)
     click.echo("Retrieving FPDS records from ATOM feed...")
-    records, path = request()
+    records = request()
 
     # dump data here...
-    click.echo(f"Caller's path is {path}")
+    DATA_FILE = FPDS_DATA_DATE_DIR / f"{uuid4()}.json"
+    with open(DATA_FILE, "w") as outfile:
+        json.dump(records, outfile)
+
     click.echo(f"{len(records)} records have been dumped into JSON")
