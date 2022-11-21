@@ -7,6 +7,7 @@ from click import UsageError, BadArgumentUsage, BadParameter
 
 from fpds import fpdsRequest, FPDS_DATA_DATE_DIR
 from fpds.config import FPDS_FIELDS_CONFIG as FIELDS
+from fpds.utilities import filter_config_dict, raw_literal_regex_match
 
 @click.command()
 @click.argument("params", nargs=-1)
@@ -47,27 +48,22 @@ def parse(params):
                 message=f"`{param_name}` is not a valid parameter"
             )
 
-        get_field_dict = lambda field: field.get("name") == param_name
-        field_regex = list(filter(get_field_dict, FIELDS))[0].get("regex")
-
-        # does the param input match the expected regex pattern?
-        raw_pattern = fr"{field_regex}".replace("\\\\", "\\")
-        LITERAL_PATTERN = re.compile(raw_pattern)
-        match = LITERAL_PATTERN.match(param_input)
+        kwarg_dict = filter_config_dict(FIELDS, "name", param_name)
+        kwarg_regex = kwarg_dict.get("regex")
+        match = raw_literal_regex_match(kwarg_regex, param_input)
         if not match:
             raise BadArgumentUsage(
-                message=f"`{param_input}` does not match regex: {raw_pattern}"
+                message=f"`{param_input}` does not match regex: {kwarg_regex}"
             )
 
         # enclose param value in quotes, if required by the Atom feed
-        quotes = list(filter(get_field_dict, FIELDS))[0].get("quotes")
-        if quotes:
+        if kwarg_dict.get("quotes"):
             param_tuple[1] = f'"{param_input}"'
 
     params_kwargs = dict(params)
     click.echo(f"Params to be used for FPDS search: {params_kwargs}")
 
-    request = fpdsRequest(**params_kwargs)
+    request = fpdsRequest(**params_kwargs, cli_run=True)
     click.echo("Retrieving FPDS records from ATOM feed...")
     records = request()
 

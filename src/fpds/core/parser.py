@@ -2,19 +2,21 @@
 Base classes for FPDS XML elements
 
 author: derek663@gmail.com
-last_updated: 11/19/2022
+last_updated: 11/20/2022
 """
 
 import re
 import xml
 from itertools import chain
-from pathlib import Path
 from typing import Dict, List, NoReturn
 from xml.etree import ElementTree
 from xml.etree.ElementTree import Element
 
 import requests
 from tqdm import tqdm
+
+from fpds.config import FPDS_FIELDS_CONFIG as FIELDS
+from fpds.utilities import filter_config_dict, raw_literal_regex_match
 
 # types
 TREE = xml.etree.ElementTree.Element
@@ -93,8 +95,35 @@ class _ElementAttributes(Element):
 
 
 class fpdsRequest(fpdsMixin):
-    def __init__(self, **kwargs):
-        self.kwargs = kwargs
+    def __init__(self, cli_run: bool = False,  **kwargs):
+        self.cli_run = cli_run
+        if kwargs:
+            self.kwargs = kwargs
+        else:
+            raise ValueError("You must provide at least one keyword parameter")
+
+        # do not run class validations since CLI command has its own
+        if not self.cli_run:
+            self.valid_fields = [field.get("name") for field in FIELDS]
+            for kwarg, value in self.kwargs.items():
+                if kwarg not in self.valid_fields:
+                    raise ValueError(f"`{kwarg}` is not a valid FPDS parameter")
+                else:
+                    kwarg_dict = filter_config_dict(FIELDS, "name", kwarg)
+                    kwarg_regex = kwarg_dict.get("regex")
+                    match = raw_literal_regex_match(kwarg_regex, value)
+                    if not match:
+                        raise ValueError(
+                            f"`{value}` does not match regex: {kwarg_regex}"
+                        )
+                    if kwarg_dict.get("quotes"):
+                        self.kwargs[kwarg] = f'"{value}"'
+
+    def __str__(self):
+        kwargs_str = " ".join(
+            [f"{key}={value}" for key, value in self.kwargs.items()]
+        )
+        return f"<fpdsRequest {kwargs_str}>"
 
     def __call__(self):
         records = self.parse_content()
@@ -138,8 +167,8 @@ class fpdsRequest(fpdsMixin):
 
         links = tree.pagination_links(params=params)
         links.pop(0) # the first link is the first page so we drop it
-        # for link in links:
-        #     self.send_request(link)
+        for link in links:
+            self.send_request(link)
 
     def parse_content(self) -> List[Dict[str, str]]:
         """Parses a content iterable and generates a list of records
@@ -238,7 +267,6 @@ class fpdsXML(fpdsMixin):
         page_range = list(
             range(0, self.total_record_count + resp_size, resp_size)
         )
-        # need to build request params first
         page_links = []
         for num in page_range:
             link = f"{self.url_base}&q={params}&start={num}"
