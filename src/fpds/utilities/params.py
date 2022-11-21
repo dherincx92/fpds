@@ -1,3 +1,9 @@
+"""
+Utility functions related to FPDS request parameters
+
+author: derek663@gmail.com
+last_updated: 11/21/2022
+"""
 import re
 from typing import Dict, List, Union
 
@@ -6,8 +12,7 @@ def filter_config_dict(
     field: str,
     value: Union[str, bool]
 ):
-    """
-    Given a configuration object, return single object from config where
+    """Given a configuration object, return single object from config where
     config[field] = value
 
     Parameters
@@ -26,7 +31,10 @@ def filter_config_dict(
         field_dict = dict[0]
     return field_dict
 
-def raw_literal_regex_match(pattern, string ):
+def raw_literal_regex_match(pattern, string):
+    """Converts a regex pattern into a raw string literal to be used by
+    Python's regex module
+    """
     raw_pattern = fr"{pattern}".replace("\\\\", "\\")
     LITERAL_PATTERN = re.compile(raw_pattern)
     match = LITERAL_PATTERN.match(string)
