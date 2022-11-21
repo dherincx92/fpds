@@ -12,7 +12,7 @@ from fpds.utilities import filter_config_dict, raw_literal_regex_match
 @click.argument("params", nargs=-1)
 def parse(params):
     """
-    Parsing command to parse the FPDS Atom feed
+    Parsing command for the FPDS Atom feed
 
     \b
     Usage:
