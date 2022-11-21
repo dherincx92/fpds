@@ -1,5 +1,4 @@
 import json
-import re
 from uuid import uuid4
 
 import click
