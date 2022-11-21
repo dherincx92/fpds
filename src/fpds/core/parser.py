@@ -8,7 +8,7 @@ last_updated: 11/20/2022
 import re
 import xml
 from itertools import chain
-from typing import Dict, List, NoReturn
+from typing import Dict, List, NoReturn, Union
 from xml.etree import ElementTree
 from xml.etree.ElementTree import Element
 
@@ -40,7 +40,15 @@ class fpdsMixin:
 class _ElementAttributes(Element):
     """
     Utility class that helps parse out extra features of XML tags generated
-    by `xml.etree.ElementTree.Element`
+    by `xml.etree.ElementTree.Element`. This class should ideally not be
+    instantiated by users.
+
+    Parameters
+    ----------
+    element: xml.etree.ElementTree.Element
+        An XML element
+    namespace_dict: Dict[str, str]
+        A namespace dictionary that allows module to parse FPDS elements
     """
     def __init__(
         self,
@@ -95,6 +103,23 @@ class _ElementAttributes(Element):
 
 
 class fpdsRequest(fpdsMixin):
+    """Makes a GET request to the FPDS ATOM feed. Takes an unlimited number of
+    arguments. All query parameters should be submitted as strings. During
+    class instantiation, this class will validate argument names and values and
+    raise a `ValueError` if any error exists.
+
+    Example:
+        request = fpdsRequest(
+            LAST_MOD_DATE="[2022/01/01, 2022/05/01]",
+            AGENCY_CODE="7504"
+        )
+
+    Parameters
+    ----------
+    cli_run: bool
+        Flag indicating if this class is being isntantiated by a CLI run
+        Defaults to `False`
+    """
     def __init__(self, cli_run: bool = False,  **kwargs):
         self.cli_run = cli_run
         if kwargs:
@@ -135,7 +160,7 @@ class fpdsRequest(fpdsMixin):
         _params = [f"{key}:{value}" for key, value in self.kwargs.items()]
         return " ".join(_params)
 
-    def send_request(self, url: str = None):
+    def send_request(self, url: str = None) -> NoReturn:
         """Sends request to FPDS Atom feed
 
         Parameters
@@ -156,7 +181,7 @@ class fpdsRequest(fpdsMixin):
         else:
             self.content.append(content_tree)
 
-    def create_content_iterable(self):
+    def create_content_iterable(self) -> NoReturn:
         """Paginates through response and creates an iterable of XML trees.
         This method will not have a return but rather, will set the `content`
         attribute to an iterable of XML ElementTree's
@@ -170,7 +195,7 @@ class fpdsRequest(fpdsMixin):
         for link in links:
             self.send_request(link)
 
-    def parse_content(self) -> List[Dict[str, str]]:
+    def parse_content(self) -> List[Dict[str, Union[str, int, float]]]:
         """Parses a content iterable and generates a list of records
         """
         self.create_content_iterable()
@@ -181,14 +206,16 @@ class fpdsRequest(fpdsMixin):
             records.append(xml.get_entry_data())
         return list(chain.from_iterable(records))
 
-    def write_content(self) -> NoReturn:
-        """Writes content to a specified dir
-        """
-
 
 # TODO: have class inherit from Logger()
 class fpdsXML(fpdsMixin):
-    def __init__(self, content: bytes) -> "fpdsXML":
+    """Parses FPDS request content received as bytes or `xml.etree.ElementTree`.
+
+    Parameters
+    ----------
+    content
+    """
+    def __init__(self, content: Union[bytes, TREE]) -> "fpdsXML":
         self.content = content
         if isinstance(self.content, bytes):
             self.tree = self.convert_to_lxml_tree()
@@ -205,7 +232,7 @@ class fpdsXML(fpdsMixin):
         """
         yield from element.iter()
 
-    def convert_to_lxml_tree(self):
+    def convert_to_lxml_tree(self) -> TREE:
         """Returns lxml tree element from a bytes response
         """
         tree = ElementTree.fromstring(self.content)
@@ -253,7 +280,7 @@ class fpdsXML(fpdsMixin):
         """Total number of records for response
         """
         links = self.tree.findall('.//ns0:link', self.namespace_dict)
-        last_link = list(filter(lambda link: link.get("rel") == "last", links))
+        last_link = [link for link in links if link.get("rel") == "last"]
         # index 0 should work since only one link should match the filter cond.
         record_count = re.search(LAST_PAGE_REGEX, last_link[0].attrib["href"])
         return int(record_count.group(1))
@@ -272,7 +299,6 @@ class fpdsXML(fpdsMixin):
             link = f"{self.url_base}&q={params}&start={num}"
             page_links.append(link)
         return page_links
-
 
     def get_atom_feed_entries(self) -> List[TREE]:
         """Returns tree entries that contain FPDS record data

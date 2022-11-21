@@ -67,7 +67,6 @@ def parse(params):
     click.echo("Retrieving FPDS records from ATOM feed...")
     records = request()
 
-    # dump data here...
     DATA_FILE = FPDS_DATA_DATE_DIR / f"{uuid4()}.json"
     with open(DATA_FILE, "w") as outfile:
         json.dump(records, outfile)
