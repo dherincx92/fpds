@@ -9,7 +9,7 @@
         "description": "Agency Code",
         "name": "AGENCY_CODE",
         "quotes": true,
-        "regex": "\\d{4}"
+        "regex": "^\\d{4}$"
     },
     {
         "description": "Agency Name",
@@ -21,7 +21,7 @@
         "description": "Contracting Agency",
         "name": "CONTRACTING_AGENCY_ID",
         "quotes": true,
-        "regex": "\\d{4}"
+        "regex": "^\\d{4}$"
     },
     {
         "description": "Award Completion Date",
@@ -87,7 +87,7 @@
         "description": "Department ID",
         "name": "DEPARTMENT_ID",
         "quotes": true,
-        "regex": "\\d{4}"
+        "regex": "^\\d{4}$"
     },
    {
         "description": "Department Name",
@@ -111,13 +111,13 @@
         "description": "Funding Agency ID",
         "name": "FUNDING_AGENCY_ID",
         "quotes": true,
-        "regex": "\\d{4}"
+        "regex": "^\\d{4}$"
     },
     {
         "description": "Action Obligation",
         "name": "OBLIGATED_AMOUNT",
         "quotes": true,
-        "regex": "\\d{4}"
+        "regex": "^\\d{4}$"
     },
     {
         "description": "Funding Office ID",
