@@ -4,7 +4,8 @@ from uuid import uuid4
 import click
 from click import UsageError, BadArgumentUsage, BadParameter
 
-from fpds import fpdsRequest, FPDS_DATA_DATE_DIR
+from fpds import fpdsRequest
+from fpds.config import FPDS_DATA_DATE_DIR
 from fpds.config import FPDS_FIELDS_CONFIG as FIELDS
 from fpds.utilities import filter_config_dict, raw_literal_regex_match
 

@@ -2,7 +2,7 @@
 Base classes for FPDS XML elements
 
 author: derek663@gmail.com
-last_updated: 11/20/2022
+last_updated: 11/25/2022
 """
 
 import re
@@ -58,6 +58,9 @@ class _ElementAttributes(Element):
         self.element = element
         self.namespace_dict = namespace_dict
 
+    def __str__(self):
+        return f"<_ElementAttributes {self.element.tag}>"
+
     @property
     def clean_tag(self) -> str:
         """Tag name without the namespace. A tag like the following:
@@ -94,11 +97,12 @@ class _ElementAttributes(Element):
         _attributes_copy = attributes.copy()
 
         tag = self.clean_tag
+        # the undecoded, textual value of the element
+        _attributes_copy[f"{tag}"] = self.element.text
         for key in attributes:
             nested_key = f"{tag}__{key}"
             _attributes_copy[nested_key] = attributes[key]
             del _attributes_copy[key]
-        _attributes_copy[f"{tag}"] = self.element.text
         return _attributes_copy
 
 
@@ -119,6 +123,13 @@ class fpdsRequest(fpdsMixin):
     cli_run: bool
         Flag indicating if this class is being isntantiated by a CLI run
         Defaults to `False`
+
+    Raises
+    ------
+    ValueError:
+        Raised if no keyword argument(s) are provided, a keyword argument
+        is not a valid FPDS parameter, or the value of a keyword argument
+        does not match the expected regex.
     """
     def __init__(self, cli_run: bool = False,  **kwargs):
         self.cli_run = cli_run
@@ -160,7 +171,7 @@ class fpdsRequest(fpdsMixin):
         _params = [f"{key}:{value}" for key, value in self.kwargs.items()]
         return " ".join(_params)
 
-    def send_request(self, url: str = None) -> NoReturn:
+    def send_request(self, url: str = None):
         """Sends request to FPDS Atom feed
 
         Parameters
@@ -181,7 +192,7 @@ class fpdsRequest(fpdsMixin):
         else:
             self.content.append(content_tree)
 
-    def create_content_iterable(self) -> NoReturn:
+    def create_content_iterable(self):
         """Paginates through response and creates an iterable of XML trees.
         This method will not have a return but rather, will set the `content`
         attribute to an iterable of XML ElementTree's
@@ -191,15 +202,15 @@ class fpdsRequest(fpdsMixin):
         tree = fpdsXML(self.content[0])
 
         links = tree.pagination_links(params=params)
-        links.pop(0) # the first link is the first page so we drop it
-        for link in links:
-            self.send_request(link)
+        if len(links) > 1:
+            links.pop(0)
+            for link in links:
+                self.send_request(link)
 
     def parse_content(self) -> List[Dict[str, Union[str, int, float]]]:
         """Parses a content iterable and generates a list of records
         """
         self.create_content_iterable()
-
         records = []
         for tree in tqdm(self.content):
             xml = fpdsXML(tree)
@@ -277,22 +288,26 @@ class fpdsXML(fpdsMixin):
 
     @property
     def total_record_count(self) -> int:
-        """Total number of records for response
+        """Total number of records across all pagination links.
         """
         links = self.tree.findall('.//ns0:link', self.namespace_dict)
         last_link = [link for link in links if link.get("rel") == "last"]
-        # index 0 should work since only one link should match the filter cond.
-        record_count = re.search(LAST_PAGE_REGEX, last_link[0].attrib["href"])
-        return int(record_count.group(1))
+        if last_link:
+            # length of last_link should always be 1
+            match = re.search(LAST_PAGE_REGEX, last_link[0].attrib["href"])
+            record_count = int(match.group(1))
+        else:
+            record_count = len(self.get_atom_feed_entries())
+        return record_count
 
     def pagination_links(self, params: str) -> List[str]:
-        """FPDS contains an XML tag that provides the last link of the response.
-        Within that link is the total number of records contained within the
-        response. This method uses that value to build the pagination links
+        """Builds pagination links for a single API response based on the
+        total record count value
         """
         resp_size = self.response_size
+        offset = 0 if self.total_record_count <= 10 else resp_size
         page_range = list(
-            range(0, self.total_record_count + resp_size, resp_size)
+            range(0, self.total_record_count + offset, resp_size)
         )
         page_links = []
         for num in page_range:
@@ -313,12 +328,15 @@ class fpdsXML(fpdsMixin):
         entries = self.get_atom_feed_entries()
 
         parsed_records = []
+        # an entry is the XML tag that contains individual responses
         for entry in entries:
             entry_tags = dict()
             tags = self.parse_items(entry)
+            # a tag is an individual data item
             for tag in tags:
-                elem = _ElementAttributes(tag, self.namespace_dict)
-                entry_tags.update(elem._generate_nested_attribute_dict())
+                if not len(tag):
+                    elem = _ElementAttributes(tag, self.namespace_dict)
+                    entry_tags.update(elem._generate_nested_attribute_dict())
             parsed_records.append(entry_tags)
 
         return parsed_records
