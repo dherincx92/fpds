@@ -2,6 +2,7 @@ import unittest
 from unittest import mock, TestCase
 from unittest.mock import MagicMock
 from xml.etree import ElementTree
+from xml.etree.ElementTree import Element
 
 import requests
 
@@ -13,7 +14,7 @@ FPDS_REQUEST_PARAMS_DICT = {
     "AGENCY_CODE": "7504"
 }
 
-FILE = "/Users/derek.herincx/projects/fpds/src/fpds/tests/test_data.xml"
+FILE = "/Users/dherincx/projects/git/fpds/src/fpds/tests/test_data.xml"
 with open(FILE) as data:
     DATA_BYTES = data.read().encode("utf-8")
 
@@ -39,15 +40,6 @@ class MockFpdsXML(object):
             '{some-fpds-link}&start=20'
         ]
 
-class MockContentIterable(object):
-    def __init__(self, cls):
-        self.cls = cls
-
-    def action(self):
-        raise Exception
-        # self.cls.content.append(CONTENT_TREE)
-        # import pdb; pdb.set_trace()
-
 class TestFpdsRequest(TestCase):
     def setUp(self):
         self._class = fpdsRequest(**FPDS_REQUEST_PARAMS_DICT)
@@ -67,17 +59,14 @@ class TestFpdsRequest(TestCase):
         self._class.create_content_iterable()
         self.assertEqual(mock_response.call_count, 3)
 
+    def side_effect_create_content_iterable(self):
+        self._class.content.append(CONTENT_TREE)
+
     @mock.patch.object(fpdsRequest, "create_content_iterable")
     def test_parse_content(self, mock_content):
-        mock_content.return_value = MockContentIterable(self._class)
-        # to mimic updating `self.content`
-        mock_content.action()
-        mock_content.side_effect = mock_content.action()
-        import pdb;pdb.set_trace()
-        self._class.parse_content()
-
-
-
+        mock_content.side_effect = self.side_effect_create_content_iterable()
+        records = self._class.parse_content()
+        self.assertEqual(len(records), 10)
 
 if __name__ == "__main__":
     unittest.main()
