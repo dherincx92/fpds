@@ -133,6 +133,7 @@ class fpdsRequest(fpdsMixin):
     """
     def __init__(self, cli_run: bool = False,  **kwargs):
         self.cli_run = cli_run
+        self.content = []
         if kwargs:
             self.kwargs = kwargs
         else:
