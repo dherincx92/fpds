@@ -1,9 +1,8 @@
 import unittest
-from unittest import mock, TestCase
+from unittest import TestCase, mock
 from unittest.mock import MagicMock
 from xml.etree import ElementTree
 from xml.etree.ElementTree import Element
-
 
 from fpds import fpdsXML
 

@@ -1,13 +1,12 @@
 import unittest
-from unittest import mock, TestCase
+from unittest import TestCase, mock
 from unittest.mock import MagicMock
 from xml.etree import ElementTree
 from xml.etree.ElementTree import Element
 
 import requests
 
-import fpds
-from fpds import fpdsRequest, fpdsXML
+from fpds import fpdsRequest
 
 FPDS_REQUEST_PARAMS_DICT = {
     "LAST_MOD_DATE": "[2022/01/01, 2022/05/01]",

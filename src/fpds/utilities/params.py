@@ -7,6 +7,7 @@ last_updated: 11/21/2022
 import re
 from typing import Dict, List, Union
 
+
 def filter_config_dict(
     config: List[Dict[str, Union[str, bool]]],
     field: str,

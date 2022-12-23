@@ -8,7 +8,7 @@ last_updated: 11/25/2022
 import re
 import xml
 from itertools import chain
-from typing import Dict, List, NoReturn, Union
+from typing import Dict, List, Union
 from xml.etree import ElementTree
 from xml.etree.ElementTree import Element
 
@@ -25,17 +25,25 @@ NAMESPACE_REGEX = r"\{(.*)\}"
 WHITESPACE_REGEX = r"\n\s+"
 LAST_PAGE_REGEX = r"start=(.*?)$"
 
+
 class fpdsMixin:
     @property
     def url_base(self) -> str:
+        """Base URL for FPDS Atom feed"""
         return "https://www.fpds.gov/ezsearch/FEEDS/ATOM?FEEDNAME=PUBLIC"
 
     @staticmethod
-    def convert_to_lxml_tree(content):
+    def convert_to_lxml_tree(content) -> TREE:
         """Returns lxml tree element from a bytes response
+
+        Parameters
+        ----------
+        content: bytes
+            Any type of bytes content that can be parsed into XML
         """
         tree = ElementTree.fromstring(content)
         return tree
+
 
 class _ElementAttributes(Element):
     """
@@ -45,7 +53,7 @@ class _ElementAttributes(Element):
 
     Parameters
     ----------
-    element: xml.etree.ElementTree.Element
+    element: TREE
         An XML element
     namespace_dict: Dict[str, str]
         A namespace dictionary that allows module to parse FPDS elements
@@ -107,10 +115,12 @@ class _ElementAttributes(Element):
 
 
 class fpdsRequest(fpdsMixin):
-    """Makes a GET request to the FPDS ATOM feed. Takes an unlimited number of
-    arguments. All query parameters should be submitted as strings. During
-    class instantiation, this class will validate argument names and values and
-    raise a `ValueError` if any error exists.
+    """Makes a GET request to the FPDS ATOM feed.
+
+    Takes an unlimited number of arguments. All query parameters should
+    be submitted as strings. During class instantiation, this class will
+    validate argument names and values and raise a `ValueError` if any
+    error exists.
 
     Example:
         request = fpdsRequest(
