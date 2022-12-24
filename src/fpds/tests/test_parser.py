@@ -19,6 +19,7 @@ with open(FILE) as data:
 
 CONTENT_TREE = ElementTree.fromstring(DATA_BYTES)
 
+
 class MockResponse(object):
     def __init__(self, status_code):
         self.status_code = status_code
@@ -31,6 +32,7 @@ class MockResponse(object):
         if self.status_code != 200:
             raise Exception
 
+
 class MockFpdsXML(object):
     def pagination_links(self, params="some-param1: param1-value"):
         return [
@@ -38,6 +40,7 @@ class MockFpdsXML(object):
             '{some-fpds-link}&start=10',
             '{some-fpds-link}&start=20'
         ]
+
 
 class TestFpdsRequest(TestCase):
     def setUp(self):

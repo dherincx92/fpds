@@ -141,7 +141,7 @@ class fpdsRequest(fpdsMixin):
         is not a valid FPDS parameter, or if the value of a keyword argument
         does not match the expected regex pattern.
     """
-    def __init__(self, cli_run: bool = False,  **kwargs):
+    def __init__(self, cli_run: bool = False, **kwargs):
         self.cli_run = cli_run
         self.content = []
         if kwargs:
