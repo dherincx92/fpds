@@ -2,7 +2,7 @@
 Configurations and constants
 
 author: derek663@gmail.com
-last_updated: 11/15/2022
+last_updated: 12/27/2022
 """
 import json
 from datetime import datetime
