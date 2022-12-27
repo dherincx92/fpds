@@ -80,10 +80,10 @@ class _ElementAttributes(Element):
         -------
         <ns1:contractActionType description="BPA" part8OrPart13="PART8">E</ns1:contractActionType>
 
-        The value of the `contractActionType` is "E". To help decipher
-        this data, this class will parse out all attributes of the tag. This
-        method will generate a nested key name structure to indicate what tag
-        each attribute belongs to. In this example, the tag `contractActionType`
+        Extracting the text value from `contractActionType` would return "E".
+        Addtional metadata is stored as tag attributes which this method will
+        help parse out. This method will generate a dictionary including both
+        the text and tag attribute data. In this example, `contractActionType`
         has two attributes: `description` and `part8OrPart13`. This method will
         represent this tag the following way:
 
