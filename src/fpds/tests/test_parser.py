@@ -10,18 +10,23 @@ import requests
 from fpds import fpdsRequest
 from fpds.config import FPDS_XML_TEST_DATA_FILE as TEST_FILE
 
+# valid params and values
 FPDS_REQUEST_PARAMS_DICT = {
     "LAST_MOD_DATE": "[2022/01/01, 2022/05/01]",
     "AGENCY_CODE": "7504"
 }
+# an invalid param combined with a valid param
 FPDS_REQUEST_INVALID_PARAM_DICT = {
     "INCORRECT_PARAM": "some-value",
     "AGENCY_CODE": "7504"
 }
+# valid param names, but an incorrect regex pattern for a single param
 FPDS_REQUEST_INVALID_REGEX_DICT = {
     "LAST_MOD_DATE": "[2022/01/01, 2022/05/01]",
     "AGENCY_CODE": "not-a-proper-regex"
 }
+
+# sample FPDS response stored as
 with open(TEST_FILE) as data:
     DATA_BYTES = data.read().encode("utf-8")
 

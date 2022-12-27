@@ -8,7 +8,7 @@ last_updated: 11/25/2022
 import re
 import xml
 from itertools import chain
-from typing import Dict, List, Union
+from typing import Dict, List, NoReturn, Union
 from xml.etree import ElementTree
 from xml.etree.ElementTree import Element
 
@@ -25,25 +25,17 @@ NAMESPACE_REGEX = r"\{(.*)\}"
 WHITESPACE_REGEX = r"\n\s+"
 LAST_PAGE_REGEX = r"start=(.*?)$"
 
-
 class fpdsMixin:
     @property
     def url_base(self) -> str:
-        """Base URL for FPDS Atom feed"""
         return "https://www.fpds.gov/ezsearch/FEEDS/ATOM?FEEDNAME=PUBLIC"
 
     @staticmethod
-    def convert_to_lxml_tree(content) -> TREE:
+    def convert_to_lxml_tree(content):
         """Returns lxml tree element from a bytes response
-
-        Parameters
-        ----------
-        content: bytes
-            Any type of bytes content that can be parsed into valid XML
         """
         tree = ElementTree.fromstring(content)
         return tree
-
 
 class _ElementAttributes(Element):
     """
@@ -53,7 +45,7 @@ class _ElementAttributes(Element):
 
     Parameters
     ----------
-    element: TREE
+    element: xml.etree.ElementTree.Element
         An XML element
     namespace_dict: Dict[str, str]
         A namespace dictionary that allows module to parse FPDS elements
@@ -66,7 +58,7 @@ class _ElementAttributes(Element):
         self.element = element
         self.namespace_dict = namespace_dict
 
-    def __str__(self) -> str:
+    def __str__(self):
         return f"<_ElementAttributes {self.element.tag}>"
 
     @property
@@ -77,12 +69,12 @@ class _ElementAttributes(Element):
         """
         namespaces = "|".join(self.namespace_dict.values())
         # yeah, f-strings don't do well with backslashes
-        PATTERN = "\{(" + namespaces + ")\}" # noqa
+        PATTERN = "\{(" + namespaces + ")\}"
         clean_tag = re.sub(PATTERN, "", self.element.tag)
         return clean_tag
 
     def _generate_nested_attribute_dict(self) -> Dict[str, str]:
-        """Returns all attributes of type `Element`
+        """Returns all attributes of an Element
 
         Example
         -------
@@ -115,12 +107,10 @@ class _ElementAttributes(Element):
 
 
 class fpdsRequest(fpdsMixin):
-    """Makes a GET request to the FPDS ATOM feed.
-
-    Takes an unlimited number of arguments. All query parameters should
-    be submitted as strings. During class instantiation, this class will
-    validate argument names and values and raise a `ValueError` if any
-    error exists.
+    """Makes a GET request to the FPDS ATOM feed. Takes an unlimited number of
+    arguments. All query parameters should be submitted as strings. During
+    class instantiation, this class will validate argument names and values and
+    raise a `ValueError` if any error exists.
 
     Example:
         request = fpdsRequest(
@@ -131,17 +121,17 @@ class fpdsRequest(fpdsMixin):
     Parameters
     ----------
     cli_run: bool
-        Flag indicating if this class is being instantiated by a CLI run
+        Flag indicating if this class is being isntantiated by a CLI run
         Defaults to `False`
 
     Raises
     ------
     ValueError:
-        Raised if no keyword argument(s) are provided, if a keyword argument
-        is not a valid FPDS parameter, or if the value of a keyword argument
-        does not match the expected regex pattern.
+        Raised if no keyword argument(s) are provided, a keyword argument
+        is not a valid FPDS parameter, or the value of a keyword argument
+        does not match the expected regex.
     """
-    def __init__(self, cli_run: bool = False, **kwargs):
+    def __init__(self, cli_run: bool = False,  **kwargs):
         self.cli_run = cli_run
         self.content = []
         if kwargs:
@@ -166,7 +156,7 @@ class fpdsRequest(fpdsMixin):
                     if kwarg_dict.get("quotes"):
                         self.kwargs[kwarg] = f'"{value}"'
 
-    def __str__(self) -> str:
+    def __str__(self):
         kwargs_str = " ".join(
             [f"{key}={value}" for key, value in self.kwargs.items()]
         )
@@ -177,7 +167,7 @@ class fpdsRequest(fpdsMixin):
         return records
 
     @property
-    def search_params(self) -> str:
+    def search_params(self):
         """Search parameters inputted by user"""
         _params = [f"{key}:{value}" for key, value in self.kwargs.items()]
         return " ".join(_params)
@@ -197,11 +187,7 @@ class fpdsRequest(fpdsMixin):
         )
         response.raise_for_status()
         content_tree = self.convert_to_lxml_tree(response.content)
-
-        if "content" not in self.__dict__.keys():
-            self.content = [content_tree]
-        else:
-            self.content.append(content_tree)
+        self.content.append(content_tree)
 
     def create_content_iterable(self):
         """Paginates through response and creates an iterable of XML trees.

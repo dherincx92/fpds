@@ -5,17 +5,19 @@ from xml.etree import ElementTree
 from xml.etree.ElementTree import Element
 
 from fpds import fpdsXML
-from fpds.config import FPDS_XML_TEST_DATA_FILE as TEST_FILE
+from fpds.config import (
+    FPDS_TRUNCATED_XML_TEST_DATA_FILE,
+    FPDS_XML_TEST_DATA_FILE
+)
+from fpds.utilities import read_xml_as_bytes
 
 FPDS_REQUEST_PARAMS_DICT = {
     "LAST_MOD_DATE": "[2022/01/01, 2022/05/01]",
     "AGENCY_CODE": "7504"
 }
 
-with open(TEST_FILE) as data:
-    DATA_BYTES = data.read().encode("utf-8")
-
-CONTENT_TREE = ElementTree.fromstring(DATA_BYTES)
+FULL_DATA_BYTES = read_xml_as_bytes(FPDS_XML_TEST_DATA_FILE)
+TRUNCATED_DATA_BYTES = read_xml_as_bytes(FPDS_TRUNCATED_XML_TEST_DATA_FILE)
 TEST_NAMESPACE_DICT = {
     'ns0': 'http://www.w3.org/2005/Atom',
     'ns1': 'https://www.fpds.gov/FPDS'
@@ -24,7 +26,7 @@ TEST_NAMESPACE_DICT = {
 
 class TestFpdsXML(TestCase):
     def setUp(self):
-        self._class = fpdsXML(DATA_BYTES)
+        self._class = fpdsXML(FULL_DATA_BYTES)
 
     def test_invalid_content_type(self):
         with pytest.raises(TypeError):
@@ -44,6 +46,19 @@ class TestFpdsXML(TestCase):
     def test_total_record_count(self):
         total = self._class.total_record_count
         self.assertEqual(total, 20)
+
+    def test_total_record_count_truncated_response(self):
+        """A truncated response won't have a `last` link tag. This test
+        ensures that if the response size is less than 10 that the
+        `total_record_count` property is still generated correctly.
+        """
+        _class = fpdsXML(TRUNCATED_DATA_BYTES)
+        total = _class.total_record_count
+        self.assertEqual(total, 1)
+
+    def test_pagination_links(self):
+        links = self._class.pagination_links(params="some-param1: param1-value")
+        self.assertEqual(len(links), 3)
 
     def test_get_atom_feed_entries(self):
         entries = self._class.get_atom_feed_entries()
