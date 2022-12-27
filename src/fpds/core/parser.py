@@ -25,6 +25,7 @@ NAMESPACE_REGEX = r"\{(.*)\}"
 WHITESPACE_REGEX = r"\n\s+"
 LAST_PAGE_REGEX = r"start=(.*?)$"
 
+
 class fpdsMixin:
     @property
     def url_base(self) -> str:
@@ -36,6 +37,7 @@ class fpdsMixin:
         """
         tree = ElementTree.fromstring(content)
         return tree
+
 
 class _ElementAttributes(Element):
     """
@@ -69,7 +71,7 @@ class _ElementAttributes(Element):
         """
         namespaces = "|".join(self.namespace_dict.values())
         # yeah, f-strings don't do well with backslashes
-        PATTERN = "\{(" + namespaces + ")\}"
+        PATTERN = "\{(" + namespaces + ")\}" # noqa
         clean_tag = re.sub(PATTERN, "", self.element.tag)
         return clean_tag
 
@@ -131,7 +133,7 @@ class fpdsRequest(fpdsMixin):
         is not a valid FPDS parameter, or the value of a keyword argument
         does not match the expected regex.
     """
-    def __init__(self, cli_run: bool = False,  **kwargs):
+    def __init__(self, cli_run: bool = False, **kwargs):
         self.cli_run = cli_run
         self.content = []
         if kwargs:

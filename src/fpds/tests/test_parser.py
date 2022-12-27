@@ -102,5 +102,6 @@ class TestFpdsRequest(TestCase):
         records = self._class.parse_content()
         self.assertEqual(len(records), 10)
 
+
 if __name__ == "__main__":
     unittest.main()

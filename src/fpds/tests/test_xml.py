@@ -1,5 +1,4 @@
 import pytest
-import unittest
 from unittest import TestCase
 from xml.etree import ElementTree
 from xml.etree.ElementTree import Element
@@ -66,4 +65,3 @@ class TestFpdsXML(TestCase):
         entry_types = set([type(entry) for entry in entries])
         self.assertEqual(len(entries), 10)
         self.assertEqual(len(entry_types), 1)
-

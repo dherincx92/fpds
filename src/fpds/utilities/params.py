@@ -32,6 +32,7 @@ def filter_config_dict(
         field_dict = dct[0]
     return field_dict
 
+
 def raw_literal_regex_match(pattern, string):
     """Converts a regex pattern into a raw literal string to be used by
     Python's regex module.

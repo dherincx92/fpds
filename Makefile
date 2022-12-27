@@ -30,10 +30,10 @@ isort: ## Format and sort imports
 	isort src
 
 lint: ## Check style with flake8
-	flake8 src tests
+	flake8 src
 
 mypy: ## Typechecking with mypy
-	mypy src tests
+	mypy src
 
 formatters: black isort lint mypy
 
