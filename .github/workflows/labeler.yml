@@ -1,0 +1,22 @@
+name: Add Labels
+on:
+  # PR is opened, reopened, or pushed, or edited
+  # https://docs.github.com/en/actions/using-workflows/events-that-trigger-workflows#pull_request
+  pull_request:
+    types:
+    - opened
+    - reopened
+    - synchronize
+    - edited
+jobs:
+  label:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+    # this uses the api to get the config file, so we can't generate it
+    # https://github.com/actions/labeler/blob/69da01b8e0929f147b8943611bee75ee4175a49e/src/labeler.ts#L95-L123
+    - name: apply labels
+      uses: actions/labeler@v3
+      with:
+        repo-token: "${{ secrets.GITHUB_TOKEN }}"
+        sync-labels: true
