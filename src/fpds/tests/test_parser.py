@@ -1,3 +1,4 @@
+import pytest
 import unittest
 from unittest import TestCase, mock
 from unittest.mock import MagicMock
@@ -7,14 +8,21 @@ from xml.etree.ElementTree import Element
 import requests
 
 from fpds import fpdsRequest
+from fpds.config import FPDS_XML_TEST_DATA_FILE as TEST_FILE
 
 FPDS_REQUEST_PARAMS_DICT = {
     "LAST_MOD_DATE": "[2022/01/01, 2022/05/01]",
     "AGENCY_CODE": "7504"
 }
-
-FILE = "/Users/dherincx/projects/git/fpds/src/fpds/tests/test_data.xml"
-with open(FILE) as data:
+FPDS_REQUEST_INVALID_PARAM_DICT = {
+    "INCORRECT_PARAM": "some-value",
+    "AGENCY_CODE": "7504"
+}
+FPDS_REQUEST_INVALID_REGEX_DICT = {
+    "LAST_MOD_DATE": "[2022/01/01, 2022/05/01]",
+    "AGENCY_CODE": "not-a-proper-regex"
+}
+with open(TEST_FILE) as data:
     DATA_BYTES = data.read().encode("utf-8")
 
 CONTENT_TREE = ElementTree.fromstring(DATA_BYTES)
@@ -45,6 +53,25 @@ class MockFpdsXML(object):
 class TestFpdsRequest(TestCase):
     def setUp(self):
         self._class = fpdsRequest(**FPDS_REQUEST_PARAMS_DICT)
+
+    def test_params_exist(self):
+        with pytest.raises(ValueError):
+            fpdsRequest({})
+
+    def test_invalid_param(self):
+        with pytest.raises(ValueError):
+            fpdsRequest(**FPDS_REQUEST_INVALID_PARAM_DICT)
+
+    def test_invalid_param_regex(self):
+        with pytest.raises(ValueError):
+            fpdsRequest(**FPDS_REQUEST_INVALID_REGEX_DICT)
+
+    def test_str_magic_method(self):
+        object_as_string = (
+            '<fpdsRequest LAST_MOD_DATE=[2022/01/01, 2022/05/01] '
+            'AGENCY_CODE="7504">'
+        )
+        self.assertEqual(self._class.__str__(), object_as_string)
 
     @mock.patch.object(requests, "get")
     def test_send_request(self, mock_response):

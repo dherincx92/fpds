@@ -1,18 +1,18 @@
+import pytest
 import unittest
-from unittest import TestCase, mock
-from unittest.mock import MagicMock
+from unittest import TestCase
 from xml.etree import ElementTree
 from xml.etree.ElementTree import Element
 
 from fpds import fpdsXML
+from fpds.config import FPDS_XML_TEST_DATA_FILE as TEST_FILE
 
 FPDS_REQUEST_PARAMS_DICT = {
     "LAST_MOD_DATE": "[2022/01/01, 2022/05/01]",
     "AGENCY_CODE": "7504"
 }
 
-FILE = "/Users/dherincx/projects/git/fpds/src/fpds/tests/test_data.xml"
-with open(FILE) as data:
+with open(TEST_FILE) as data:
     DATA_BYTES = data.read().encode("utf-8")
 
 CONTENT_TREE = ElementTree.fromstring(DATA_BYTES)
@@ -25,6 +25,10 @@ TEST_NAMESPACE_DICT = {
 class TestFpdsXML(TestCase):
     def setUp(self):
         self._class = fpdsXML(DATA_BYTES)
+
+    def test_invalid_content_type(self):
+        with pytest.raises(TypeError):
+            fpdsXML(content="a-string-not-bytes-or-tree")
 
     def test_convert_to_lxml_tree(self):
         content = self._class.convert_to_lxml_tree()

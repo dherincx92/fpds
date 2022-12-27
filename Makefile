@@ -52,7 +52,7 @@ test: venv install ## Run unit tests with coverage
 	fi
 
 local-test:  ## Runs unit tests
-	pytest --cov=src/ --cov-report term-missing tests/
+	pytest --cov=src/ --cov-report term-missing src/fpds/tests/
 
 venv: ## Check if operating in a virtual environment, create if not detected.
 	if [ ! -z ${VIRTUAL_ENV} ]; then echo "\nvirtual environment detected\n"; else python3.8 -m venv venv && . ./venv/bin/activate; fi

@@ -18,6 +18,10 @@ FPDS_FIELDS_FILE = "fields.json"
 FPDS_FIELDS_FILE_PATH = files("fpds.constants").joinpath(FPDS_FIELDS_FILE)
 FPDS_DATA_DATE_DIR = FPDS_DATA_DIR / CURRENT_DATE
 
+# test configurations
+FPDS_XML_TEST_DATA = "test_data.xml"
+FPDS_XML_TEST_DATA_FILE = files("fpds.tests").joinpath(FPDS_XML_TEST_DATA)
+
 # actions
 FPDS_DATA_DATE_DIR.mkdir(parents=True, exist_ok=True)
 
