@@ -22,4 +22,4 @@ FPDS_DATA_DATE_DIR = FPDS_DATA_DIR / CURRENT_DATE
 FPDS_DATA_DATE_DIR.mkdir(parents=True, exist_ok=True)
 
 with Path(FPDS_FIELDS_FILE_PATH).open(encoding="utf-8") as file:
-    FPDS_FIELDS_CONFIG= json.load(file)
+    FPDS_FIELDS_CONFIG = json.load(file)
