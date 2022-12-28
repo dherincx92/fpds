@@ -11,6 +11,26 @@ $ source venv/bin/activate
 # pip install -e .
 ```
 
+## Usage
+
+Via CLI:
+```
+$  fpds parse params "LAST_MOD_DATE=[2022/01/01, 2022/05/01]" "AGENCY_CODE=7504"
+```
+
+Same request via python interpreter:
+```
+from fpds import fpdsRequest
+
+request = fpdsRequest(
+    LAST_MOD_DATE="[2022/01/01, 2022/05/01]",
+    AGENCY_CODE="7504"
+)
+
+# Records saved as a python list
+records = request()
+```
+
 For linting and formatting, we use `flake8` and `black`.
 
 ```
