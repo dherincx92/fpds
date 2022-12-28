@@ -4,7 +4,7 @@ from xml.etree import ElementTree
 from xml.etree.ElementTree import Element
 
 from fpds import fpdsXML
-from tests import FULL_DATA_BYTES, TRUNCATED_DATA_BYTES
+from tests import FULL_RESPONSE_DATA_BYTES, TRUNCATED_RESPONSE_DATA_BYTES
 
 FPDS_REQUEST_PARAMS_DICT = {
     "LAST_MOD_DATE": "[2022/01/01, 2022/05/01]",
@@ -18,7 +18,7 @@ TEST_NAMESPACE_DICT = {
 
 class TestFpdsXML(TestCase):
     def setUp(self):
-        self._class = fpdsXML(FULL_DATA_BYTES)
+        self._class = fpdsXML(FULL_RESPONSE_DATA_BYTES)
 
     def test_invalid_content_type(self):
         with pytest.raises(TypeError):
@@ -44,7 +44,7 @@ class TestFpdsXML(TestCase):
         ensures that if the response size is less than 10 that the
         `total_record_count` property is still generated correctly.
         """
-        _class = fpdsXML(TRUNCATED_DATA_BYTES)
+        _class = fpdsXML(TRUNCATED_RESPONSE_DATA_BYTES)
         total = _class.total_record_count
         self.assertEqual(total, 1)
 

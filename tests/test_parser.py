@@ -1,14 +1,12 @@
 import pytest
 import unittest
 from unittest import TestCase, mock
-from unittest.mock import MagicMock
 from xml.etree import ElementTree
-from xml.etree.ElementTree import Element
 
 import requests
 
 from fpds import fpdsRequest
-from tests import FULL_DATA_BYTES
+from tests import FULL_RESPONSE_DATA_BYTES
 
 # valid params and values
 FPDS_REQUEST_PARAMS_DICT = {
@@ -25,7 +23,7 @@ FPDS_REQUEST_INVALID_REGEX_DICT = {
     "LAST_MOD_DATE": "[2022/01/01, 2022/05/01]",
     "AGENCY_CODE": "not-a-proper-regex"
 }
-CONTENT_TREE = ElementTree.fromstring(FULL_DATA_BYTES)
+CONTENT_TREE = ElementTree.fromstring(FULL_RESPONSE_DATA_BYTES)
 
 
 class MockResponse(object):
@@ -34,7 +32,7 @@ class MockResponse(object):
 
     @property
     def content(self):
-        return FULL_DATA_BYTES
+        return FULL_RESPONSE_DATA_BYTES
 
     def raise_for_status(self):
         if self.status_code != 200:
