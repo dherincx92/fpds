@@ -18,11 +18,6 @@ FPDS_FIELDS_FILE = "fields.json"
 FPDS_FIELDS_FILE_PATH = files("fpds.constants").joinpath(FPDS_FIELDS_FILE)
 FPDS_DATA_DATE_DIR = FPDS_DATA_DIR / CURRENT_DATE
 
-# test configurations
-FPDS_TEST_DATA_DIR = "fpds.tests.data"
-FPDS_XML_TEST_DATA_FILE = files(FPDS_TEST_DATA_DIR).joinpath("full_response.xml")
-FPDS_TRUNCATED_XML_TEST_DATA_FILE = files(FPDS_TEST_DATA_DIR).joinpath("truncated_response.xml")
-
 # actions
 FPDS_DATA_DATE_DIR.mkdir(parents=True, exist_ok=True)
 

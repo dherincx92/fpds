@@ -4,19 +4,12 @@ from xml.etree import ElementTree
 from xml.etree.ElementTree import Element
 
 from fpds import fpdsXML
-from fpds.config import (
-    FPDS_TRUNCATED_XML_TEST_DATA_FILE,
-    FPDS_XML_TEST_DATA_FILE
-)
-from fpds.utilities import read_xml_as_bytes
+from tests import FULL_DATA_BYTES, TRUNCATED_DATA_BYTES
 
 FPDS_REQUEST_PARAMS_DICT = {
     "LAST_MOD_DATE": "[2022/01/01, 2022/05/01]",
     "AGENCY_CODE": "7504"
 }
-
-FULL_DATA_BYTES = read_xml_as_bytes(FPDS_XML_TEST_DATA_FILE)
-TRUNCATED_DATA_BYTES = read_xml_as_bytes(FPDS_TRUNCATED_XML_TEST_DATA_FILE)
 TEST_NAMESPACE_DICT = {
     'ns0': 'http://www.w3.org/2005/Atom',
     'ns1': 'https://www.fpds.gov/FPDS'

@@ -8,7 +8,7 @@ from xml.etree.ElementTree import Element
 import requests
 
 from fpds import fpdsRequest
-from fpds.config import FPDS_XML_TEST_DATA_FILE as TEST_FILE
+from tests import FULL_DATA_BYTES
 
 # valid params and values
 FPDS_REQUEST_PARAMS_DICT = {
@@ -25,12 +25,7 @@ FPDS_REQUEST_INVALID_REGEX_DICT = {
     "LAST_MOD_DATE": "[2022/01/01, 2022/05/01]",
     "AGENCY_CODE": "not-a-proper-regex"
 }
-
-# sample FPDS response stored as
-with open(TEST_FILE) as data:
-    DATA_BYTES = data.read().encode("utf-8")
-
-CONTENT_TREE = ElementTree.fromstring(DATA_BYTES)
+CONTENT_TREE = ElementTree.fromstring(FULL_DATA_BYTES)
 
 
 class MockResponse(object):
@@ -39,7 +34,7 @@ class MockResponse(object):
 
     @property
     def content(self):
-        return DATA_BYTES
+        return FULL_DATA_BYTES
 
     def raise_for_status(self):
         if self.status_code != 200:
