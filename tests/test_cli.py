@@ -4,8 +4,8 @@ from unittest import TestCase
 from click.testing import CliRunner
 from fpds.cli import cli
 
-invalid_cli_params = ['parse', 'params', "{an-invalid-param}={some-value}"]
-invalid_cli_param_regex = ['parse', 'params', 'AGENCY_CODE={not-valid}']
+invalid_cli_params = ["parse", "params", "{an-invalid-param}={some-value}"]
+invalid_cli_param_regex = ["parse", "params", "AGENCY_CODE={not-valid}"]
 
 
 class TestFpdsCLI(TestCase):
@@ -13,7 +13,7 @@ class TestFpdsCLI(TestCase):
         self.runner = CliRunner()
 
     def test_missing_cli_parameters(self):
-        result = self.runner.invoke(cli, ['parse'])
+        result = self.runner.invoke(cli, ["parse"])
         assert "Please provide at least one parameter" in result.output
 
     def test_invalid_cli_parameter(self):

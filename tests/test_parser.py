@@ -11,17 +11,17 @@ from tests import FULL_RESPONSE_DATA_BYTES
 # valid params and values
 FPDS_REQUEST_PARAMS_DICT = {
     "LAST_MOD_DATE": "[2022/01/01, 2022/05/01]",
-    "AGENCY_CODE": "7504"
+    "AGENCY_CODE": "7504",
 }
 # an invalid param combined with a valid param
 FPDS_REQUEST_INVALID_PARAM_DICT = {
     "INCORRECT_PARAM": "some-value",
-    "AGENCY_CODE": "7504"
+    "AGENCY_CODE": "7504",
 }
 # valid param names, but an incorrect regex pattern for a single param
 FPDS_REQUEST_INVALID_REGEX_DICT = {
     "LAST_MOD_DATE": "[2022/01/01, 2022/05/01]",
-    "AGENCY_CODE": "not-a-proper-regex"
+    "AGENCY_CODE": "not-a-proper-regex",
 }
 CONTENT_TREE = ElementTree.fromstring(FULL_RESPONSE_DATA_BYTES)
 
@@ -42,9 +42,9 @@ class MockResponse(object):
 class MockFpdsXML(object):
     def pagination_links(self, params="some-param1: param1-value"):
         return [
-            '{some-fpds-link}&start=0',
-            '{some-fpds-link}&start=10',
-            '{some-fpds-link}&start=20'
+            "{some-fpds-link}&start=0",
+            "{some-fpds-link}&start=10",
+            "{some-fpds-link}&start=20",
         ]
 
 
@@ -66,8 +66,7 @@ class TestFpdsRequest(TestCase):
 
     def test_str_magic_method(self):
         object_as_string = (
-            '<fpdsRequest LAST_MOD_DATE=[2022/01/01, 2022/05/01] '
-            'AGENCY_CODE="7504">'
+            "<fpdsRequest LAST_MOD_DATE=[2022/01/01, 2022/05/01] " 'AGENCY_CODE="7504">'
         )
         self.assertEqual(self._class.__str__(), object_as_string)
 

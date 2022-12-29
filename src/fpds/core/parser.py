@@ -33,8 +33,7 @@ class fpdsMixin:
 
     @staticmethod
     def convert_to_lxml_tree(content):
-        """Returns lxml tree element from a bytes response
-        """
+        """Returns lxml tree element from a bytes response"""
         tree = ElementTree.fromstring(content)
         return tree
 
@@ -52,10 +51,9 @@ class _ElementAttributes(Element):
     namespace_dict: Dict[str, str]
         A namespace dictionary that allows module to parse FPDS elements
     """
+
     def __init__(
-        self,
-        element: Element,
-        namespace_dict: Dict[str, str]
+        self, element: Element, namespace_dict: Dict[str, str]
     ) -> "_ElementAttributes":
         self.element = element
         self.namespace_dict = namespace_dict
@@ -71,7 +69,7 @@ class _ElementAttributes(Element):
         """
         namespaces = "|".join(self.namespace_dict.values())
         # yeah, f-strings don't do well with backslashes
-        PATTERN = "\{(" + namespaces + ")\}" # noqa
+        PATTERN = "\{(" + namespaces + ")\}"  # noqa
         clean_tag = re.sub(PATTERN, "", self.element.tag)
         return clean_tag
 
@@ -133,6 +131,7 @@ class fpdsRequest(fpdsMixin):
         is not a valid FPDS parameter, or the value of a keyword argument
         does not match the expected regex.
     """
+
     def __init__(self, cli_run: bool = False, **kwargs):
         self.cli_run = cli_run
         self.content = []
@@ -159,9 +158,7 @@ class fpdsRequest(fpdsMixin):
                         self.kwargs[kwarg] = f'"{value}"'
 
     def __str__(self):
-        kwargs_str = " ".join(
-            [f"{key}={value}" for key, value in self.kwargs.items()]
-        )
+        kwargs_str = " ".join([f"{key}={value}" for key, value in self.kwargs.items()])
         return f"<fpdsRequest {kwargs_str}>"
 
     def __call__(self):
@@ -184,8 +181,7 @@ class fpdsRequest(fpdsMixin):
             will default to using `url_base`
         """
         response = requests.get(
-            url=self.url_base if not url else url,
-            params={"q": self.search_params}
+            url=self.url_base if not url else url, params={"q": self.search_params}
         )
         response.raise_for_status()
         content_tree = self.convert_to_lxml_tree(response.content)
@@ -207,8 +203,7 @@ class fpdsRequest(fpdsMixin):
                 self.send_request(link)
 
     def parse_content(self) -> List[Dict[str, Union[str, int, float]]]:
-        """Parses a content iterable and generates a list of records
-        """
+        """Parses a content iterable and generates a list of records"""
         self.create_content_iterable()
         records = []
         for tree in tqdm(self.content):
@@ -225,6 +220,7 @@ class fpdsXML(fpdsMixin):
     ----------
     content
     """
+
     def __init__(self, content: Union[bytes, TREE]) -> "fpdsXML":
         self.content = content
         if isinstance(self.content, bytes):
@@ -238,13 +234,11 @@ class fpdsXML(fpdsMixin):
             )
 
     def parse_items(self, element: Element):
-        """Returns iteration of `Element` as a generator
-        """
+        """Returns iteration of `Element` as a generator"""
         yield from element.iter()
 
     def convert_to_lxml_tree(self) -> TREE:
-        """Returns lxml tree element from a bytes response
-        """
+        """Returns lxml tree element from a bytes response"""
         tree = ElementTree.fromstring(self.content)
         return tree
 
@@ -260,12 +254,11 @@ class fpdsXML(fpdsMixin):
             An lxml Element type
         """
         namespace = re.match(NAMESPACE_REGEX, element.tag)
-        return namespace.group(1) if namespace else ''
+        return namespace.group(1) if namespace else ""
 
     @property
     def response_size(self) -> int:
-        """Max number of records in a single response
-        """
+        """Max number of records in a single response"""
         return 10
 
     @property
@@ -282,14 +275,13 @@ class fpdsXML(fpdsMixin):
             if _namespace not in namespaces:
                 namespaces.append(_namespace)
 
-        namespace_dict = {f'ns{idx}': ns for idx, ns in enumerate(namespaces)}
+        namespace_dict = {f"ns{idx}": ns for idx, ns in enumerate(namespaces)}
         return namespace_dict
 
     @property
     def total_record_count(self) -> int:
-        """Total number of records across all pagination links.
-        """
-        links = self.tree.findall('.//ns0:link', self.namespace_dict)
+        """Total number of records across all pagination links."""
+        links = self.tree.findall(".//ns0:link", self.namespace_dict)
         last_link = [link for link in links if link.get("rel") == "last"]
         if last_link:
             # length of last_link should always be 1
@@ -305,9 +297,7 @@ class fpdsXML(fpdsMixin):
         """
         resp_size = self.response_size
         offset = 0 if self.total_record_count <= 10 else resp_size
-        page_range = list(
-            range(0, self.total_record_count + offset, resp_size)
-        )
+        page_range = list(range(0, self.total_record_count + offset, resp_size))
         page_links = []
         for num in page_range:
             link = f"{self.url_base}&q={params}&start={num}"
@@ -315,12 +305,8 @@ class fpdsXML(fpdsMixin):
         return page_links
 
     def get_atom_feed_entries(self) -> List[TREE]:
-        """Returns tree entries that contain FPDS record data
-        """
-        data_entries = self.tree.findall(
-            './/ns0:entry',
-            self.namespace_dict
-        )
+        """Returns tree entries that contain FPDS record data"""
+        data_entries = self.tree.findall(".//ns0:entry", self.namespace_dict)
         return data_entries
 
     def get_entry_data(self):

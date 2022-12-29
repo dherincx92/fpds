@@ -9,9 +9,7 @@ from typing import Dict, List, Union
 
 
 def filter_config_dict(
-    config: List[Dict[str, Union[str, bool]]],
-    field: str,
-    value: Union[str, bool]
+    config: List[Dict[str, Union[str, bool]]], field: str, value: Union[str, bool]
 ):
     """Given a configuration object, return single object from config where
     config[field] = value
@@ -22,10 +20,7 @@ def filter_config_dict(
     field: str
     value: Union[str, bool]
     """
-    dct = [
-        field_dict for field_dict in config
-        if field_dict.get(field) == value
-    ]
+    dct = [field_dict for field_dict in config if field_dict.get(field) == value]
     if len(dct) > 1:
         raise ValueError(f"Multiple objects match `{field}`=`{value}`")
     else:
@@ -40,7 +35,7 @@ def raw_literal_regex_match(pattern, string):
     This function was written out of a need of escaping single backslahes
     with double backslahes in JSON. See `constants/fields.json` for examples
     """
-    raw_pattern = fr"{pattern}".replace("\\\\", "\\")
+    raw_pattern = rf"{pattern}".replace("\\\\", "\\")
     LITERAL_PATTERN = re.compile(raw_pattern)
     match = LITERAL_PATTERN.match(string)
     return match

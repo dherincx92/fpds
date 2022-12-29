@@ -56,3 +56,11 @@ local-test:  ## Runs unit tests
 
 venv: ## Check if operating in a virtual environment, create if not detected.
 	if [ ! -z ${VIRTUAL_ENV} ]; then echo "\nvirtual environment detected\n"; else python3.8 -m venv venv && . ./venv/bin/activate; fi
+
+package:
+	@ pip install -U pip
+	@ pip install .[packaging]
+	@ python -m build --sdist --wheel --outdir dist/ .
+
+publish: venv login
+	twine upload --verbose -r codeartifact dist/*

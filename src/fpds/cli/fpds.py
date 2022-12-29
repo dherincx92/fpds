@@ -45,9 +45,7 @@ def parse(params):
         # checks that every parameter provided is valid
         param_name, param_input = param_tuple
         if param_name not in field_names:
-            raise BadParameter(
-                message=f"`{param_name}` is not a valid parameter"
-            )
+            raise BadParameter(message=f"`{param_name}` is not a valid parameter")
 
         kwarg_dict = filter_config_dict(FIELDS, "name", param_name)
         kwarg_regex = kwarg_dict.get("regex")

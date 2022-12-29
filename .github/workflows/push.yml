@@ -1,0 +1,42 @@
+name: Publish fpds python library
+
+on:
+  push:
+    branches:
+      - develop
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+      - uses: actions/setup-python@v3
+        with:
+          python-version: '3.8'
+          architecture: 'x64'
+      - name: Create Virtual Environment
+        run: |
+          python -m venv .venv
+          source .venv/bin/activate
+      - name: Install package
+        run: |
+          source .venv/bin/activate
+          pip install -e .[all]
+      - name: Run linters
+        run: |
+          source .venv/bin/activate
+          make formatters
+      - name: Install packaging tools
+        run: |
+          source .venv/bin/activate
+          pip install .[packaging]
+      - name: Publish Package
+        env:
+          TWINE_USERNAME: ${{ secrets.PYPI_USERNAME }}
+          TWINE_PASSWORD: ${{ secrets.PYPI_PASSWORD }}
+        run : |
+          source .venv/bin/activate
+          echo "Publishing package..."
+          make package
+          make publish

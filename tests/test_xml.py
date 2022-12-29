@@ -8,11 +8,11 @@ from tests import FULL_RESPONSE_DATA_BYTES, TRUNCATED_RESPONSE_DATA_BYTES
 
 FPDS_REQUEST_PARAMS_DICT = {
     "LAST_MOD_DATE": "[2022/01/01, 2022/05/01]",
-    "AGENCY_CODE": "7504"
+    "AGENCY_CODE": "7504",
 }
 TEST_NAMESPACE_DICT = {
-    'ns0': 'http://www.w3.org/2005/Atom',
-    'ns1': 'https://www.fpds.gov/FPDS'
+    "ns0": "http://www.w3.org/2005/Atom",
+    "ns1": "https://www.fpds.gov/FPDS",
 }
 
 
