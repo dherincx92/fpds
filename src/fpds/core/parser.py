@@ -8,7 +8,7 @@ last_updated: 11/25/2022
 import re
 import xml
 from itertools import chain
-from typing import Dict, List, NoReturn, Union
+from typing import Dict, Iterator, List, Optional, Union
 from xml.etree import ElementTree
 from xml.etree.ElementTree import Element
 
@@ -52,13 +52,11 @@ class _ElementAttributes(Element):
         A namespace dictionary that allows module to parse FPDS elements
     """
 
-    def __init__(
-        self, element: Element, namespace_dict: Dict[str, str]
-    ) -> "_ElementAttributes":
+    def __init__(self, element: Element, namespace_dict: Dict[str, str]) -> None:
         self.element = element
         self.namespace_dict = namespace_dict
 
-    def __str__(self):
+    def __str__(self) -> str:
         return f"<_ElementAttributes {self.element.tag}>"
 
     @property
@@ -98,7 +96,8 @@ class _ElementAttributes(Element):
 
         tag = self.clean_tag
         # the undecoded, textual value of the element
-        _attributes_copy[f"{tag}"] = self.element.text
+        if self.element.text:
+            _attributes_copy[f"{tag}"] = self.element.text
         for key in attributes:
             nested_key = f"{tag}__{key}"
             _attributes_copy[nested_key] = attributes[key]
@@ -134,7 +133,7 @@ class fpdsRequest(fpdsMixin):
 
     def __init__(self, cli_run: bool = False, **kwargs):
         self.cli_run = cli_run
-        self.content = []
+        self.content = []  # type: List[TREE]
         if kwargs:
             self.kwargs = kwargs
         else:
@@ -157,7 +156,7 @@ class fpdsRequest(fpdsMixin):
                     if kwarg_dict.get("quotes"):
                         self.kwargs[kwarg] = f'"{value}"'
 
-    def __str__(self):
+    def __str__(self) -> str:
         kwargs_str = " ".join([f"{key}={value}" for key, value in self.kwargs.items()])
         return f"<fpdsRequest {kwargs_str}>"
 
@@ -171,7 +170,7 @@ class fpdsRequest(fpdsMixin):
         _params = [f"{key}:{value}" for key, value in self.kwargs.items()]
         return " ".join(_params)
 
-    def send_request(self, url: str = None):
+    def send_request(self, url: Optional[str] = None):
         """Sends request to FPDS Atom feed
 
         Parameters
@@ -212,7 +211,6 @@ class fpdsRequest(fpdsMixin):
         return list(chain.from_iterable(records))
 
 
-# TODO: have class inherit from Logger()
 class fpdsXML(fpdsMixin):
     """Parses FPDS request content received as bytes or `xml.etree.ElementTree`.
 
@@ -221,11 +219,11 @@ class fpdsXML(fpdsMixin):
     content
     """
 
-    def __init__(self, content: Union[bytes, TREE]) -> "fpdsXML":
-        self.content = content
-        if isinstance(self.content, bytes):
+    def __init__(self, content: Union[bytes, TREE]) -> None:
+        if isinstance(content, bytes):
+            self.content = content
             self.tree = self.convert_to_lxml_tree()
-        if isinstance(self.content, TREE):
+        if isinstance(content, TREE):
             self.tree = content
         if not isinstance(self.content, (bytes, TREE)):
             raise TypeError(
@@ -233,11 +231,11 @@ class fpdsXML(fpdsMixin):
                 "`xml.etree.ElementTree.Element`"
             )
 
-    def parse_items(self, element: Element):
+    def parse_items(self, element: Element) -> Iterator:
         """Returns iteration of `Element` as a generator"""
         yield from element.iter()
 
-    def convert_to_lxml_tree(self) -> TREE:
+    def convert_to_lxml_tree(self) -> TREE:  # type: ignore
         """Returns lxml tree element from a bytes response"""
         tree = ElementTree.fromstring(self.content)
         return tree
@@ -286,6 +284,7 @@ class fpdsXML(fpdsMixin):
         if last_link:
             # length of last_link should always be 1
             match = re.search(LAST_PAGE_REGEX, last_link[0].attrib["href"])
+            assert match is not None
             record_count = int(match.group(1))
         else:
             record_count = len(self.get_atom_feed_entries())
