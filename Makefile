@@ -22,6 +22,7 @@ clean: ## Remove test and coverage artifacts
 	rm -f .coverage
 	rm -fr htmlcov/
 	rm -fr .pytest_cache
+	rm -fr .mypy_cache
 
 black: ## Format with black
 	black src tests setup.py
