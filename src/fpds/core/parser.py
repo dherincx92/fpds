@@ -2,7 +2,7 @@
 Base classes for FPDS XML elements
 
 author: derek663@gmail.com
-last_updated: 11/25/2022
+last_updated: 12/29/2022
 """
 
 import re
@@ -67,7 +67,7 @@ class _ElementAttributes(Element):
         """
         namespaces = "|".join(self.namespace_dict.values())
         # yeah, f-strings don't do well with backslashes
-        PATTERN = "\{(" + namespaces + ")\}"  # noqa
+        PATTERN = r"\{(" + namespaces + r")\}"  # noqa
         clean_tag = re.sub(PATTERN, "", self.element.tag)
         return clean_tag
 
@@ -212,11 +212,19 @@ class fpdsRequest(fpdsMixin):
 
 
 class fpdsXML(fpdsMixin):
-    """Parses FPDS request content received as bytes or `xml.etree.ElementTree`.
+    """Parses FPDS request content received as bytes or `xml.etree.ElementTree`
 
     Parameters
     ----------
-    content
+    content: Union[bytes, TREE]
+        Bytes content or an ElementTree element that can be parsed into
+        valid XML.
+
+    Raises
+    ------
+    TypeError:
+        If `content` is not of type `bytes` or an instance of
+        `xml.etree.ElementTree.Element`.
     """
 
     def __init__(self, content: Union[bytes, TREE]) -> None:
@@ -225,13 +233,13 @@ class fpdsXML(fpdsMixin):
             self.tree = self.convert_to_lxml_tree()
         if isinstance(content, TREE):
             self.tree = content
-        if not isinstance(self.content, (bytes, TREE)):
+        if not isinstance(content, (bytes, TREE)):
             raise TypeError(
                 "You must provide bytes content or an instance of"
                 "`xml.etree.ElementTree.Element`"
             )
 
-    def parse_items(self, element: Element) -> Iterator:
+    def parse_items(self, element: Element) -> Iterator[TREE]:
         """Returns iteration of `Element` as a generator"""
         yield from element.iter()
 

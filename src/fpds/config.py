@@ -33,5 +33,5 @@ FPDS_DATA_DATE_DIR = FPDS_DATA_DIR / CURRENT_DATE
 # actions
 FPDS_DATA_DATE_DIR.mkdir(parents=True, exist_ok=True)
 
-with Path(FPDS_FIELDS_FILE_PATH).open(encoding="utf-8") as file:
+with Path(FPDS_FIELDS_FILE_PATH).open(encoding="utf-8") as file:  # type: ignore
     FPDS_FIELDS_CONFIG = json.load(file)
