@@ -1,4 +1,5 @@
 import json
+from pathlib import Path
 from uuid import uuid4
 
 import click
@@ -11,14 +12,15 @@ from fpds.utilities import filter_config_dict, raw_literal_regex_match
 
 
 @click.command()
+@click.option("-o", "--output", required=False)
 @click.argument("params", nargs=-1)
-def parse(params):
+def parse(params, output):
     """
     Parsing command for the FPDS Atom feed
 
     \b
     Usage:
-        $ fpds parse [PARAMS]
+        $ fpds parse [PARAMS] [OUTPUT]
 
     \b
     Positional Argument(s):
@@ -33,9 +35,16 @@ def parse(params):
         A full CLI command could look like this:
 
         \b
-            fpds parse params "LAST_MOD_DATE=[2022/01/01, 2022/05/01]" "AGENCY_CODE=7504"
+            fpds parse "LAST_MOD_DATE=[2022/01/01, 2022/05/01]" "AGENCY_CODE=7504"
     """
-    params = [param.split("=") for param in params[1:]]
+
+    if output:
+        OUTPUT_PATH = Path(output)
+        if not OUTPUT_PATH.exists():
+            click.echo(f"Creating output directory {str(OUTPUT_PATH.resolve())}")
+            OUTPUT_PATH.mkdir(parents=True, exist_ok=True)
+
+    params = [param.split("=") for param in params]
     field_names = [field.get("name") for field in FIELDS]
 
     if not params:
@@ -66,8 +75,9 @@ def parse(params):
     click.echo("Retrieving FPDS records from ATOM feed...")
     records = request()
 
-    DATA_FILE = FPDS_DATA_DATE_DIR / f"{uuid4()}.json"
+    DATA_DIR = OUTPUT_PATH if output else FPDS_DATA_DATE_DIR
+    DATA_FILE = DATA_DIR / f"{uuid4()}.json"
     with open(DATA_FILE, "w") as outfile:
         json.dump(records, outfile)
 
-    click.echo(f"{len(records)} records have been dumped into JSON")
+    click.echo(f"{len(records)} records have been saved as JSON at: {DATA_FILE}")

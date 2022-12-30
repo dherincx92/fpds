@@ -1,6 +1,6 @@
 import click
 
-from .fpds import parse as _parse
+from .parse import parse as _parse
 
 
 @click.group()
