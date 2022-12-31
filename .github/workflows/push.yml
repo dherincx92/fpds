@@ -1,4 +1,4 @@
-name: fpds release
+name: test pull request
 
 on:
   push:
@@ -31,16 +31,3 @@ jobs:
         run: |
           source .venv/bin/activate
           make test
-      - name: Install packaging tools
-        run: |
-          source .venv/bin/activate
-          pip install .[packaging]
-      - name: Publish Package
-        env:
-          TWINE_USERNAME: ${{ secrets.PYPI_USERNAME }}
-          TWINE_PASSWORD: ${{ secrets.PYPI_PASSWORD }}
-        run : |
-          source .venv/bin/activate
-          echo "Publishing package..."
-          make package
-          make publish
