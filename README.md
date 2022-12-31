@@ -18,7 +18,6 @@ $ source venv/bin/activate
 ```
 
 ## Usage
-
 The `parse` command allows users to filter federal contracts with an unlimited
 number of data filters. _Individual_ parameters must be enclosed in quotes.
 By default, this package will dump data into an `.fpds` directory created at
@@ -50,10 +49,9 @@ $ make lint
 $ make formatters
 ```
 
-Lastly, you can clean the clutter and unwanted noise.
-
+You can build and serve up docs, including dbt's super neat lineage graph.
 ```
-$ make clean
+$ make serve
 ```
 
 ## Testing
