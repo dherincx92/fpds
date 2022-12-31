@@ -1,6 +1,5 @@
 import pytest
 from unittest import TestCase
-from xml.etree import ElementTree
 from xml.etree.ElementTree import Element
 
 from fpds import fpdsXML
