@@ -3,7 +3,7 @@ name: fpds release
 on:
   push:
     branches:
-      - master
+      - develop
 
 jobs:
   build-and-test:
