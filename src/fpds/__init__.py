@@ -4,3 +4,5 @@ __all__ = [
     "fpdsRequest",
     "fpdsXML",
 ]
+
+__version__ = "0.0.0"

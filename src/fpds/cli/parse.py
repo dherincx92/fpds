@@ -1,3 +1,10 @@
+"""
+Parsing command for retrieving FPDS federal
+contracts
+
+author: derek663@gmail.com
+last_updated: 12/30/2022
+"""
 import json
 from pathlib import Path
 from uuid import uuid4
@@ -12,7 +19,7 @@ from fpds.utilities import filter_config_dict, raw_literal_regex_match
 
 
 @click.command()
-@click.option("-o", "--output", required=False)
+@click.option("-o", "--output", required=False, help="Output directory")
 @click.argument("params", nargs=-1)
 def parse(params, output):
     """
@@ -20,7 +27,7 @@ def parse(params, output):
 
     \b
     Usage:
-        $ fpds parse [PARAMS] [OUTPUT]
+        $ fpds parse [PARAMS] [OPTIONS]
 
     \b
     Positional Argument(s):

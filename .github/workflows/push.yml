@@ -1,9 +1,9 @@
-name: Publish fpds python library
+name: fpds release
 
 on:
   push:
     branches:
-      - develop
+      - master
 
 jobs:
   build-and-test:
