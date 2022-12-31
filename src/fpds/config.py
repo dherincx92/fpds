@@ -17,10 +17,10 @@ FPDS_DATA_DIR = HOME / ".fpds"
 FPDS_FIELDS_FILE = "fields.json"
 
 # assumes a python3.x version
-if sys.version_info[1] <= 8:
+if sys.version_info <= (3,8):
     from importlib.resources import path
 
-    with path("fpds.constants", FPDS_FIELDS_FILE) as file:
+    with path("fpds.constants", FPDS_FIELDS_FILE) as file:  # type: ignore
         FPDS_FIELDS_FILE_PATH = file
 else:
     from importlib.resources import files

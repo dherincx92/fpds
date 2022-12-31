@@ -3,8 +3,8 @@ A parser for the Federal Procurement Data System (FPDS) at
 https://www.fpds.gov/fpdsng_cms/index.php/en/.
 
 This package has been designed to automatically handle any HTTP request to
-the FPDS ATOM feed. Users can provide any number of data filters and this
-module will represent any FPDS XML data structure as JSON.
+the FPDS ATOM feed. Users can provide an unlimited number of data filters.
+In the end, this package will conveniently export XML data as JSON.
 
 ## Setup
 
@@ -21,9 +21,9 @@ $ source venv/bin/activate
 
 The `parse` command allows users to filter federal contracts with an unlimited
 number of data filters. _Individual_ parameters must be enclosed in quotes.
-By default, this package will dump data into an `.fpds` folder created at
-$HOME. If you wish to override this location, simply provide the desired
-directory with the `-o` option:
+By default, this package will dump data into an `.fpds` directory created at
+the HOME directory. If you wish to override this location, simply provide
+the desired directory with the `-o` option:
 
 ```
 $  fpds parse "LAST_MOD_DATE=[2022/01/01, 2022/05/01]" "AGENCY_CODE=7504"
