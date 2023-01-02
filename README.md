@@ -22,14 +22,20 @@ $ source venv/bin/activate
 
 ## Usage
 
+For a list of valid search criteria parameters, consult FPDS documentation
+found at: https://www.fpds.gov/wiki/index.php/Atom_Feed_Usage. _Note_: `fpds`
+handles parameter quoting so simply enclose your parameter string in one
+set of quotes, as seen below.
+
 Via CLI:
 ```
 $  fpds parse params "LAST_MOD_DATE=[2022/01/01, 2022/05/01]" "AGENCY_CODE=7504"
 ```
 
+
 By default, data will be dumped into an `.fpds` folder at the user's
 `$HOME` directory. If you wish to override this behavior, provide the `-o`
-option. The directory will be created if it doesn't exist
+option. The directory will be created if it doesn't exist:
 
 ```
 $  fpds parse params "LAST_MOD_DATE=[2022/01/01, 2022/05/01]" "AGENCY_CODE=7504" -o {some-directory}
