@@ -2,7 +2,7 @@
 Base classes for FPDS XML elements
 
 author: derek663@gmail.com
-last_updated: 12/30/2022
+last_updated: 01/02/2023
 """
 
 import re
@@ -235,7 +235,7 @@ class fpdsXML(fpdsMixin):
             self.tree = content
         if not isinstance(content, (bytes, TREE)):
             raise TypeError(
-                "You must provide bytes content or an instance of"
+                "You must provide bytes content or an instance of "
                 "`xml.etree.ElementTree.Element`"
             )
 
