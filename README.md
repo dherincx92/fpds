@@ -49,11 +49,6 @@ $ make lint
 $ make formatters
 ```
 
-You can build and serve up docs, including dbt's super neat lineage graph.
-```
-$ make serve
-```
-
 ## Testing
 ```
 $ make test
