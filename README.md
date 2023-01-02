@@ -1,15 +1,17 @@
-# FPDS
-A parser for the Federal Procurement Data System (FPDS) at
-https://www.fpds.gov/fpdsng_cms/index.php/en/.
+# fpds
+A no-frills parser for the Federal Procurement Data System (FPDS)
+at https://www.fpds.gov/fpdsng_cms/index.php/en/
 
-This package has been designed to automatically handle any HTTP request to
-the FPDS ATOM feed. Users can provide an unlimited number of data filters.
-In the end, this package will conveniently export XML data as JSON.
+## Motivation
+The only programmatic access to this data via an ATOM feed limits each request to 10 records.
+Additonally, data is exported as XML, which proves annoying for most developers.
+`fpds` will handle all pagination and data transformation to provide users with a nice JSON
+representation of the equivalent XML data.
+
 
 ## Setup
 
-To install this package for development, create a virtual environment
-and install dependencies.
+To install this package for development, create a virtual environment and install dependencies.
 
 ```
 $ python3 -m venv venv
@@ -18,18 +20,13 @@ $ source venv/bin/activate
 ```
 
 ## Usage
-The `parse` command allows users to filter federal contracts with an unlimited
-number of data filters. _Individual_ parameters must be enclosed in quotes.
-By default, this package will dump data into an `.fpds` directory created at
-the HOME directory. If you wish to override this location, simply provide
-the desired directory with the `-o` option:
 
+Via CLI:
 ```
-$  fpds parse "LAST_MOD_DATE=[2022/01/01, 2022/05/01]" "AGENCY_CODE=7504"
+$  fpds parse params "LAST_MOD_DATE=[2022/01/01, 2022/05/01]" "AGENCY_CODE=7504"
 ```
 
 Same request via python interpreter:
-
 ```
 from fpds import fpdsRequest
 
@@ -49,7 +46,19 @@ $ make lint
 $ make formatters
 ```
 
-## Testing
+You can build and serve up docs, including dbt's super neat lineage graph.
+```
+$ make serve
+```
+
+Lastly, you can clean the clutter and unwanted noise.
+
+```
+$ make clean
+```
+
+### Testing
+
 ```
 $ make test
 ```
