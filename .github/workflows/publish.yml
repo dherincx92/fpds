@@ -1,0 +1,42 @@
+name: publish fpds package
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+      - uses: actions/setup-python@v3
+        with:
+          python-version: '3.8'
+          architecture: 'x64'
+      - name: Create Virtual Environment
+        run: |
+          python -m venv .venv
+          source .venv/bin/activate
+      - name: Install package
+        run: |
+          source .venv/bin/activate
+          pip install -e .[all]
+      - name: Run linters
+        run: |
+          source .venv/bin/activate
+          make formatters
+      - name: Run tests
+        run: |
+          source .venv/bin/activate
+          make test
+      - name: Install packaging tools
+        run: |
+          source .venv/bin/activate
+          pip install .[packaging]
+      - name: Package project
+        run : |
+          source .venv/bin/activate
+          echo "Packaging project..."
+          make package
+          echo "Created package distribution..."
+      - name: Publish fpds distribution to PyPI
+        uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+          password: ${{ secrets.PYPI_API_TOKEN }}

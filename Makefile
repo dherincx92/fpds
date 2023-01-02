@@ -64,4 +64,4 @@ package:
 	@ python -m build --sdist --wheel --outdir dist/ .
 
 publish: venv login
-	twine upload --verbose -r codeartifact dist/*
+	twine upload --verbose dist/*
