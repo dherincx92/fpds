@@ -1,5 +1,13 @@
 # fpds
-A parser for the Federal Procurement Data System (FPDS) at https://www.fpds.gov/fpdsng_cms/index.php/en/
+A no-frills parser for the Federal Procurement Data System (FPDS)
+at https://www.fpds.gov/fpdsng_cms/index.php/en/
+
+## Motivation
+The only programmatic access to this data via an ATOM feed limits each request to 10 records.
+Additonally, data is exported as XML, which proves annoying for most developers.
+`fpds` will handle all pagination and data transformation to provide users with a nice JSON
+representation of the equivalent XML data.
+
 
 ## Setup
 
