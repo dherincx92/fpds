@@ -48,6 +48,25 @@ request = fpdsRequest(
 records = request()
 ```
 
+For linting and formatting, we use `flake8` and `black`.
+
+```
+$ make lint
+$ make formatters
+```
+
+Lastly, you can clean the clutter and unwanted noise.
+
+```
+$ make clean
+```
+
+### Testing
+
+```
+$ make test
+```
+
 ## Additional Notes
 To ensure no data is lost during export, `fpds` will save tag attributes as
 individual data elements. For example, parsing the `contractActionType` tag
@@ -67,25 +86,4 @@ following manner:
         "contractActionType__description": "BPA"
         "contractActionType__part8OrPart13": "PART8"
     }
-```
-
-
-For linting and formatting, we use `flake8` and `black`.
-
-```
-$ make lint
-$ make formatters
-```
-
-
-Lastly, you can clean the clutter and unwanted noise.
-
-```
-$ make clean
-```
-
-### Testing
-
-```
-$ make test
 ```
