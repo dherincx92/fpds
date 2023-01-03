@@ -31,8 +31,8 @@ following exceptions:
 
  + Colons (:) will be replaced by equal signs (=)
  + Certain parameters enclose their value in quotations. `fpds` will
- automatically determine if quotes are needed, so simply enclose your
- entire criteria string in quotes.
+automatically determine if quotes are needed, so simply enclose your
+entire criteria string in quotes.
 
  For example, `AGENCY_CODE:”3600”` should be used as `"AGENCY_CODE=3600"`.
 
