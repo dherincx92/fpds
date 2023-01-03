@@ -1,5 +1,10 @@
 name: publish fpds package
 
+on:
+  push:
+    branches:
+      - master
+
 jobs:
   build-and-test:
     runs-on: ubuntu-latest
