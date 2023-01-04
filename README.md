@@ -39,7 +39,7 @@ entire criteria string in quotes.
 
 Via CLI:
 ```
-$  fpds parse params "LAST_MOD_DATE=[2022/01/01, 2022/05/01]" "AGENCY_CODE=7504"
+$  fpds parse "LAST_MOD_DATE=[2022/01/01, 2022/05/01]" "AGENCY_CODE=7504"
 ```
 
 
@@ -48,7 +48,7 @@ By default, data will be dumped into an `.fpds` folder at the user's
 option. The directory will be created if it doesn't exist:
 
 ```
-$  fpds parse params "LAST_MOD_DATE=[2022/01/01, 2022/05/01]" "AGENCY_CODE=7504" -o {some-directory}
+$  fpds parse "LAST_MOD_DATE=[2022/01/01, 2022/05/01]" "AGENCY_CODE=7504" -o {some-directory}
 ```
 
 Same request via python interpreter:
