@@ -27,7 +27,7 @@
         "description": "Award Completion Date",
         "name": "AWARD_COMPLETION_DATE",
         "quotes": false,
-        "regex": "\\[\\d{4}\\/\\d{2}\\/\\d{2},\\d{4}\\/\\d{2}\\/\\d{2}\\]"
+        "regex": "\\[\\d{4}\\/\\d{2}\\/\\d{2}\\s*,\\s*\\d{4}\\/\\d{2}\\/\\d{2}\\]"
     },
     {
         "description": "Award Status (Deleted | Final)",
@@ -75,13 +75,13 @@
         "description": "Created Date",
         "name": "CREATED_DATE",
         "quotes": false,
-        "regex": "\\[\\d{4}\\/\\d{2}\\/\\d{2},\\d{4}\\/\\d{2}\\/\\d{2}\\]"
+        "regex": "\\[\\d{4}\\/\\d{2}\\/\\d{2}\\s*,\\s*\\d{4}\\/\\d{2}\\/\\d{2}\\]"
     },
    {
         "description": "Date Signed",
         "name": "SIGNED_DATE",
         "quotes": false,
-        "regex": "\\[\\d{4}\\/\\d{2}\\/\\d{2},\\d{4}\\/\\d{2}\\/\\d{2}\\]"
+        "regex": "\\[\\d{4}\\/\\d{2}\\/\\d{2}\\s*,\\s*\\d{4}\\/\\d{2}\\/\\d{2}\\]"
     },
    {
         "description": "Department ID",
@@ -105,7 +105,7 @@
         "description": "Estimated Completion Date",
         "name": "ESTIMATED_COMPLETION_DATE",
         "quotes": false,
-        "regex": "\\[\\d{4}\\/\\d{2}\\/\\d{2},\\d{4}\\/\\d{2}\\/\\d{2}\\]"
+        "regex": "\\[\\d{4}\\/\\d{2}\\/\\d{2}\\s*,\\s*\\d{4}\\/\\d{2}\\/\\d{2}\\]"
     },
     {
         "description": "Funding Agency ID",
@@ -189,7 +189,7 @@
         "description": "Period of Performance Start Date",
         "name": "EFFECTIVE_DATE",
         "quotes": false,
-        "regex": "\\[\\d{4}\\/\\d{2}\\/\\d{2},\\d{4}\\/\\d{2}\\/\\d{2}\\]"
+        "regex": "\\[\\d{4}\\/\\d{2}\\/\\d{2}\\s*,\\s*\\d{4}\\/\\d{2}\\/\\d{2}\\]"
     },
     {
         "description": "Product or Service Code",
@@ -345,7 +345,7 @@
         "description": "Approved Date",
         "name": "APPROVED_DATE",
         "quotes": false,
-        "regex": "\\[\\d{4}\\/\\d{2}\\/\\d{2},\\d{4}\\/\\d{2}\\/\\d{2}\\]"
+        "regex": "\\[\\d{4}\\/\\d{2}\\/\\d{2}\\s*,\\s*\\d{4}\\/\\d{2}\\/\\d{2}\\]"
     },
     {
         "description": "Referenced IDV Type",
@@ -369,7 +369,7 @@
         "description": "Cage Code",
         "name": "CAGE_CODE",
         "quotes": true,
-        "regex": null
+        "regex": ".*"
     },
     {
         "description": "Closed Status",
@@ -381,7 +381,7 @@
         "description": "Closed Date",
         "name": "CLOSED_DATE",
         "quotes": false,
-        "regex": "\\[\\d{4}\\/\\d{2}\\/\\d{2},\\d{4}\\/\\d{2}\\/\\d{2}\\]"
+        "regex": "\\[\\d{4}\\/\\d{2}\\/\\d{2}\\s*,\\s*\\d{4}\\/\\d{2}\\/\\d{2}\\]"
     },
     {
         "description": "Closed By",
