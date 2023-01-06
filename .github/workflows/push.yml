@@ -1,6 +1,6 @@
 name: test pull request
 
-on: [push, pull_request]
+on: [push]
 
 jobs:
   build-and-test:
