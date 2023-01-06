@@ -3,7 +3,7 @@ name: test pull request
 on:
   push:
     branches:
-      - develop
+      - '!master'
 
 jobs:
   build-and-test:
