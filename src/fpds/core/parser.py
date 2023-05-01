@@ -27,12 +27,16 @@ LAST_PAGE_REGEX = r"start=(.*?)$"
 
 
 class fpdsMixin:
+    """
+    Fpds mixin class
+    """
     @property
     def url_base(self) -> str:
+        """API URL base string for ATOM feed requests"""
         return "https://www.fpds.gov/ezsearch/FEEDS/ATOM?FEEDNAME=PUBLIC"
 
     @staticmethod
-    def convert_to_lxml_tree(content):
+    def convert_to_lxml_tree(content: bytes) -> TREE:
         """Returns lxml tree element from a bytes response"""
         tree = ElementTree.fromstring(content)
         return tree
@@ -170,7 +174,7 @@ class fpdsRequest(fpdsMixin):
         _params = [f"{key}:{value}" for key, value in self.kwargs.items()]
         return " ".join(_params)
 
-    def send_request(self, url: Optional[str] = None):
+    def send_request(self, url: Optional[str] = None) -> None:
         """Sends request to FPDS Atom feed
 
         Parameters
@@ -186,7 +190,7 @@ class fpdsRequest(fpdsMixin):
         content_tree = self.convert_to_lxml_tree(response.content)
         self.content.append(content_tree)
 
-    def create_content_iterable(self):
+    def create_content_iterable(self) -> None:
         """Paginates through response and creates an iterable of XML trees.
         This method will not have a return but rather, will set the `content`
         attribute to an iterable of XML ElementTree's
@@ -312,13 +316,15 @@ class fpdsXML(fpdsMixin):
         return page_links
 
     def get_atom_feed_entries(self) -> List[TREE]:
-        """Returns tree entries that contain FPDS record data"""
+        """Returns tree entries. An entry can be defined as the outermost
+        data container for an individual award -- an award being either of
+        type `AWARD` or `IDV`.
+        """
         data_entries = self.tree.findall(".//ns0:entry", self.namespace_dict)
         return data_entries
 
     def get_entry_data(self):
         entries = self.get_atom_feed_entries()
-
         parsed_records = []
         # an entry is the XML tag that contains individual responses
         for entry in entries:
@@ -329,6 +335,8 @@ class fpdsXML(fpdsMixin):
                 if not len(tag):
                     elem = _ElementAttributes(tag, self.namespace_dict)
                     entry_tags.update(elem._generate_nested_attribute_dict())
+                else:
+                     elem = _ElementAttributes(tag, self.namespace_dict)
             parsed_records.append(entry_tags)
 
         return parsed_records
