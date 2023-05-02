@@ -238,7 +238,7 @@ class fpdsXML(fpdsMixin):
     def jsonified_entries(self):
         """Returns all paginated entries from an FPDS request as valid JSON"""
         entries = self.get_atom_feed_entries()
-        json_data = [Entry(content=entry).get_entry_data() for entry in entries]
+        json_data = [Entry(content=entry)() for entry in entries]
         return json_data
 
 
@@ -283,11 +283,12 @@ class _ElementAttributes(fpdsElement, fpdsMixin):
     Parameters
     ----------
     element: `xml.etree.ElementTree.Element`
-        An XML element
+        An XML element.
     namespace_dict: `Dict[str, str]`
-        A namespace dictionary that allows module to parse FPDS elements
+        A namespace dictionary that allows module to parse FPDS elements.
     prefix: `str`
-        ADD DOCS HERE
+        Prefix to append to attribute dictionary. This will ensure that
+        duplicate tags like `PIID` are distinguished in the data.
     """
 
     def __init__(self, prefix, *args, **kwargs) -> None:
@@ -296,18 +297,6 @@ class _ElementAttributes(fpdsElement, fpdsMixin):
 
     def __str__(self) -> str:
         return f"<_ElementAttributes {self.tree.tag}>"
-
-    @property
-    def contract_type(self) -> str:
-        """Added on v1.2.0
-
-        Identifies the contract type for an individual award entry. Possible
-        options include: `AWARD` or `IDV`
-        """
-        content = self.tree.find(".//ns0:content", self.namespace_dict)
-        award = list(content)[0]
-        award_type = re.sub(self.NAMESPACE_REGEX_PATTERN, "", award.tag)
-        return award_type.upper()
 
     def _generate_nested_attribute_dict(self) -> Dict[str, str]:
         """Returns all attributes of an Element
@@ -346,11 +335,29 @@ class Entry(fpdsElement):
     def __init__(self, *args, **kwargs) -> None:
         super().__init__(*args, **kwargs)
 
+    def __call__(self):
+        """Shortcut for the finalized data structure"""
+        data_with_attributes = self.get_entry_data()
+        data_with_attributes["award_type"] = self.contract_type
+        return data_with_attributes
+
+    @property
+    def contract_type(self) -> str:
+        """Added on v1.2.0
+
+        Identifies the contract type for an individual award entry. Possible
+        options include: `AWARD` or `IDV`
+        """
+        content = self.tree.find(".//ns0:content", self.namespace_dict)
+        award = list(content)[0]
+        award_type = re.sub(self.NAMESPACE_REGEX_PATTERN, "", award.tag)
+        return award_type.upper()
+
     def parse_tags(self) -> Iterator[TREE]:
         """Returns iteration of `Element` as a generator"""
         return [tag for tag in self.tree.iter()]
 
-    def get_entry_data(self):
+    def get_entry_data(self) -> Dict[str, Union[str, int, float]]:
         entry_tags = dict()
 
         # for some reason, the tag we parse gets included in the final list
@@ -439,15 +446,12 @@ class Entry(fpdsElement):
                 abbreviated_name = "__".join(tags_split)
             return abbreviated_name
 
-        NAMESPACE_REGEX_PATTERN = (
-            r"\{https://www.fpds.gov/FPDS\}|\{http://www.w3.org/2005/Atom\}"
-        )
-
         children = list(element)
         if children:
             for child in children:
-                _tag = child.tag
-                clean_tag = re.sub(NAMESPACE_REGEX_PATTERN, "", child.tag)
+                # _tag = child.tag
+                fpdsChild = fpdsElement(content=child)
+                clean_tag = fpdsChild.clean_tag
 
                 _parent = Parent(content=child, parent=parent)
                 # if _parent.clean_tag not in self.tag_exclusions:
