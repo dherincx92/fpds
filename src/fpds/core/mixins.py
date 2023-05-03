@@ -1,5 +1,3 @@
-import re
-import xml
 from xml.etree import ElementTree
 
 from fpds.core import TREE
@@ -10,12 +8,15 @@ class fpdsMixin:
     def url_base(self) -> str:
         return "https://www.fpds.gov/ezsearch/FEEDS/ATOM?FEEDNAME=PUBLIC"
 
-    @staticmethod
-    def convert_to_lxml_tree(self) -> TREE:  # type: ignore
+    def convert_to_lxml_tree(self) -> None:  # type: ignore
         """Returns lxml tree element from a bytes response"""
-        tree = ElementTree.fromstring(self.content)
-        return tree
+        if isinstance(self.content, list):
+            self.content = [ElementTree.fromstring(_content) for _content in self.content]
+        else:
+            self.content = ElementTree.fromstring(self.content)
 
+
+class fpdsXMLMixin:
     @property
     def NAMESPACE_REGEX_PATTERN(self) -> str:
         namespaces = "|".join(self.namespace_dict.values())

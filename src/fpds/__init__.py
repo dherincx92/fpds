@@ -1,6 +1,3 @@
-from .core.parser import fpdsRequest, fpdsXML
+from .core.parser import fpdsRequest
 
-__all__ = [
-    "fpdsRequest",
-    "fpdsXML",
-]
+__all__ = ["fpdsRequest"]
