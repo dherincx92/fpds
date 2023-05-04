@@ -77,7 +77,6 @@ class fpdsRequest(fpdsMixin):
     def __call__(self):
         """Shortcut for making an API call and retrieving content"""
         records = self.parse_content()
-        import ipdb; ipdb.set_trace()
         return records
 
     @property
@@ -127,5 +126,5 @@ class fpdsRequest(fpdsMixin):
         records = []
         for tree in tqdm(self.content):
             xml = fpdsXML(content=tree)
-            records.append(xml.jsonified_entries())
+            records.extend(xml.jsonified_entries())
         return records

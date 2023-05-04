@@ -137,7 +137,6 @@ class fpdsXML(fpdsXMLMixin, fpdsMixin):
         """Returns all paginated entries from an FPDS request as valid JSON"""
         entries = self.get_atom_feed_entries()
         json_data = [Entry(content=entry)() for entry in entries]
-        import ipdb; ipdb.set_trace()
         return json_data
 
 
@@ -284,16 +283,13 @@ class Entry(fpdsElement):
     def get_entry_data(self) -> Dict[str, Union[str, int, float]]:
         """Extracts award data from an entry"""
         entry_tags = dict()
-
-        # for some reason, the tag we parse gets included in the final list
         tags = self.parse_tags()
         hierarchy = self.content_tag_hierarchy()
 
-        # NOTE: remove indexing and remove item by value where clean_tag == "entry"
-        for _tag in tags:
-            prefix = hierarchy.get(_tag.tag)
-            elem = _ElementAttributes(content=_tag, prefix=prefix)
-            entry_tags.update(elem._generate_nested_attribute_dict())
+        for prefix, tag in hierarchy.items():
+            attributes = _ElementAttributes(content=tag, prefix=prefix)
+            entry_tags.update(attributes._generate_nested_attribute_dict())
+
         return entry_tags
 
     @property
@@ -310,7 +306,6 @@ class Entry(fpdsElement):
         element: Element = None,
         parent: str = None,
         hierarchy: Dict = dict(),
-        truncate: bool = True,  # to truncate hierarchy names
     ) -> Dict[str, str]:
         """Added on v1.2.0
 
@@ -353,23 +348,10 @@ class Entry(fpdsElement):
         hierarchy: `Dict[str, str]`
             The hierarchy dictionary structure to be passed through each
             recursive function call
-        truncate: `bool`
-            Should the tag hierarchy names be truncated?
         """
         if element is None:
             element = self.tree
 
-        def shorten_parent_name(parent, delim="__"):
-            """Shortens the parent name to take the outermost tag and the final
-            tag name (which contains the actual data). Note: this function will
-            only be used if `truncate` is set to `True`.
-            """
-            tags_split = parent.split(delim)
-            if len(tags_split) > 2:
-                abbreviated_name = tags_split[0] + delim + tags_split[-1]
-            else:
-                abbreviated_name = delim.join(tags_split)
-            return abbreviated_name
 
         _parent = Parent(content=element)
 
@@ -379,16 +361,10 @@ class Entry(fpdsElement):
             for child in _parent.children():
                 _child = Parent(content=child, parent_name=parent)
                 parent_tag_name = _child.parent_child_hierarchy_name()
-
-                if truncate:
-                    hierarchy[_child.tag] = shorten_parent_name(parent_tag_name)
-                else:
-                    hierarchy[child.tag] = parent_tag_name
-
+                hierarchy[parent_tag_name] = child
                 self.content_tag_hierarchy(
                     element=child, parent=parent_tag_name, hierarchy=hierarchy
                 )
-
         return hierarchy
 
 
@@ -421,7 +397,6 @@ class Parent(fpdsElement):
             return list(self.tree)
 
     if has_children:
-
         def parent_child_hierarchy_name(self, delim="__"):
             if self.parent_name and self.parent_name not in self.tag_exclusions:
                 name = self.parent_name + delim + self.clean_tag
