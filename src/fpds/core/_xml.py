@@ -266,8 +266,6 @@ class Entry(fpdsElement):
     def __call__(self) -> Mapping[str, Union[str, int, float]]:
         """Shortcut for the finalized data structure"""
         data_with_attributes = self.get_entry_data()
-        ### add this in the actual function
-        data_with_attributes["award_type"] = self.contract_type
         return data_with_attributes
 
     @property
@@ -288,6 +286,9 @@ class Entry(fpdsElement):
         for prefix, tag in hierarchy.items():
             attributes = _ElementAttributes(content=tag, prefix=prefix)
             entry_tags.update(attributes._generate_nested_attribute_dict())
+            # the dumbest part of this data is it not natively having a column
+            # for the contract type
+            entry_tags["contract_type"] = self.contract_type
         return entry_tags
 
     @property
