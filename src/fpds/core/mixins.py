@@ -1,5 +1,6 @@
 from xml.etree import ElementTree
 
+
 class fpdsMixin:
     @property
     def url_base(self) -> str:

@@ -5,7 +5,7 @@ author: derek663@gmail.com
 last_updated: 05/03/2023
 """
 import re
-from typing import Dict, Iterator, List, Mapping, Union
+from typing import Dict, List, Mapping, Union
 from xml.etree import ElementTree
 from xml.etree.ElementTree import Element
 
