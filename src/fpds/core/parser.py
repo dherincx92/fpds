@@ -4,8 +4,7 @@ Base classes for FPDS XML elements
 author: derek663@gmail.com
 last_updated: 05/03/2023
 """
-from itertools import chain
-from typing import Dict, List, Optional, Union
+from typing import List, Mapping, Optional, Union
 
 import requests
 from tqdm import tqdm
@@ -98,10 +97,8 @@ class fpdsRequest(fpdsMixin):
             url=self.url_base if not url else url, params={"q": self.search_params}
         )
         response.raise_for_status()
-        # content_tree = self.convert_to_lxml_tree(response)
-        # self.content.append(content_tree)
-        self.content.append(response.content)
-
+        content_tree = self.convert_to_lxml_tree(response.content)
+        self.content.append(content_tree)
 
     def create_content_iterable(self):
         """Paginates through response and creates an iterable of XML trees.
@@ -118,9 +115,7 @@ class fpdsRequest(fpdsMixin):
             for link in links:
                 self.send_request(link)
 
-        self.convert_to_lxml_tree()
-
-    def parse_content(self) -> List[Dict[str, Union[str, int, float]]]:
+    def parse_content(self) -> List[Mapping[str, Union[str, int, float]]]:
         """Parses a content iterable and generates a list of records"""
         self.create_content_iterable()
         records = []

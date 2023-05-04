@@ -5,7 +5,8 @@ author: derek663@gmail.com
 last_updated: 05/03/2023
 """
 import re
-from typing import Dict, Iterator, List, Union
+from typing import Dict, Iterator, List, Mapping, Union
+from xml.etree import ElementTree
 from xml.etree.ElementTree import Element
 
 from fpds.core import TREE
@@ -16,7 +17,7 @@ NAMESPACE_REGEX = r"\{(.*)\}"
 LAST_PAGE_REGEX = r"start=(.*?)$"
 
 # types
-FPDS_ENTRY = Dict[str, Union[str, int, float]]
+FPDS_ENTRY = Mapping[str, Union[str, int, float]]
 
 
 class EmptyParentName(str):
@@ -45,9 +46,7 @@ class fpdsXML(fpdsXMLMixin, fpdsMixin):
     def __init__(self, content: Union[bytes, TREE]) -> None:
         if isinstance(content, bytes):
             self.content = content
-            # self.tree = self.convert_to_lxml_tree()
-            self.convert_to_lxml_tree()
-            self.tree = self.content
+            self.tree = self.convert_to_lxml_tree()
         if isinstance(content, TREE):
             self.tree = content
         if not isinstance(content, (bytes, TREE)):
@@ -63,6 +62,11 @@ class fpdsXML(fpdsXMLMixin, fpdsMixin):
     def parse_items(self):
         """Returns iteration of `Element` as a generator"""
         yield from self.tree.iter()
+
+    def convert_to_lxml_tree(self) -> TREE:  # type: ignore
+        """Returns lxml tree element from a bytes response"""
+        tree = ElementTree.fromstring(self.content)
+        return tree
 
     # @staticmethod
     def _get_full_namespace(self, element: TREE) -> str:
@@ -259,7 +263,7 @@ class Entry(fpdsElement):
     def __init__(self, *args, **kwargs) -> None:
         super().__init__(*args, **kwargs)
 
-    def __call__(self) -> Dict[str, Union[str, int, float]]:
+    def __call__(self) -> Mapping[str, Union[str, int, float]]:
         """Shortcut for the finalized data structure"""
         data_with_attributes = self.get_entry_data()
         ### add this in the actual function
@@ -276,20 +280,14 @@ class Entry(fpdsElement):
         award_type = re.sub(self.NAMESPACE_REGEX_PATTERN, "", award.tag)
         return award_type.upper()
 
-    def parse_tags(self) -> Iterator[TREE]:
-        """Returns iteration of `Element` as a generator"""
-        yield from self.tree.iter()
-
-    def get_entry_data(self) -> Dict[str, Union[str, int, float]]:
+    def get_entry_data(self) -> Dict[str, str]:
         """Extracts award data from an entry"""
         entry_tags = dict()
-        tags = self.parse_tags()
         hierarchy = self.content_tag_hierarchy()
 
         for prefix, tag in hierarchy.items():
             attributes = _ElementAttributes(content=tag, prefix=prefix)
             entry_tags.update(attributes._generate_nested_attribute_dict())
-
         return entry_tags
 
     @property
@@ -303,8 +301,8 @@ class Entry(fpdsElement):
 
     def content_tag_hierarchy(
         self,
-        element: Element = None,
-        parent: str = None,
+        element: Union[Element, None] = None,
+        parent: Union[str, None] = None,
         hierarchy: Dict = dict(),
     ) -> Dict[str, str]:
         """Added on v1.2.0
@@ -352,7 +350,6 @@ class Entry(fpdsElement):
         if element is None:
             element = self.tree
 
-
         _parent = Parent(content=element)
 
         # continue parsing XML hierarchy because children exist and we want
@@ -396,10 +393,9 @@ class Parent(fpdsElement):
         if self.has_children:
             return list(self.tree)
 
-    if has_children:
-        def parent_child_hierarchy_name(self, delim="__"):
-            if self.parent_name and self.parent_name not in self.tag_exclusions:
-                name = self.parent_name + delim + self.clean_tag
-            else:
-                name = self.clean_tag
-            return name
+    def parent_child_hierarchy_name(self, delim="__"):
+        if self.parent_name and self.parent_name not in self.tag_exclusions:
+            name = self.parent_name + delim + self.clean_tag
+        else:
+            name = self.clean_tag
+        return name
