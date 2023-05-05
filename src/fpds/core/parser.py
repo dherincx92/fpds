@@ -10,7 +10,7 @@ import requests
 from tqdm import tqdm
 
 from fpds.config import FPDS_FIELDS_CONFIG as FIELDS
-from fpds.core import TREE
+from fpds.core import FPDS_ENTRY, TREE
 from fpds.core.mixins import fpdsMixin
 # to prevent clash with Python's xml library
 from fpds.core.xml import fpdsXML
@@ -115,7 +115,7 @@ class fpdsRequest(fpdsMixin):
             for link in links:
                 self.send_request(link)
 
-    def parse_content(self) -> List[Mapping[str, Union[str, int, float]]]:
+    def parse_content(self) -> List[FPDS_ENTRY]:
         """Parses a content iterable and generates a list of records"""
         self.create_content_iterable()
         records = []

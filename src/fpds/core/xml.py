@@ -9,14 +9,11 @@ from typing import Dict, Iterator, List, Mapping, Union
 from xml.etree import ElementTree
 from xml.etree.ElementTree import Element
 
-from fpds.core import TREE
+from fpds.core import FPDS_ENTRY, TREE
 from fpds.core.mixins import fpdsMixin, fpdsXMLMixin
 
 NAMESPACE_REGEX = r"\{(.*)\}"
 LAST_PAGE_REGEX = r"start=(.*?)$"
-
-# types / note that all values will come in as strings
-FPDS_ENTRY = Mapping[str, str]
 
 
 class fpdsXML(fpdsXMLMixin, fpdsMixin):
