@@ -5,7 +5,7 @@ author: derek663@gmail.com
 last_updated: 05/03/2023
 """
 import re
-from typing import Dict, List, Mapping, Union
+from typing import Dict, Iterator, List, Mapping, Union
 from xml.etree import ElementTree
 from xml.etree.ElementTree import Element
 
@@ -16,15 +16,8 @@ from fpds.utilities import jsonify
 NAMESPACE_REGEX = r"\{(.*)\}"
 LAST_PAGE_REGEX = r"start=(.*?)$"
 
-# types
-FPDS_ENTRY = Mapping[str, Union[str, int, float]]
-
-
-class EmptyParentName(str):
-    """Class representation of tag with no parent name"""
-
-    def __new__(cls):
-        return ""
+# types / note that all values will come in as strings
+FPDS_ENTRY = Mapping[str, str]
 
 
 class fpdsXML(fpdsXMLMixin, fpdsMixin):
@@ -55,11 +48,10 @@ class fpdsXML(fpdsXMLMixin, fpdsMixin):
                 "`xml.etree.ElementTree.Element`"
             )
 
-    def __str__(self):
-        return f"<fpdsXML {self.content.tag}>"
+    def __str__(self) -> str:
+        return f"<fpdsXML {self.tree.tag}>"
 
-    # def parse_items(self, element: TREE) -> Iterator[TREE]:
-    def parse_items(self):
+    def parse_items(self) -> Iterator[TREE]:
         """Returns iteration of `Element` as a generator"""
         yield from self.tree.iter()
 
@@ -68,7 +60,6 @@ class fpdsXML(fpdsXMLMixin, fpdsMixin):
         tree = ElementTree.fromstring(self.content)
         return tree
 
-    # @staticmethod
     def _get_full_namespace(self, element: TREE) -> str:
         """For some odd reason, the lxml API doesn't have a method to provide
         namespaces natively unless an XML file is saved locally. To avoid this,
@@ -136,7 +127,7 @@ class fpdsXML(fpdsXMLMixin, fpdsMixin):
         data_entries = self.tree.findall(".//ns0:entry", self.namespace_dict)
         return data_entries
 
-    # @jsonify
+    @jsonify
     def jsonified_entries(self) -> List[FPDS_ENTRY]:
         """Returns all paginated entries from an FPDS request as valid JSON"""
         entries = self.get_atom_feed_entries()
@@ -263,7 +254,7 @@ class Entry(fpdsElement):
     def __init__(self, *args, **kwargs) -> None:
         super().__init__(*args, **kwargs)
 
-    def __call__(self) -> Mapping[str, Union[str, int, float]]:
+    def __call__(self) -> FPDS_ENTRY:
         """Shortcut for the finalized data structure"""
         data_with_attributes = self.get_entry_data()
         return data_with_attributes
@@ -290,15 +281,6 @@ class Entry(fpdsElement):
             # for the contract type
             entry_tags["contract_type"] = self.contract_type
         return entry_tags
-
-    @property
-    def tag_exclusions(self):
-        """Tag names that should be excluded from the hierarchy tree. Because
-        some of the XML hierarchy doesn't provide much value, we provide a
-        mechanism for `award_tag_hierarchy` to avoid using such tags in the
-        final string concatenation.
-        """
-        return ["content", "IDV", "award"]
 
     def content_tag_hierarchy(
         self,

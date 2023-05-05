@@ -11,9 +11,9 @@ from tqdm import tqdm
 
 from fpds.config import FPDS_FIELDS_CONFIG as FIELDS
 from fpds.core import TREE
-# to prevent clash with Python's xml library
-from fpds.core._xml import fpdsXML
 from fpds.core.mixins import fpdsMixin
+# to prevent clash with Python's xml library
+from fpds.core.xml import fpdsXML
 from fpds.utilities import filter_config_dict, raw_literal_regex_match
 
 

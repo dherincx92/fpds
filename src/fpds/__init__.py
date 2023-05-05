@@ -1,5 +1,5 @@
-from .core._xml import fpdsXML
 from .core.parser import fpdsRequest
+from .core.xml import fpdsXML
 
 __all__ = [
     "fpdsRequest",
