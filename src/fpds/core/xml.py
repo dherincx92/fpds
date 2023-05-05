@@ -11,7 +11,6 @@ from xml.etree.ElementTree import Element
 
 from fpds.core import TREE
 from fpds.core.mixins import fpdsMixin, fpdsXMLMixin
-from fpds.utilities import jsonify
 
 NAMESPACE_REGEX = r"\{(.*)\}"
 LAST_PAGE_REGEX = r"start=(.*?)$"
@@ -127,7 +126,6 @@ class fpdsXML(fpdsXMLMixin, fpdsMixin):
         data_entries = self.tree.findall(".//ns0:entry", self.namespace_dict)
         return data_entries
 
-    @jsonify
     def jsonified_entries(self) -> List[FPDS_ENTRY]:
         """Returns all paginated entries from an FPDS request as valid JSON"""
         entries = self.get_atom_feed_entries()
