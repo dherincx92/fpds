@@ -4,24 +4,26 @@ Base classes for FPDS XML elements
 author: derek663@gmail.com
 last_updated: 05/03/2023
 """
-from typing import List, Mapping, Optional, Union
+from typing import List, Optional
+from xml.etree.ElementTree import ElementTree
 
 import requests
 from tqdm import tqdm
 
 from fpds.config import FPDS_FIELDS_CONFIG as FIELDS
-from fpds.core import FPDS_ENTRY, TREE
+from fpds.core import FPDS_ENTRY
 from fpds.core.mixins import fpdsMixin
-# to prevent clash with Python's xml library
 from fpds.core.xml import fpdsXML
 from fpds.utilities import filter_config_dict, raw_literal_regex_match
 
 
 class fpdsRequest(fpdsMixin):
     """Makes a GET request to the FPDS ATOM feed. Takes an unlimited number of
-    arguments. All query parameters should be submitted as strings. During
-    class instantiation, this class will validate argument names and values and
-    raise a `ValueError` if any error exists.
+    arguments. All query parameters should be submitted as strings. If new
+    arguments are added to the feed, add the argument to the
+    `fpds/core/constants.json` file. During class instantiation, this class
+    will validate argument names and values and raise a `ValueError` if any
+    error exists.
 
     Example:
         request = fpdsRequest(
@@ -45,7 +47,7 @@ class fpdsRequest(fpdsMixin):
 
     def __init__(self, cli_run: bool = False, **kwargs):
         self.cli_run = cli_run
-        self.content = []  # type: List[TREE]
+        self.content = []  # type: List[ElementTree]
         if kwargs:
             self.kwargs = kwargs
         else:
@@ -121,5 +123,6 @@ class fpdsRequest(fpdsMixin):
         records = []
         for tree in tqdm(self.content):
             xml = fpdsXML(content=tree)
+            print(xml.__str__())
             records.extend(xml.jsonified_entries())
         return records
