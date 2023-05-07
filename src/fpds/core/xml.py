@@ -2,14 +2,13 @@
 XML classes for parsing FPDS content.
 
 author: derek663@gmail.com
-last_updated: 05/03/2023
+last_updated: 05/07/2023
 """
 import re
-from typing import Dict, Iterator, List, Mapping, Union
-from xml.etree import ElementTree
-from xml.etree.ElementTree import Element
+from typing import Dict, Iterator, List, Union
+from xml.etree.ElementTree import Element, ElementTree
 
-from fpds.core import FPDS_ENTRY, TREE
+from fpds.core import FPDS_ENTRY
 from fpds.core.mixins import fpdsMixin, fpdsXMLMixin
 
 NAMESPACE_REGEX = r"\{(.*)\}"
@@ -17,47 +16,60 @@ LAST_PAGE_REGEX = r"start=(.*?)$"
 
 
 class fpdsXML(fpdsXMLMixin, fpdsMixin):
-    """Parses FPDS request content received as bytes or `xml.etree.ElementTree`
+    """Parses FPDS request content received as bytes or `ElementTree`.
+    This class represents an entire XML document.
 
     Parameters
     ----------
-    content: `Union[bytes, TREE]`
-        Bytes content or an ElementTree element that can be parsed into
+    content: `Union[bytes, ElementTree]`
+        Bytes content or an `ElementTree` type that can be parsed into
         valid XML.
 
     Raises
     ------
     TypeError:
-        If `content` is not of type `bytes` or an instance of
-        `xml.etree.ElementTree.Element`.
+        If `content` is not of type `bytes` or an instance of `ElementTree`.
     """
 
-    def __init__(self, content: Union[bytes, TREE]) -> None:
+    def __init__(self, content: Union[bytes, ElementTree]) -> None:
         if isinstance(content, bytes):
             self.content = content
             self.tree = self.convert_to_lxml_tree()
-        if isinstance(content, TREE):
+        if isinstance(content, self.xml_child_classes):
             self.tree = content
-        if not isinstance(content, (bytes, TREE)):
+        if not isinstance(content, self.xml_child_classes):
+            module_names = ",".join(
+                [f"`{mod}`" for mod in self.xml_child_classes_with_modules]
+            )
             raise TypeError(
-                "You must provide bytes content or an instance of "
-                "`xml.etree.ElementTree.Element`"
+                f"You must provide bytes content or an instance of the "
+                f"following: {module_names}."
             )
 
     def __str__(self) -> str:
-        return f"<fpdsXML {self.tree.tag}>"
+        """The root represents the top of the XML tree from an instance of type
+        `ElementTree`. Since `fpdsElement` inherits from this class, we overwrite
+        this method in child classes since `getroot()` is not available for
+        tags of type `Element`
+        """
+        if isinstance(self.tree, ElementTree):
+            root = self.tree.getroot()
+            query = root.find(".//ns0:title", self.namespace_dict).text
+            page = root.find(".ns0:link[@rel='alternate']", self.namespace_dict)
+            return f"<fpdsXML query=`{query}` page=`{page.attrib['href']}`>"
 
-    def parse_items(self) -> Iterator[TREE]:
+    def parse_items(self) -> Iterator[ElementTree]:
         """Returns iteration of `Element` as a generator"""
         yield from self.tree.iter()
 
-    def convert_to_lxml_tree(self) -> TREE:  # type: ignore
+    def convert_to_lxml_tree(self) -> ElementTree:
         """Returns lxml tree element from a bytes response"""
         tree = ElementTree.fromstring(self.content)
         return tree
 
-    def _get_full_namespace(self, element: TREE) -> str:
-        """For some odd reason, the lxml API doesn't have a method to provide
+    @staticmethod
+    def _get_full_namespace(element: Element) -> str:
+        """For some odd reason, the `xml` API doesn't have a method to provide
         namespaces natively unless an XML file is saved locally. To avoid this,
         we just do some regex work.
 
@@ -94,11 +106,10 @@ class fpdsXML(fpdsXMLMixin, fpdsMixin):
     @property
     def total_record_count(self) -> int:
         """Total number of records across all pagination links."""
-        links = self.tree.findall(".//ns0:link", self.namespace_dict)
-        last_link = [link for link in links if link.get("rel") == "last"]
+        last_link = self.tree.find(".//ns0:link[@rel='last']", self.namespace_dict)
         if last_link:
             # length of last_link should always be 1
-            match = re.search(LAST_PAGE_REGEX, last_link[0].attrib["href"])
+            match = re.search(LAST_PAGE_REGEX, last_link.attrib["href"])
             assert match is not None
             record_count = int(match.group(1))
         else:
@@ -118,13 +129,13 @@ class fpdsXML(fpdsXMLMixin, fpdsMixin):
             page_links.append(link)
         return page_links
 
-    def get_atom_feed_entries(self) -> List[TREE]:
+    def get_atom_feed_entries(self) -> List[ElementTree]:
         """Returns tree entries that contain FPDS record data"""
         data_entries = self.tree.findall(".//ns0:entry", self.namespace_dict)
         return data_entries
 
     def jsonified_entries(self) -> List[FPDS_ENTRY]:
-        """Returns all paginated entries from an FPDS request as valid JSON"""
+        """Returns all paginated entries from an FPDS request"""
         entries = self.get_atom_feed_entries()
         json_data = [Entry(content=entry)() for entry in entries]
         return json_data
@@ -137,6 +148,17 @@ class fpdsElement(fpdsXML):
 
     def __init__(self, *args, **kwargs) -> None:
         super().__init__(*args, **kwargs)
+        # per the `xml` API, an `ElementTree` and `Element` are different
+        # we ensure we follow that convention here by removing the `tree` attrib
+        self.element = self.tree
+        delattr(self, "tree")
+
+    def __str__(self):
+        return f"<fpdsElement {self.tag}>"
+
+    def parse_items(self) -> Iterator[ElementTree]:
+        """Returns iteration of `Element` as a generator"""
+        yield from self.element.iter()
 
     @property
     def NAMESPACE_REGEX_PATTERN(self) -> str:
@@ -146,12 +168,12 @@ class fpdsElement(fpdsXML):
         namespaces = "|".join(self.namespace_dict.values())
         # yeah, f-strings don't do well with backslashes
         PATTERN = r"\{(" + namespaces + r")\}"  # noqa
-
         return PATTERN
 
     @property
     def tag(self):
-        return self.tree.tag
+        """Raw tag from `xml` library"""
+        return self.element.tag
 
     @property
     def clean_tag(self) -> str:
@@ -185,7 +207,7 @@ class _ElementAttributes(fpdsElement, fpdsXMLMixin):
         super().__init__(*args, **kwargs)
 
     def __str__(self) -> str:
-        return f"<_ElementAttributes {self.tree.tag}>"
+        return f"<_ElementAttributes {self.tag}>"
 
     def _generate_nested_attribute_dict(self) -> Dict[str, str]:
         """Returns all attributes of an Element
@@ -202,16 +224,16 @@ class _ElementAttributes(fpdsElement, fpdsXMLMixin):
         represent this tag the following way:
 
             {
-                "contractActionType": "E",
-                "contractActionType__description": "BPA"
-                "contractActionType__part8OrPart13": "PART8"
+                "{prefix}__contractActionType": "E",
+                "{prefix}__contractActionType__description": "BPA"
+                "{prefix}__contractActionType__part8OrPart13": "PART8"
             }
         """
-        attributes = self.tree.attrib
+        attributes = self.element.attrib
         _attributes_copy = attributes.copy()
 
-        if self.tree.text:
-            _attributes_copy[self.prefix] = self.tree.text
+        if self.element.text:
+            _attributes_copy[self.prefix] = self.element.text
         for key in attributes:
             nested_key = f"{self.prefix}__{key}"
             _attributes_copy[nested_key] = attributes[key]
@@ -249,6 +271,9 @@ class Entry(fpdsElement):
     def __init__(self, *args, **kwargs) -> None:
         super().__init__(*args, **kwargs)
 
+    def __str__(self) -> str:
+        return f"<Entry {self.clean_tag}>"
+
     def __call__(self) -> FPDS_ENTRY:
         """Shortcut for the finalized data structure"""
         data_with_attributes = self.get_entry_data()
@@ -259,8 +284,8 @@ class Entry(fpdsElement):
         """Identifies the contract type for an individual award entry. Possible
         options include: `AWARD` or `IDV`
         """
-        content = self.tree.find(".//ns0:content", self.namespace_dict)
-        award = list(content)[0]  # type: ignore
+        content = self.element.find(".//ns0:content", self.namespace_dict)
+        award = list(content)[0]
         award_type = re.sub(self.NAMESPACE_REGEX_PATTERN, "", award.tag)
         return award_type.upper()
 
@@ -326,7 +351,7 @@ class Entry(fpdsElement):
             recursive function call
         """
         if element is None:
-            element = self.tree
+            element = self.element
 
         _parent = Parent(content=element)
 
@@ -364,12 +389,12 @@ class Parent(fpdsElement):
     @property
     def has_children(self):
         """Identifies if element has children"""
-        return bool(list(self.tree))
+        return bool(list(self.element))
 
     def children(self):
         """Returns children if they exist"""
         if self.has_children:
-            return list(self.tree)
+            return list(self.element)
 
     def parent_child_hierarchy_name(self, delim="__"):
         if self.parent_name and self.parent_name not in self.tag_exclusions:
