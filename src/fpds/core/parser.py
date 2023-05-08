@@ -109,7 +109,7 @@ class fpdsRequest(fpdsMixin):
         """
         self.send_request()
         params = self.search_params
-        tree = fpdsXML(self.content[0])
+        tree = fpdsXML(content=self.content[0])
 
         links = tree.pagination_links(params=params)
         if len(links) > 1:
@@ -123,6 +123,5 @@ class fpdsRequest(fpdsMixin):
         records = []
         for tree in tqdm(self.content):
             xml = fpdsXML(content=tree)
-            print(xml.__str__())
             records.extend(xml.jsonified_entries())
         return records

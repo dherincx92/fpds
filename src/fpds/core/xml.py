@@ -6,7 +6,7 @@ last_updated: 05/07/2023
 """
 import re
 from typing import Dict, Iterator, List, Union
-from xml.etree.ElementTree import Element, ElementTree
+from xml.etree.ElementTree import Element, ElementTree, fromstring
 
 from fpds.core import FPDS_ENTRY
 from fpds.core.mixins import fpdsMixin, fpdsXMLMixin
@@ -54,17 +54,21 @@ class fpdsXML(fpdsXMLMixin, fpdsMixin):
         """
         if isinstance(self.tree, ElementTree):
             root = self.tree.getroot()
-            query = root.find(".//ns0:title", self.namespace_dict).text
+            query = root.find(".//ns0:title", self.namespace_dict)
+            assert isinstance(query, Element)
+
             page = root.find(".ns0:link[@rel='alternate']", self.namespace_dict)
+            assert isinstance(page, Element)
+
             return f"<fpdsXML query=`{query}` page=`{page.attrib['href']}`>"
 
-    def parse_items(self) -> Iterator[ElementTree]:
+    def parse_items(self) -> Iterator[Element]:
         """Returns iteration of `Element` as a generator"""
         yield from self.tree.iter()
 
     def convert_to_lxml_tree(self) -> ElementTree:
         """Returns lxml tree element from a bytes response"""
-        tree = ElementTree.fromstring(self.content)
+        tree = ElementTree(fromstring(self.content))
         return tree
 
     @staticmethod
@@ -129,7 +133,7 @@ class fpdsXML(fpdsXMLMixin, fpdsMixin):
             page_links.append(link)
         return page_links
 
-    def get_atom_feed_entries(self) -> List[ElementTree]:
+    def get_atom_feed_entries(self) -> List[Element]:
         """Returns tree entries that contain FPDS record data"""
         data_entries = self.tree.findall(".//ns0:entry", self.namespace_dict)
         return data_entries
@@ -156,7 +160,7 @@ class fpdsElement(fpdsXML):
     def __str__(self):
         return f"<fpdsElement {self.tag}>"
 
-    def parse_items(self) -> Iterator[ElementTree]:
+    def parse_items(self) -> Iterator[Element]:
         """Returns iteration of `Element` as a generator"""
         yield from self.element.iter()
 
@@ -202,7 +206,7 @@ class _ElementAttributes(fpdsElement, fpdsXMLMixin):
         duplicate tags like `PIID` are distinguished in the data.
     """
 
-    def __init__(self, prefix, *args, **kwargs) -> None:
+    def __init__(self, prefix: str, *args, **kwargs) -> None:
         self.prefix = prefix
         super().__init__(*args, **kwargs)
 
@@ -229,6 +233,9 @@ class _ElementAttributes(fpdsElement, fpdsXMLMixin):
                 "{prefix}__contractActionType__part8OrPart13": "PART8"
             }
         """
+        import ipdb
+
+        ipdb.set_trace()
         attributes = self.element.attrib
         _attributes_copy = attributes.copy()
 
@@ -285,8 +292,9 @@ class Entry(fpdsElement):
         options include: `AWARD` or `IDV`
         """
         content = self.element.find(".//ns0:content", self.namespace_dict)
-        award = list(content)[0]
-        award_type = re.sub(self.NAMESPACE_REGEX_PATTERN, "", award.tag)
+        if content:
+            award = list(content)[0]
+            award_type = re.sub(self.NAMESPACE_REGEX_PATTERN, "", award.tag)
         return award_type.upper()
 
     def get_entry_data(self) -> Dict[str, str]:

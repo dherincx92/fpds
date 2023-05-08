@@ -4,6 +4,7 @@ from xml.etree.ElementTree import Element, ElementTree, fromstring
 class fpdsMixin:
     @property
     def url_base(self) -> str:
+        """Base URL for all ATOM feed requests"""
         return "https://www.fpds.gov/ezsearch/FEEDS/ATOM?FEEDNAME=PUBLIC"
 
     @staticmethod
