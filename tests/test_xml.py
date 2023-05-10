@@ -1,8 +1,9 @@
 import pytest
 from unittest import TestCase
-from xml.etree.ElementTree import Element
+from xml.etree.ElementTree import Element, ElementTree
 
 from fpds import fpdsXML
+from fpds.core.xml import fpdsElement
 from tests import FULL_RESPONSE_DATA_BYTES, TRUNCATED_RESPONSE_DATA_BYTES
 
 FPDS_REQUEST_PARAMS_DICT = {
@@ -25,7 +26,7 @@ class TestFpdsXML(TestCase):
 
     def test_convert_to_lxml_tree(self):
         content = self._class.convert_to_lxml_tree()
-        self.assertIsInstance(content, Element)
+        self.assertIsInstance(content, ElementTree)
 
     def test_response_size(self):
         self.assertEqual(self._class.response_size, 10)
@@ -57,3 +58,14 @@ class TestFpdsXML(TestCase):
         entry_types = set([type(entry) for entry in entries])
         self.assertEqual(len(entries), 10)
         self.assertEqual(len(entry_types), 1)
+
+
+class TestFpdsElement(TestCase):
+    def setUp(self):
+        xml = fpdsXML(content=FULL_RESPONSE_DATA_BYTES)
+        element = xml.get_atom_feed_entries()[0]
+        self._class = fpdsElement(content=element)
+
+    def test_str_magic_method(self):
+        object_as_string = "<fpdsElement {http://www.w3.org/2005/Atom}entry>"
+        self.assertEqual(self._class.__str__(), object_as_string)
