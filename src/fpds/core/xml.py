@@ -5,7 +5,7 @@ author: derek663@gmail.com
 last_updated: 05/07/2023
 """
 import re
-from typing import Dict, Iterator, List, Union
+from typing import Dict, Iterator, List, Optional, Union
 from xml.etree.ElementTree import Element, ElementTree, fromstring
 
 from fpds.core import FPDS_ENTRY
@@ -37,7 +37,7 @@ class fpdsXML(fpdsXMLMixin, fpdsMixin):
             self.tree = self.convert_to_lxml_tree()
         if isinstance(content, self.xml_child_classes):
             self.tree = content
-        if not isinstance(content, self.xml_child_classes):
+        if not isinstance(content, self.xml_child_classes + (bytes,)):
             module_names = ",".join(
                 [f"`{mod}`" for mod in self.xml_child_classes_with_modules]
             )
@@ -60,7 +60,7 @@ class fpdsXML(fpdsXMLMixin, fpdsMixin):
             page = root.find(".ns0:link[@rel='alternate']", self.namespace_dict)
             assert isinstance(page, Element)
 
-            return f"<fpdsXML query=`{query}` page=`{page.attrib['href']}`>"
+            return f"<fpdsXML query=`{query.text}` page=`{page.attrib['href']}`>"
 
     def parse_items(self) -> Iterator[Element]:
         """Returns iteration of `Element` as a generator"""
@@ -111,7 +111,7 @@ class fpdsXML(fpdsXMLMixin, fpdsMixin):
     def total_record_count(self) -> int:
         """Total number of records across all pagination links."""
         last_link = self.tree.find(".//ns0:link[@rel='last']", self.namespace_dict)
-        if last_link:
+        if isinstance(last_link, Element):
             # length of last_link should always be 1
             match = re.search(LAST_PAGE_REGEX, last_link.attrib["href"])
             assert match is not None
@@ -233,9 +233,8 @@ class _ElementAttributes(fpdsElement, fpdsXMLMixin):
                 "{prefix}__contractActionType__part8OrPart13": "PART8"
             }
         """
-        import ipdb
+        assert isinstance(self.element, Element)
 
-        ipdb.set_trace()
         attributes = self.element.attrib
         _attributes_copy = attributes.copy()
 
@@ -312,8 +311,8 @@ class Entry(fpdsElement):
 
     def content_tag_hierarchy(
         self,
-        element: Union[Element, None] = None,
-        parent: Union[str, None] = None,
+        element: Optional[Element] = None,
+        parent: Optional[str] = None,
         hierarchy: Dict = dict(),
     ) -> Dict[str, str]:
         """Added on v1.2.0
@@ -359,7 +358,7 @@ class Entry(fpdsElement):
             recursive function call
         """
         if element is None:
-            element = self.element
+            element = self.element  # type: ignore
 
         _parent = Parent(content=element)
 
