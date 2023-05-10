@@ -1,4 +1,4 @@
-from xml.etree.ElementTree import Element, ElementTree, fromstring
+from xml.etree.ElementTree import Element, ElementTree
 
 
 class fpdsMixin:
@@ -6,12 +6,6 @@ class fpdsMixin:
     def url_base(self) -> str:
         """Base URL for all ATOM feed requests"""
         return "https://www.fpds.gov/ezsearch/FEEDS/ATOM?FEEDNAME=PUBLIC"
-
-    @staticmethod
-    def convert_to_lxml_tree(content) -> ElementTree:
-        """Returns lxml tree element from a bytes response"""
-        tree = ElementTree(fromstring(content))
-        return tree
 
 
 class fpdsXMLMixin:

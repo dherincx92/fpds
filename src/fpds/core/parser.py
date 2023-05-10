@@ -5,7 +5,7 @@ author: derek663@gmail.com
 last_updated: 05/03/2023
 """
 from typing import List, Optional
-from xml.etree.ElementTree import ElementTree
+from xml.etree.ElementTree import ElementTree, fromstring
 
 import requests
 from tqdm import tqdm
@@ -85,6 +85,12 @@ class fpdsRequest(fpdsMixin):
         """Search parameters inputted by user"""
         _params = [f"{key}:{value}" for key, value in self.kwargs.items()]
         return " ".join(_params)
+
+    @staticmethod
+    def convert_to_lxml_tree(content) -> ElementTree:
+        """Returns lxml tree element from a bytes response"""
+        tree = ElementTree(fromstring(content))
+        return tree
 
     def send_request(self, url: Optional[str] = None):
         """Sends request to FPDS Atom feed
