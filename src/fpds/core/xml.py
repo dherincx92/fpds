@@ -2,7 +2,7 @@
 XML classes for parsing FPDS content.
 
 author: derek663@gmail.com
-last_updated: 05/07/2023
+last_updated: 05/10/2023
 """
 import re
 from typing import Dict, Iterator, List, Optional, Union
@@ -67,7 +67,7 @@ class fpdsXML(fpdsXMLMixin, fpdsMixin):
         yield from self.tree.iter()
 
     def convert_to_lxml_tree(self) -> ElementTree:
-        """Returns lxml tree element from a bytes response"""
+        """Returns an `ElementTree` object from a bytes response"""
         tree = ElementTree(fromstring(self.content))
         return tree
 

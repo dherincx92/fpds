@@ -2,7 +2,7 @@
 Base classes for FPDS XML elements
 
 author: derek663@gmail.com
-last_updated: 05/03/2023
+last_updated: 05/10/2023
 """
 from typing import List, Optional
 from xml.etree.ElementTree import ElementTree, fromstring
@@ -109,7 +109,7 @@ class fpdsRequest(fpdsMixin):
         self.content.append(content_tree)
 
     def create_content_iterable(self):
-        """Paginates through response and creates an iterable of XML trees.
+        """Paginates through a response and creates an iterable of XML trees.
         This method will not have a return but rather, will set the `content`
         attribute to an iterable of XML ElementTrees'
         """
