@@ -125,7 +125,7 @@ class fpdsXML(fpdsXMLMixin, fpdsMixin):
         total record count value
         """
         resp_size = self.response_size
-        offset = 0 if self.total_record_count <= 10 else resp_size
+        offset = 0 if self.total_record_count < 10 else resp_size
         page_range = list(range(0, self.total_record_count + offset, resp_size))
         page_links = []
         for num in page_range:
