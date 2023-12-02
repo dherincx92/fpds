@@ -15,6 +15,7 @@ from fpds.core import FPDS_ENTRY
 from fpds.core.mixins import fpdsMixin
 from fpds.core.xml import fpdsXML
 from fpds.utilities import filter_config_dict, raw_literal_regex_match
+from fpds.utilities.db import insert_records
 
 
 class fpdsRequest(fpdsMixin):
@@ -36,6 +37,8 @@ class fpdsRequest(fpdsMixin):
     cli_run: `bool`
         Flag indicating if this class is being isntantiated by a CLI run
         Defaults to `False`
+    target_database_url_env_key: `str`
+        Database URL environment key to insert data into.
 
     Raises
     ------
@@ -45,8 +48,14 @@ class fpdsRequest(fpdsMixin):
         does not match the expected regex.
     """
 
-    def __init__(self, cli_run: bool = False, **kwargs):
+    def __init__(
+        self,
+        cli_run: bool = False,
+        target_database_url_env_key: str = None,
+        **kwargs
+    ):
         self.cli_run = cli_run
+        self.target_database_url_env_key = target_database_url_env_key
         self.content = []  # type: List[ElementTree]
         if kwargs:
             self.kwargs = kwargs
@@ -77,8 +86,19 @@ class fpdsRequest(fpdsMixin):
 
     def __call__(self):
         """Shortcut for making an API call and retrieving content"""
-        records = self.parse_content()
-        return records
+        data = self.parse_content()
+
+        if self.target_database_url_env_key:
+            insert_records(
+                data=data,
+                request_url=self.__url__(),
+                target_database_url_env_key=self.target_database_url_env_key,
+            )
+        else:
+            return data
+
+    def __url__(self):
+        return f"{self.url_base}&q={self.search_params}"
 
     @property
     def search_params(self):
