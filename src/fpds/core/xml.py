@@ -5,7 +5,7 @@ author: derek663@gmail.com
 last_updated: 05/10/2023
 """
 import re
-from typing import Dict, Iterator, List, Optional, Union
+from typing import Iterator, List, Mapping, Optional, Union
 from xml.etree.ElementTree import Element, ElementTree, fromstring
 
 from fpds.core import FPDS_ENTRY
@@ -91,7 +91,7 @@ class fpdsXML(fpdsXMLMixin, fpdsMixin):
         return 10
 
     @property
-    def namespace_dict(self) -> Dict[str, str]:
+    def namespace_dict(self) -> Mapping[str, str]:
         """The better way of parsing tree elements with namespaces, per the docs.
         Note that `namespaces` is a list, which retains parsing order of the
         tree, which will be important in identifying Atom entries in `fpds`
@@ -157,7 +157,7 @@ class fpdsElement(fpdsXML):
         self.element = self.tree
         delattr(self, "tree")
 
-    def __str__(self):
+    def __str__(self) -> str:
         return f"<fpdsElement {self.tag}>"
 
     def parse_items(self) -> Iterator[Element]:
@@ -199,7 +199,7 @@ class _ElementAttributes(fpdsElement, fpdsXMLMixin):
     ----------
     element: `xml.etree.ElementTree.Element`
         An XML element.
-    namespace_dict: `Dict[str, str]`
+    namespace_dict: `Mapping[str, str]`
         A namespace dictionary that allows module to parse FPDS elements.
     prefix: `str`
         Prefix to append to attribute dictionary. This will ensure that
@@ -213,7 +213,7 @@ class _ElementAttributes(fpdsElement, fpdsXMLMixin):
     def __str__(self) -> str:
         return f"<_ElementAttributes {self.tag}>"
 
-    def _generate_nested_attribute_dict(self) -> Dict[str, str]:
+    def _generate_nested_attribute_dict(self) -> Mapping[str, str]:
         """Returns all attributes of an Element
 
         Example
@@ -296,7 +296,7 @@ class Entry(fpdsElement):
             award_type = re.sub(self.NAMESPACE_REGEX_PATTERN, "", award.tag)
         return award_type.upper()
 
-    def get_entry_data(self) -> Dict[str, str]:
+    def get_entry_data(self) -> Mapping[str, str]:
         """Extracts award data from an entry"""
         entry_tags = dict()
         hierarchy = self.content_tag_hierarchy()
@@ -313,8 +313,8 @@ class Entry(fpdsElement):
         self,
         element: Optional[Element] = None,
         parent: Optional[str] = None,
-        hierarchy: Dict = dict(),
-    ) -> Dict[str, str]:
+        hierarchy: Mapping[str, str] = dict(),
+    ) -> Mapping[str, str]:
         """Added on v1.2.0
 
         For each FPDS request made, the `entry` tag represents an individual
@@ -348,12 +348,12 @@ class Entry(fpdsElement):
 
         Parameters
         ----------
-        element: `Element`
+        element: `Optional[Element]`
             Per docs, to get children simply iterate over element
             https://lxml.de/api/lxml.etree._Element-class.html#getchildren
-        parent: `str`
+        parent: `Optional[str]`
             Name of `elements` XML parent
-        hierarchy: `Dict[str, str]`
+        hierarchy: `Mapping[str, str]`
             The hierarchy dictionary structure to be passed through each
             recursive function call
         """
@@ -385,7 +385,7 @@ class Parent(fpdsElement):
         self.parent_name = parent_name
 
     @property
-    def tag_exclusions(self):
+    def tag_exclusions(self) -> List[str]:
         """Tag names that should be excluded from the hierarchy tree. Because
         some of the XML hierarchy doesn't provide much value, we provide a
         mechanism for `award_tag_hierarchy` to avoid using such tags in the
@@ -394,7 +394,7 @@ class Parent(fpdsElement):
         return ["content", "IDV", "award"]
 
     @property
-    def has_children(self):
+    def has_children(self) -> bool:
         """Identifies if element has children"""
         return bool(list(self.element))
 
