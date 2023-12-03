@@ -4,7 +4,7 @@ Base classes for FPDS XML elements
 author: derek663@gmail.com
 last_updated: 05/10/2023
 """
-from typing import List, Optional
+from typing import List, Optional, Union
 from xml.etree.ElementTree import ElementTree, fromstring
 
 import requests
@@ -35,8 +35,8 @@ class fpdsRequest(fpdsMixin):
     Parameters
     ----------
     cli_run: `bool`
-        Flag indicating if this class is being isntantiated by a CLI run
-        Defaults to `False`
+        Flag indicating if this class is being isntantiated by a CLI run.
+        Defaults to `False`.
     target_database_url_env_key: `str`
         Database URL environment key to insert data into.
 
@@ -51,8 +51,8 @@ class fpdsRequest(fpdsMixin):
     def __init__(
         self,
         cli_run: bool = False,
-        target_database_url_env_key: str = None,
-        **kwargs
+        target_database_url_env_key: Union[str, None] = None,
+        **kwargs,
     ):
         self.cli_run = cli_run
         self.target_database_url_env_key = target_database_url_env_key

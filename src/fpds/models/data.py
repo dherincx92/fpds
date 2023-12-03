@@ -1,6 +1,7 @@
-from sqlalchemy import Column, Integer, JSON, String, TIMESTAMP, VARCHAR
+from sqlalchemy import JSON, TIMESTAMP, VARCHAR, Column, Integer, String
 
 from fpds.models import Base
+
 
 class Fpds(Base):
     __tablename__ = "fpds"
