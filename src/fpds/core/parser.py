@@ -84,7 +84,7 @@ class fpdsRequest(fpdsMixin):
         kwargs_str = " ".join([f"{key}={value}" for key, value in self.kwargs.items()])
         return f"<fpdsRequest {kwargs_str}>"
 
-    def __call__(self) -> Union[Mapping[str, Any], None]:
+    def __call__(self) -> Union[None, List[FPDS_ENTRY]]:
         """Shortcut for making an API call and retrieving content"""
         data = self.parse_content()
 
@@ -94,6 +94,7 @@ class fpdsRequest(fpdsMixin):
                 request_url=self.__url__(),
                 target_database_url_env_key=self.target_database_url_env_key,
             )
+            return None
         else:
             return data
 
@@ -126,7 +127,7 @@ class fpdsRequest(fpdsMixin):
             url=self.url_base if not url else url, params={"q": self.search_params}
         )
         response.raise_for_status()
-        content_tree = self.convert_to_lxml_tree(response.content)
+        content_tree = self.convert_to_lxml_tree(response.content.decode("utf-8"))
         self.content.append(content_tree)
 
     def create_content_iterable(self) -> None:
