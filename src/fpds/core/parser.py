@@ -2,9 +2,9 @@
 Base classes for FPDS XML elements
 
 author: derek663@gmail.com
-last_updated: 05/10/2023
+last_updated: 12/03/2023
 """
-from typing import List, Optional, Union
+from typing import Any, List, Mapping, Optional, Union
 from xml.etree.ElementTree import ElementTree, fromstring
 
 import requests
@@ -84,7 +84,7 @@ class fpdsRequest(fpdsMixin):
         kwargs_str = " ".join([f"{key}={value}" for key, value in self.kwargs.items()])
         return f"<fpdsRequest {kwargs_str}>"
 
-    def __call__(self):
+    def __call__(self) -> Union[Mapping[str, Any], None]:
         """Shortcut for making an API call and retrieving content"""
         data = self.parse_content()
 
@@ -97,22 +97,23 @@ class fpdsRequest(fpdsMixin):
         else:
             return data
 
-    def __url__(self):
+    def __url__(self) -> str:
+        """Custom magic method for request URL"""
         return f"{self.url_base}&q={self.search_params}"
 
     @property
-    def search_params(self):
+    def search_params(self) -> str:
         """Search parameters inputted by user"""
         _params = [f"{key}:{value}" for key, value in self.kwargs.items()]
         return " ".join(_params)
 
     @staticmethod
-    def convert_to_lxml_tree(content) -> ElementTree:
+    def convert_to_lxml_tree(content: str) -> ElementTree:
         """Returns lxml tree element from a bytes response"""
         tree = ElementTree(fromstring(content))
         return tree
 
-    def send_request(self, url: Optional[str] = None):
+    def send_request(self, url: Optional[str] = None) -> None:
         """Sends request to FPDS Atom feed
 
         Parameters
@@ -128,7 +129,7 @@ class fpdsRequest(fpdsMixin):
         content_tree = self.convert_to_lxml_tree(response.content)
         self.content.append(content_tree)
 
-    def create_content_iterable(self):
+    def create_content_iterable(self) -> None:
         """Paginates through a response and creates an iterable of XML trees.
         This method will not have a return but rather, will set the `content`
         attribute to an iterable of XML ElementTrees'
