@@ -5,7 +5,7 @@ author: derek663@gmail.com
 last_updated: 05/10/2023
 """
 import re
-from typing import Dict, Iterator, List, Mapping, Optional, Union
+from typing import Dict, Iterator, List, Optional, Union
 from xml.etree.ElementTree import Element, ElementTree, fromstring
 
 from fpds.core import FPDS_ENTRY
@@ -364,7 +364,7 @@ class Entry(fpdsElement):
 
         # continue parsing XML hierarchy because children exist and we want
         # to get every possible bit of data
-        if _parent.has_children:
+        if _parent.children():
             for child in _parent.children():
                 _child = Parent(content=child, parent_name=parent)
                 parent_tag_name = _child.parent_child_hierarchy_name()
@@ -393,15 +393,10 @@ class Parent(fpdsElement):
         """
         return ["content", "IDV", "award"]
 
-    @property
-    def has_children(self) -> bool:
-        """Identifies if element has children"""
-        return bool(list(self.element))
-
     def children(self):
         """Returns children if they exist"""
-        if self.has_children:
-            return list(self.element)
+        if self.element.getchildren():
+            return self.element.getchildren()
 
     def parent_child_hierarchy_name(self, delim="__"):
         if self.parent_name and self.parent_name not in self.tag_exclusions:

@@ -4,7 +4,7 @@ Base classes for FPDS XML elements
 author: derek663@gmail.com
 last_updated: 12/03/2023
 """
-from typing import Any, List, Mapping, Optional, Union
+from typing import Any, List, Optional, Union
 from xml.etree.ElementTree import ElementTree, fromstring
 
 import requests
@@ -15,7 +15,6 @@ from fpds.core import FPDS_ENTRY
 from fpds.core.mixins import fpdsMixin
 from fpds.core.xml import fpdsXML
 from fpds.utilities import filter_config_dict, raw_literal_regex_match
-from fpds.utilities.db import insert_records
 
 
 class fpdsRequest(fpdsMixin):
@@ -55,8 +54,8 @@ class fpdsRequest(fpdsMixin):
         **kwargs,
     ):
         self.cli_run = cli_run
-        self.target_database_url_env_key = target_database_url_env_key
         self.content = []  # type: List[ElementTree]
+        self.target_database_url_env_key = target_database_url_env_key
         if kwargs:
             self.kwargs = kwargs
         else:
@@ -89,6 +88,8 @@ class fpdsRequest(fpdsMixin):
         data = self.parse_content()
 
         if self.target_database_url_env_key:
+            from fpds.utilities.db import insert_records
+
             insert_records(
                 data=data,
                 request_url=self.__url__(),
