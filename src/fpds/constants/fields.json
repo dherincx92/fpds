@@ -246,7 +246,7 @@
         "regex": ".*"
     },
     {
-        "description": "Source Selection Process",
+        "description": "Source Selection Process Description",
         "name": "SOURCE_SELECTION_PROCESS_DESC",
         "quotes": true,
         "regex": ".*"
@@ -516,6 +516,96 @@
     {
         "description": "PSC Type",
         "name": "PRODUCT_OR_SERVICE_TYPE",
-
+        "quotes": true
+    },
+    {
+        "description": "SBIR/STTR",
+        "name": "RESEARCH_DESCRIPTION",
+        "quotes": true,
+        "regex": "Small Business Innovation Research Program Phase I Action|Small Business Innovation Research Program Phase II Action|Small Business Innovation Research Program Phase III Action|Small Technology Transfer Research Program Phase I|Small Technology Transfer Research Program Phase II|Small Technology Transfer Research Program Phase III"
+    },
+    {
+        "description": "Simplified Procedures for Certain Commerical Products and Commerical Services",
+        "name": "CITP_DESC",
+        "quotes": true,
+        "regex": "Yes|No"
+    },
+    {
+        "description": "Small Business Competitiveness Demonstration Program",
+        "name": "SBC_DEMONSTRATION_PROGRAM_DESC",
+        "quotes": true,
+        "regex": "Yes|No"
+    },
+    {
+        "description": "Solicitation ID",
+        "name": "SOLICITATION_ID",
+        "quotes": true,
+        "regex": ".*"
+    },
+    {
+        "description": "Solicitation Procedures",
+        "name": "SOLICITATION_PROC_DESCRIPTION",
+        "quotes": true,
+        "regex": "Negotiated Proposal/Quote|Sealed Bid|Two Step|Simplified Acquisition|Architect-Engineer FAR 6.102|Basic Research|Alternative Sources|Only One Source|Subject to Multiple Award Fair Opportunity|DFARS 226.72 Demo Project"
+    },
+    {
+        "description": "Total Base And All Options Value ($)",
+        "name": "TOTAL_CURRENT_CONTRACT_VALUE",
+        "quotes": false,
+        "regex": "\\[\\d+, \\d+]"
+    },
+    {
+        "description": "Total Base and Exercised Options Value ($)",
+        "name": "TOTAL_ULTIMATE_CONTRACT_VALUE",
+        "quotes": false,
+        "regex": "\\[\\d+, \\d+]"
+    },
+    {
+        "description": "Total Dollars Obligated",
+        "name": "TOTAL_DOLLARS_OBLIGATED",
+        "quotes": false,
+        "regex": "\\[\\d+, \\d+]"
+    },
+    {
+        "description": "Total Non Government Value",
+        "name": "TOTAL_NON_GOVERNMENT_VALUE",
+        "quotes": false,
+        "regex": "\\[\\d+, \\d+]"
+    },
+    {
+        "description": "Treasury Account Symbol",
+        "name": "TREASURY_ACCOUNT_SYMBOL",
+        "quotes": true,
+        "regex": ".*"
+    },
+    {
+        "description": "Treasury Account Symbol Agency Identifier",
+        "name": "AGENCY_IDENTIFIER",
+        "quotes": true,
+        "regex": ".*"
+    },
+    {
+        "description": "Treasury Account Symbol Main Account Code",
+        "name": "MAIN_ACCOUNT_CODE",
+        "quotes": true,
+        "regex": ".*"
+    },
+    {
+        "description": "Treasury Account Symbol Sub Account Code",
+        "name": "SUB_ACCOUNT_CODE",
+        "quotes": true,
+        "regex": ".*"
+    },
+    {
+        "description": "Type of Set Aside",
+        "name": "TYPE_OF_SET_ASIDE_DESCRIPTION",
+        "quotes": true,
+        "regex": "No set aside used.|Small Business Set Aside - Total|8A Competed|Small Business Set-Aside -- Partial|HBCU or MI Set-Aside -- Total|HBCU or MI Set-Aside -- Partial|Very Small Business|Emerging Small Business Set-Aside|HUBZone Set-Aside|Service-Disabled Veteran-Owned Small Business Set-Aside|Buy Indian|Indian Economic Enterprise|Indian Small Business Economic Enterprise|HUBZone Sole Source|SDVOSB Sole Source|8(a) Sole Source|Reserved for Small Business|SDB Set-Aside 8(a)-(Will be deprecated in future)|Combination HUBZone and 8(a)-(Will be deprecated in future)|8(a) with HUBZone Preference|Veteran Set Aside|Veteran Sole Source|Women-Owned Small Business|Economically Disadvantaged Women-Owned Small Business|Women-Owned Small Business Sole Source|Economically Disadvantaged Women-Owned Small Business Sole Source"
+    },
+    {
+        "description": "Version",
+        "name": "VERSION",
+        "quotes": false,
+        "regex": "\\d+.\\d+"
     }
 ]
