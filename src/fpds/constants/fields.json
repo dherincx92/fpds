@@ -388,13 +388,14 @@
         "name": "CLOSED_BY",
         "quotes": true,
         "regex": ".*"
-    }
+    },
+    // Pending description
     {
         "description": "pending",
         "name": "A76_DESC",
         "quotes": true,
         "regex": ".*"
-    }
+    },
     {
         "description": "Additional Reporting",
         "name": "ADDITIONAL_REPORTING",
@@ -412,7 +413,7 @@
         "description": "Award Type",
         "name": "AWARD_TYPE",
         "quotes": true,
-        "regex": "A|B|C|D"
+        "regex": "BPA Call|Purchase Order|Delivery Order|Definitive Contract"
     },
     {
         "description": "Base and Exercised Options Value",
@@ -420,11 +421,11 @@
         "quotes": false,
         "regex": "\\[\\d+, \\d+]"
     },
-    // filter doesn't work
     {
         "description": "Commercial Products and Services Acquisition Procedures",
         "name": "COMMERCIAL_ITEM_ACQUISTN_DESC",
-        "quotes"
+        "quotes": true,
+        "regex": "Commercial Products/Services|Products or services pursuant to FAR 12.102(f)|Services pursuant to FAR 12.102(g)|Commercial Products/Services Procedures not used|DoD - Section 803 CSO Procedures"
     },
     {
         "description": "Contract Fiscal Year",
@@ -444,12 +445,6 @@
         "name": "CONTRACT_PRICING_DESCRIPTION",
         "quotes": true,
         "regex": ""
-    },
-    {
-        "description": "Current Contract Value",
-        "name": "CURRENT_CONTRACT_VALUE",
-        "quotes": false,
-        "regex": "\\[\\d+, \\d+]"
     },
     {
         "description": "Current Contract Value",
