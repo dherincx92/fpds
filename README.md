@@ -54,6 +54,7 @@ $  fpds parse "LAST_MOD_DATE=[2022/01/01, 2022/05/01]" "AGENCY_CODE=7504" -o {so
 Same request via python interpreter:
 ```
 from fpds import fpdsRequest
+from fpds.utilities.db import insert_records
 
 request = fpdsRequest(
     LAST_MOD_DATE="[2022/01/01, 2022/05/01]",
@@ -61,10 +62,16 @@ request = fpdsRequest(
 )
 
 # Records saved as a python list
-records = request()
+data = request()
 
 # or equivalently, explicity call the `parse_content` method
-records = request.parse_content()
+data = request.parse_content()
+
+# insert records to a db
+insert(
+    data=data,
+    target_database_url_env_key=self.target_database_url_env_key,
+)
 ```
 
 For linting and formatting, we use `flake8` and `black`.

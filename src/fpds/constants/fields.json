@@ -270,7 +270,7 @@
         "regex": ".*"
     },
     {
-        "description": "Entity congressional District Code",
+        "description": "Entity Congressional District Code",
         "name": "VENDOR_CONGRESS_DISTRICT_CODE",
         "quotes": true,
         "regex": ".*"
@@ -330,7 +330,7 @@
         "regex": ".*"
     },
     {
-        "description": "Entity Address Zip Code",
+        "description": "Entity ZIP Code",
         "name": "VENDOR_ADDRESS_ZIP_CODE",
         "quotes": true,
         "regex": "\\d{5}"
@@ -388,5 +388,134 @@
         "name": "CLOSED_BY",
         "quotes": true,
         "regex": ".*"
+    }
+    {
+        "description": "pending",
+        "name": "A76_DESC",
+        "quotes": true,
+        "regex": ".*"
+    }
+    {
+        "description": "Additional Reporting",
+        "name": "ADDITIONAL_REPORTING",
+        "quotes": true,
+        "regex": "S|E|NONE"
+    },
+    {
+        "description": "Additional Reporting Description",
+        "name": "ADDITIONAL_REPORTING_DESC",
+        "quotes": true,
+        "regex": "Service Contract Inventory (FAR 4.17)|Employment Eligibility Verification (52.222-54)|None of the Above"
+    },
+    // pending this doesn't work
+    {
+        "description": "Award Type",
+        "name": "AWARD_TYPE",
+        "quotes": true,
+        "regex": "A|B|C|D"
+    },
+    {
+        "description": "Base and Exercised Options Value",
+        "name": "BASE_EXERCISED_OPTIONS_VALUE",
+        "quotes": false,
+        "regex": "\\[\\d+, \\d+]"
+    },
+    // filter doesn't work
+    {
+        "description": "Commercial Products and Services Acquisition Procedures",
+        "name": "COMMERCIAL_ITEM_ACQUISTN_DESC",
+        "quotes"
+    },
+    {
+        "description": "Contract Fiscal Year",
+        "name": "CONTRACT_FISCAL_YEAR",
+        "quotes": true,
+        "regex": "\\d{4}"
+    },
+    {
+        "description": "Contract Opportunities Notice",
+        "name": "FED_BIZ_OPPS_DESC",
+        "quotes": true,
+        "regex": "Yes|No|Not Applicable"
+    },
+    // no idea what the tag is
+    {
+        "description": "Contract Pricing Description",
+        "name": "CONTRACT_PRICING_DESCRIPTION",
+        "quotes": true,
+        "regex": ""
+    },
+    {
+        "description": "Current Contract Value",
+        "name": "CURRENT_CONTRACT_VALUE",
+        "quotes": false,
+        "regex": "\\[\\d+, \\d+]"
+    },
+    {
+        "description": "Current Contract Value",
+        "name": "CURRENT_CONTRACT_VALUE",
+        "quotes": false,
+        "regex": "\\[\\d+, \\d+]"
+    },
+    {
+        "description": "Evaluated Preference",
+        "name": "EVALUATED_PREF_DESCRIPTION",
+        "quotes": true,
+        "regex": "No Preference used|SDB Price Evaluation|SDB Preferential Consideration Partial SB Set Aside|HUBZone Price Evaluation|Combined HUB/SDB Preference"
+    },
+    {
+        "description": "Extent Competed",
+        "name": "EXTENT_COMPETED_DESCRIPTION",
+        "quotes": true,
+        "regex": "Full and Open Competition|Not Available for Competition|Not Competed|Full and Open Competition after exclusion of sources|Follow On to Competed Action|Competed under SAP|Not Competed under SAP|Competitive Delivery Order|Non-Competitive Delivery Order"
+    },
+    {
+        "description": "Fair Opportunity",
+        "name": "FAIR_OPPORTUNITY_DESCRIPTION",
+        "quotes": true,
+        "regex": "Urgency|Only One Source - Other|Follow-on Action Following Competitive Initial Action|Minimum Guarantee|Other Statutory Authority|Fair Opportunity Given|Competitive Set Aside|Sole Source"
+    },
+    {
+        "description": "Inherently Governmental Code",
+        "name": "INHERENTLY_GOVERNMENTAL_CODE",
+        "quotes": true,
+        "regex": "CL|CT|OT|CL,CT"
+    },
+    {
+        "description": "Inherently Governmental Description",
+        "name": "INHERENTLY_GOVERNMENTAL_DESC",
+        "quotes": true,
+        "regex": "Closely Associated|Critical Functions|Other Functions|Closely Associated,Critical Functions"
+    },
+    {
+        "description": "Initiative",
+        "name": "SPENDING_CATEGORY",
+        "quotes": true,
+        "regex": "American Recovery and Reinvestment Act"
+    },
+    // non-government dollars & non-traditional government contractor participation not found,
+    {
+        "description": "Number of Offers Received",
+        "name": "NUMBER_OF_OFFERS_RECEIVED",
+        "quotes": false,
+        "regex": "\\[\\d+, \\d+]"
+    },
+    {
+        "description": "Other than Full and Open Competition",
+        "name": "REASON_NOT_COMP_DESCRIPTION",
+        "quotes": true,
+        "regex": "Unique Source (FAR 6.302-1(b)(1))|Follow-On Contract (FAR 6.302-1(a)(2)(ii/iii))|Unsolicited Research Proposal (FAR 6.302-1(a)(2)(i)|Patent or Data Rights (FAR 6.302-1(b)(2))|Utilities (FAR 6.302-1(b)(3))|Standardization (FAR 6.302-1(b)(4))|Only One Source-Other (FAR 6.302-1 other)|Urgency (FAR 6.302-2)|Mobilization, Essential R&D (FAR 6.302-3)|International Agreement (FAR 6.302-4)|Authorized by Statute (FAR 6.302-5(a)(2)(i))|Authorized Resale (FAR 6.302-5(a)(2)(ii))|National Security (FAR 6.302-6)|Public Interest (FAR 6.302-7)|Less than or equal to the Micro-Purchase Threshold|SAP Non-Competition (FAR 13)|Brand Name Description (FAR 6.302-1(c))"
+    },
+    {
+        "description": "Other Transaction Fiscal Year",
+        "name": "FISCAL_YEAR",
+        "quotes": true,
+        "regex": "\\d{4}"
+    },
+    // not sure what the pattern is here
+    {
+        "description": "PSC Type",
+        "name": "PRODUCT_OR_SERVICE_TYPE",
+
     }
 ]

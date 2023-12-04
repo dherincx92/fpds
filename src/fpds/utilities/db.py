@@ -7,7 +7,7 @@ from sqlalchemy.orm import Session
 from fpds.models import Base
 
 
-def insert_records(data, request_url: str, target_database_url_env_key: str) -> None:
+def insert(data, request_url: str, target_database_url_env_key: str) -> None:
     """Inserts FPDS records into a target database.
 
     Parameters

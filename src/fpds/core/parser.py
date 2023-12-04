@@ -88,9 +88,9 @@ class fpdsRequest(fpdsMixin):
         data = self.parse_content()
 
         if self.target_database_url_env_key:
-            from fpds.utilities.db import insert_records
+            from fpds.utilities.db import insert
 
-            insert_records(
+            insert(
                 data=data,
                 request_url=self.__url__(),
                 target_database_url_env_key=self.target_database_url_env_key,
