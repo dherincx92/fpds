@@ -1,9 +1,21 @@
 [
     {
-        "description": "Last Modified Date",
-        "name": "LAST_MOD_DATE",
-        "quotes": false,
-        "regex": "\\[\\d{4}\\/\\d{2}\\/\\d{2}\\s*,\\s*\\d{4}\\/\\d{2}\\/\\d{2}\\]"
+        "description": "A76",
+        "name": "A76_DESC",
+        "quotes": true,
+        "regex": "Yes|No"
+    },
+    {
+        "description": "Additional Reporting",
+        "name": "ADDITIONAL_REPORTING",
+        "quotes": true,
+        "regex": "S|E|NONE"
+    },
+    {
+        "description": "Additional Reporting Description",
+        "name": "ADDITIONAL_REPORTING_DESC",
+        "quotes": true,
+        "regex": "Service Contract Inventory (FAR 4.17)|Employment Eligibility Verification (52.222-54)|None of the Above"
     },
     {
         "description": "Agency Code",
@@ -12,16 +24,28 @@
         "regex": "^\\d{4}$"
     },
     {
+        "description": "Treasury Account Symbol Agency Identifier",
+        "name": "AGENCY_IDENTIFIER",
+        "quotes": true,
+        "regex": ".*"
+    },
+    {
         "description": "Agency Name",
         "name": "AGENCY_NAME",
         "quotes": true,
         "regex": ".*"
     },
     {
-        "description": "Contracting Agency",
-        "name": "CONTRACTING_AGENCY_ID",
+        "description": "Approved By",
+        "name": "APPROVED_BY",
         "quotes": true,
-        "regex": "^\\d{4}$"
+        "regex": ".*"
+    },
+    {
+        "description": "Approved Date",
+        "name": "APPROVED_DATE",
+        "quotes": false,
+        "regex": "\\[\\d{4}\\/\\d{2}\\/\\d{2}\\s*,\\s*\\d{4}\\/\\d{2}\\/\\d{2}\\]"
     },
     {
         "description": "Award Completion Date",
@@ -36,16 +60,58 @@
         "regex": "Deleted|Final"
     },
     {
-        "description": "Contract Type (IDV | Award)",
-        "name": "CONTRACT_TYPE",
+        "description": "Award Type",
+        "name": "AWARD_TYPE",
         "quotes": true,
-        "regex": "IDV|Award"
+        "regex": "BPA Call|Purchase Order|Delivery Order|Definitive Contract"
     },
     {
-        "description": "Contract ID",
-        "name": "PIID",
+        "description": "Base and Exercised Options Value",
+        "name": "BASE_EXERCISED_OPTIONS_VALUE",
+        "quotes": false,
+        "regex": "\\[\\d+, \\d+]"
+    },
+    {
+        "description": "Cage Code",
+        "name": "CAGE_CODE",
         "quotes": true,
         "regex": ".*"
+    },
+    {
+        "description": "Simplified Procedures for Certain Commerical Products and Commerical Services",
+        "name": "CITP_DESC",
+        "quotes": true,
+        "regex": "Yes|No"
+    },
+    {
+        "description": "Closed By",
+        "name": "CLOSED_BY",
+        "quotes": true,
+        "regex": ".*"
+    },
+    {
+        "description": "Closed Date",
+        "name": "CLOSED_DATE",
+        "quotes": false,
+        "regex": "\\[\\d{4}\\/\\d{2}\\/\\d{2}\\s*,\\s*\\d{4}\\/\\d{2}\\/\\d{2}\\]"
+    },
+    {
+        "description": "Closed Status",
+        "name": "CLOSED_STATUS",
+        "quotes": true,
+        "regex": "Y|N"
+    },
+    {
+        "description": "Commercial Products and Services Acquisition Procedures",
+        "name": "COMMERCIAL_ITEM_ACQUISTN_DESC",
+        "quotes": true,
+        "regex": "Commercial Products/Services|Products or services pursuant to FAR 12.102(f)|Services pursuant to FAR 12.102(g)|Commercial Products/Services Procedures not used|DoD - Section 803 CSO Procedures"
+    },
+    {
+        "description": "Contracting Agency",
+        "name": "CONTRACTING_AGENCY_ID",
+        "quotes": true,
+        "regex": "^\\d{4}$"
     },
     {
         "description": "Contracting Agency Name",
@@ -59,37 +125,55 @@
         "quotes": true,
         "regex": ".*"
     },
-   {
+    {
         "description": "Contracting Office Name",
         "name": "CONTRACTING_OFFICE_NAME",
         "quotes": true,
         "regex": ".*"
     },
-   {
+    {
+        "description": "Contract Fiscal Year",
+        "name": "CONTRACT_FISCAL_YEAR",
+        "quotes": true,
+        "regex": "\\d{4}"
+    },
+    {
+        "description": "Contract Pricing Description",
+        "name": "CONTRACT_PRICING_DESCRIPTION",
+        "quotes": true,
+        "regex": "Fixed Price Redetermination|Fixed Price Level of Effort|Firm Fixed Price|Fixed Price with Economic Price Adjustment|Fixed Price Incentive|Fixed Price Award Fee|Cost Plus Award Fee|Cost No Fee|Cost Sharing|Cost Plus Fixed Fee|Cost Plus Incentive Fee|Time and Materials|Order Dependent (IDV allows pricing arrangement to be determined separately for each order)|Combination (Applies to Awards where two or more of the above apply)|Other (Applies to Awards where none of the above apply)"
+    },
+    {
+        "description": "Contract Type (IDV | Award)",
+        "name": "CONTRACT_TYPE",
+        "quotes": true,
+        "regex": "IDV|Award"
+    },
+    {
         "description": "Created By",
         "name": "CREATED_BY",
         "quotes": true,
         "regex": ".*"
     },
-   {
+    {
         "description": "Created Date",
         "name": "CREATED_DATE",
         "quotes": false,
         "regex": "\\[\\d{4}\\/\\d{2}\\/\\d{2}\\s*,\\s*\\d{4}\\/\\d{2}\\/\\d{2}\\]"
     },
-   {
-        "description": "Date Signed",
-        "name": "SIGNED_DATE",
+    {
+        "description": "Current Contract Value",
+        "name": "CURRENT_CONTRACT_VALUE",
         "quotes": false,
-        "regex": "\\[\\d{4}\\/\\d{2}\\/\\d{2}\\s*,\\s*\\d{4}\\/\\d{2}\\/\\d{2}\\]"
+        "regex": "\\[\\d+, \\d+]"
     },
-   {
+    {
         "description": "Department ID",
         "name": "DEPARTMENT_ID",
         "quotes": true,
         "regex": "^\\d{4}$"
     },
-   {
+    {
         "description": "Department Name",
         "name": "DEPARTMENT_NAME",
         "quotes": true,
@@ -102,20 +186,50 @@
         "regex": ".*"
     },
     {
+        "description": "Period of Performance Start Date",
+        "name": "EFFECTIVE_DATE",
+        "quotes": false,
+        "regex": "\\[\\d{4}\\/\\d{2}\\/\\d{2}\\s*,\\s*\\d{4}\\/\\d{2}\\/\\d{2}\\]"
+    },
+    {
         "description": "Estimated Completion Date",
         "name": "ESTIMATED_COMPLETION_DATE",
         "quotes": false,
         "regex": "\\[\\d{4}\\/\\d{2}\\/\\d{2}\\s*,\\s*\\d{4}\\/\\d{2}\\/\\d{2}\\]"
     },
     {
-        "description": "Funding Agency ID",
-        "name": "FUNDING_AGENCY_ID",
+        "description": "Evaluated Preference",
+        "name": "EVALUATED_PREF_DESCRIPTION",
         "quotes": true,
-        "regex": "^\\d{4}$"
+        "regex": "No Preference used|SDB Price Evaluation|SDB Preferential Consideration Partial SB Set Aside|HUBZone Price Evaluation|Combined HUB/SDB Preference"
     },
     {
-        "description": "Action Obligation",
-        "name": "OBLIGATED_AMOUNT",
+        "description": "Extent Competed",
+        "name": "EXTENT_COMPETED_DESCRIPTION",
+        "quotes": true,
+        "regex": "Full and Open Competition|Not Available for Competition|Not Competed|Full and Open Competition after exclusion of sources|Follow On to Competed Action|Competed under SAP|Not Competed under SAP|Competitive Delivery Order|Non-Competitive Delivery Order"
+    },
+    {
+        "description": "Fair Opportunity",
+        "name": "FAIR_OPPORTUNITY_DESCRIPTION",
+        "quotes": true,
+        "regex": "Urgency|Only One Source - Other|Follow-on Action Following Competitive Initial Action|Minimum Guarantee|Other Statutory Authority|Fair Opportunity Given|Competitive Set Aside|Sole Source"
+    },
+    {
+        "description": "Contract Opportunities Notice",
+        "name": "FED_BIZ_OPPS_DESC",
+        "quotes": true,
+        "regex": "Yes|No|Not Applicable"
+    },
+    {
+        "description": "Other Transaction Fiscal Year",
+        "name": "FISCAL_YEAR",
+        "quotes": true,
+        "regex": "\\d{4}"
+    },
+    {
+        "description": "Funding Agency ID",
+        "name": "FUNDING_AGENCY_ID",
         "quotes": true,
         "regex": "^\\d{4}$"
     },
@@ -132,10 +246,46 @@
         "regex": ".*"
     },
     {
+        "description": "Referenced IDV Type",
+        "name": "IDV_CONTRACT_TYPE",
+        "quotes": true,
+        "regex": ".*"
+    },
+    {
+        "description": "Referenced IDV Multiple or Single",
+        "name": "IDV_MUL_OR_SINGLE_AWARD_IDC",
+        "quotes": true,
+        "regex": ".*"
+    },
+    {
+        "description": "Referenced IDV Part 8 Or Part 13",
+        "name": "IDV_PART8_OR_PART13",
+        "quotes": true,
+        "regex": ".*"
+    },
+    {
+        "description": "Inherently Governmental Code",
+        "name": "INHERENTLY_GOVERNMENTAL_CODE",
+        "quotes": true,
+        "regex": "CL|CT|OT|CL,CT"
+    },
+    {
+        "description": "Inherently Governmental Description",
+        "name": "INHERENTLY_GOVERNMENTAL_DESC",
+        "quotes": true,
+        "regex": "Closely Associated|Critical Functions|Other Functions|Closely Associated,Critical Functions"
+    },
+    {
         "description": "Last Modified By",
         "name": "LAST_MODIFIED_BY",
         "quotes": true,
         "regex": ".*"
+    },
+    {
+        "description": "Last Modified Date",
+        "name": "LAST_MOD_DATE",
+        "quotes": false,
+        "regex": "\\[\\d{4}\\/\\d{2}\\/\\d{2}\\s*,\\s*\\d{4}\\/\\d{2}\\/\\d{2}\\]"
     },
     {
         "description": "Legislative Mandates",
@@ -150,6 +300,12 @@
         "regex": "Y|N"
     },
     {
+        "description": "Treasury Account Symbol Main Account Code",
+        "name": "MAIN_ACCOUNT_CODE",
+        "quotes": true,
+        "regex": ".*"
+    },
+    {
         "description": "Modification Number",
         "name": "MODIFICATION_NUMBER",
         "quotes": true,
@@ -160,12 +316,6 @@
         "name": "MULTIYEAR_CONTRACT",
         "quotes": true,
         "regex": "Y|N"
-    },
-    {
-        "description": "NAICS Code",
-        "name": "PRINCIPAL_NAICS_CODE",
-        "quotes": true,
-        "regex": ".*"
     },
     {
         "description": "NAICS Description",
@@ -186,20 +336,20 @@
         "regex": ".*"
     },
     {
-        "description": "Period of Performance Start Date",
-        "name": "EFFECTIVE_DATE",
+        "description": "Number of Offers Received",
+        "name": "NUMBER_OF_OFFERS_RECEIVED",
         "quotes": false,
-        "regex": "\\[\\d{4}\\/\\d{2}\\/\\d{2}\\s*,\\s*\\d{4}\\/\\d{2}\\/\\d{2}\\]"
+        "regex": "\\[\\d+, \\d+]"
     },
     {
-        "description": "Product or Service Code",
-        "name": "PRODUCT_OR_SERVICE_CODE",
+        "description": "Action Obligation",
+        "name": "OBLIGATED_AMOUNT",
         "quotes": true,
-        "regex": ".*"
+        "regex": "^\\d{4}$"
     },
     {
-        "description": "PSC Description",
-        "name": "PRODUCT_OR_SERVICE_DESCRIPTION",
+        "description": "Contract ID",
+        "name": "PIID",
         "quotes": true,
         "regex": ".*"
     },
@@ -222,8 +372,43 @@
         "regex": ".*"
     },
     {
+        "description": "NAICS Code",
+        "name": "PRINCIPAL_NAICS_CODE",
+        "quotes": true,
+        "regex": ".*"
+    },
+    {
+        "description": "Product or Service Code",
+        "name": "PRODUCT_OR_SERVICE_CODE",
+        "quotes": true,
+        "regex": ".*"
+    },
+    {
+        "description": "PSC Description",
+        "name": "PRODUCT_OR_SERVICE_DESCRIPTION",
+        "quotes": true,
+        "regex": ".*"
+    },
+    {
+        "description": "PSC Type",
+        "name": "PRODUCT_OR_SERVICE_TYPE",
+        "quotes": true
+    },
+    {
         "description": "Reason for Modification",
         "name": "REASON_FOR_MODIFICATION",
+        "quotes": true,
+        "regex": ".*"
+    },
+    {
+        "description": "Other than Full and Open Competition",
+        "name": "REASON_NOT_COMP_DESCRIPTION",
+        "quotes": true,
+        "regex": "Unique Source (FAR 6.302-1(b)(1))|Follow-On Contract (FAR 6.302-1(a)(2)(ii/iii))|Unsolicited Research Proposal (FAR 6.302-1(a)(2)(i)|Patent or Data Rights (FAR 6.302-1(b)(2))|Utilities (FAR 6.302-1(b)(3))|Standardization (FAR 6.302-1(b)(4))|Only One Source-Other (FAR 6.302-1 other)|Urgency (FAR 6.302-2)|Mobilization, Essential R&D (FAR 6.302-3)|International Agreement (FAR 6.302-4)|Authorized by Statute (FAR 6.302-5(a)(2)(i))|Authorized Resale (FAR 6.302-5(a)(2)(ii))|National Security (FAR 6.302-6)|Public Interest (FAR 6.302-7)|Less than or equal to the Micro-Purchase Threshold|SAP Non-Competition (FAR 13)|Brand Name Description (FAR 6.302-1(c))"
+    },
+    {
+        "description": "Reference IDV Agency ID",
+        "name": "REF_IDV_AGENCY_ID",
         "quotes": true,
         "regex": ".*"
     },
@@ -234,10 +419,22 @@
         "regex": ".*"
     },
     {
-        "description": "Reference IDV Agency ID",
-        "name": "REF_IDV_AGENCY_ID",
+        "description": "SBIR/STTR",
+        "name": "RESEARCH_DESCRIPTION",
         "quotes": true,
-        "regex": ".*"
+        "regex": "Small Business Innovation Research Program Phase I Action|Small Business Innovation Research Program Phase II Action|Small Business Innovation Research Program Phase III Action|Small Technology Transfer Research Program Phase I|Small Technology Transfer Research Program Phase II|Small Technology Transfer Research Program Phase III"
+    },
+    {
+        "description": "Small Business Competitiveness Demonstration Program",
+        "name": "SBC_DEMONSTRATION_PROGRAM_DESC",
+        "quotes": true,
+        "regex": "Yes|No"
+    },
+    {
+        "description": "Date Signed",
+        "name": "SIGNED_DATE",
+        "quotes": false,
+        "regex": "\\[\\d{4}\\/\\d{2}\\/\\d{2}\\s*,\\s*\\d{4}\\/\\d{2}\\/\\d{2}\\]"
     },
     {
         "description": "Socio Economic Indicators",
@@ -246,8 +443,62 @@
         "regex": ".*"
     },
     {
+        "description": "Solicitation ID",
+        "name": "SOLICITATION_ID",
+        "quotes": true,
+        "regex": ".*"
+    },
+    {
+        "description": "Solicitation Procedures",
+        "name": "SOLICITATION_PROC_DESCRIPTION",
+        "quotes": true,
+        "regex": "Negotiated Proposal/Quote|Sealed Bid|Two Step|Simplified Acquisition|Architect-Engineer FAR 6.102|Basic Research|Alternative Sources|Only One Source|Subject to Multiple Award Fair Opportunity|DFARS 226.72 Demo Project"
+    },
+    {
         "description": "Source Selection Process Description",
         "name": "SOURCE_SELECTION_PROCESS_DESC",
+        "quotes": true,
+        "regex": ".*"
+    },
+    {
+        "description": "Initiative",
+        "name": "SPENDING_CATEGORY",
+        "quotes": true,
+        "regex": "American Recovery and Reinvestment Act"
+    },
+    {
+        "description": "Treasury Account Symbol Sub Account Code",
+        "name": "SUB_ACCOUNT_CODE",
+        "quotes": true,
+        "regex": ".*"
+    },
+    {
+        "description": "Total Base And All Options Value ($)",
+        "name": "TOTAL_CURRENT_CONTRACT_VALUE",
+        "quotes": false,
+        "regex": "\\[\\d+, \\d+]"
+    },
+    {
+        "description": "Total Dollars Obligated",
+        "name": "TOTAL_DOLLARS_OBLIGATED",
+        "quotes": false,
+        "regex": "\\[\\d+, \\d+]"
+    },
+    {
+        "description": "Total Non Government Value",
+        "name": "TOTAL_NON_GOVERNMENT_VALUE",
+        "quotes": false,
+        "regex": "\\[\\d+, \\d+]"
+    },
+    {
+        "description": "Total Base and Exercised Options Value ($)",
+        "name": "TOTAL_ULTIMATE_CONTRACT_VALUE",
+        "quotes": false,
+        "regex": "\\[\\d+, \\d+]"
+    },
+    {
+        "description": "Treasury Account Symbol",
+        "name": "TREASURY_ACCOUNT_SYMBOL",
         "quotes": true,
         "regex": ".*"
     },
@@ -258,20 +509,38 @@
         "regex": "[A-Z]{1}"
     },
     {
+        "description": "Type of Set Aside",
+        "name": "TYPE_OF_SET_ASIDE_DESCRIPTION",
+        "quotes": true,
+        "regex": "No set aside used.|Small Business Set Aside - Total|8A Competed|Small Business Set-Aside -- Partial|HBCU or MI Set-Aside -- Total|HBCU or MI Set-Aside -- Partial|Very Small Business|Emerging Small Business Set-Aside|HUBZone Set-Aside|Service-Disabled Veteran-Owned Small Business Set-Aside|Buy Indian|Indian Economic Enterprise|Indian Small Business Economic Enterprise|HUBZone Sole Source|SDVOSB Sole Source|8(a) Sole Source|Reserved for Small Business|SDB Set-Aside 8(a)-(Will be deprecated in future)|Combination HUBZone and 8(a)-(Will be deprecated in future)|8(a) with HUBZone Preference|Veteran Set Aside|Veteran Sole Source|Women-Owned Small Business|Economically Disadvantaged Women-Owned Small Business|Women-Owned Small Business Sole Source|Economically Disadvantaged Women-Owned Small Business Sole Source"
+    },
+    {
+        "description": "Legal Business Name",
+        "name": "UEI_NAME",
+        "quotes": true,
+        "regex": ".*"
+    },
+    {
         "description": "Ultimate Contract Value",
         "name": "ULTIMATE_CONTRACT_VALUE",
         "quotes": false,
         "regex": "\\[\\d+,\\d+\\]"
     },
     {
-        "description": "Entity City",
-        "name": "VENDOR_ADDRESS_CITY",
+        "description": "Ultimate Parent Unique Entity ID",
+        "name": "ULTIMATE_UEI",
         "quotes": true,
         "regex": ".*"
     },
     {
-        "description": "Entity Congressional District Code",
-        "name": "VENDOR_CONGRESS_DISTRICT_CODE",
+        "description": "Ultimate Parent Legal Business Name",
+        "name": "ULTIMATE_UEI_NAME",
+        "quotes": true,
+        "regex": ".*"
+    },
+    {
+        "description": "Entity City",
+        "name": "VENDOR_ADDRESS_CITY",
         "quotes": true,
         "regex": ".*"
     },
@@ -284,36 +553,6 @@
     {
         "description": "Entity Country Name",
         "name": "VENDOR_ADDRESS_COUNTRY_Name",
-        "quotes": true,
-        "regex": ".*"
-    },
-    {
-        "description": "Unique Entity ID",
-        "name": "VENDOR_UEI",
-        "quotes": true,
-        "regex": ".*"
-    },
-    {
-        "description": "Ultimate Parent Unique Entity ID",
-        "name": "ULTIMATE_UEI",
-        "quotes": true,
-        "regex": ".*"
-    },
-    {
-        "description": "Entity Doing Business As Name",
-        "name": "VENDOR_DOING_BUSINESS_AS_NAME",
-        "quotes": true,
-        "regex": ".*"
-    },
-    {
-        "description": "Legal Business Name",
-        "name": "UEI_NAME",
-        "quotes": true,
-        "regex": ".*"
-    },
-    {
-        "description": "Ultimate Parent Legal Business Name",
-        "name": "ULTIMATE_UEI_NAME",
         "quotes": true,
         "regex": ".*"
     },
@@ -336,266 +575,22 @@
         "regex": "\\d{5}"
     },
     {
-        "description": "Approved By",
-        "name": "APPROVED_BY",
+        "description": "Entity Congressional District Code",
+        "name": "VENDOR_CONGRESS_DISTRICT_CODE",
         "quotes": true,
         "regex": ".*"
     },
     {
-        "description": "Approved Date",
-        "name": "APPROVED_DATE",
-        "quotes": false,
-        "regex": "\\[\\d{4}\\/\\d{2}\\/\\d{2}\\s*,\\s*\\d{4}\\/\\d{2}\\/\\d{2}\\]"
-    },
-    {
-        "description": "Referenced IDV Type",
-        "name": "IDV_CONTRACT_TYPE",
+        "description": "Entity Doing Business As Name",
+        "name": "VENDOR_DOING_BUSINESS_AS_NAME",
         "quotes": true,
         "regex": ".*"
     },
     {
-        "description": "Referenced IDV Multiple or Single",
-        "name": "IDV_MUL_OR_SINGLE_AWARD_IDC",
+        "description": "Unique Entity ID",
+        "name": "VENDOR_UEI",
         "quotes": true,
         "regex": ".*"
-    },
-    {
-        "description": "Referenced IDV Part 8 Or Part 13",
-        "name": "IDV_PART8_OR_PART13",
-        "quotes": true,
-        "regex": ".*"
-    },
-    {
-        "description": "Cage Code",
-        "name": "CAGE_CODE",
-        "quotes": true,
-        "regex": ".*"
-    },
-    {
-        "description": "Closed Status",
-        "name": "CLOSED_STATUS",
-        "quotes": true,
-        "regex": "Y|N"
-    },
-    {
-        "description": "Closed Date",
-        "name": "CLOSED_DATE",
-        "quotes": false,
-        "regex": "\\[\\d{4}\\/\\d{2}\\/\\d{2}\\s*,\\s*\\d{4}\\/\\d{2}\\/\\d{2}\\]"
-    },
-    {
-        "description": "Closed By",
-        "name": "CLOSED_BY",
-        "quotes": true,
-        "regex": ".*"
-    },
-    // Pending description
-    {
-        "description": "pending",
-        "name": "A76_DESC",
-        "quotes": true,
-        "regex": ".*"
-    },
-    {
-        "description": "Additional Reporting",
-        "name": "ADDITIONAL_REPORTING",
-        "quotes": true,
-        "regex": "S|E|NONE"
-    },
-    {
-        "description": "Additional Reporting Description",
-        "name": "ADDITIONAL_REPORTING_DESC",
-        "quotes": true,
-        "regex": "Service Contract Inventory (FAR 4.17)|Employment Eligibility Verification (52.222-54)|None of the Above"
-    },
-    // pending this doesn't work
-    {
-        "description": "Award Type",
-        "name": "AWARD_TYPE",
-        "quotes": true,
-        "regex": "BPA Call|Purchase Order|Delivery Order|Definitive Contract"
-    },
-    {
-        "description": "Base and Exercised Options Value",
-        "name": "BASE_EXERCISED_OPTIONS_VALUE",
-        "quotes": false,
-        "regex": "\\[\\d+, \\d+]"
-    },
-    {
-        "description": "Commercial Products and Services Acquisition Procedures",
-        "name": "COMMERCIAL_ITEM_ACQUISTN_DESC",
-        "quotes": true,
-        "regex": "Commercial Products/Services|Products or services pursuant to FAR 12.102(f)|Services pursuant to FAR 12.102(g)|Commercial Products/Services Procedures not used|DoD - Section 803 CSO Procedures"
-    },
-    {
-        "description": "Contract Fiscal Year",
-        "name": "CONTRACT_FISCAL_YEAR",
-        "quotes": true,
-        "regex": "\\d{4}"
-    },
-    {
-        "description": "Contract Opportunities Notice",
-        "name": "FED_BIZ_OPPS_DESC",
-        "quotes": true,
-        "regex": "Yes|No|Not Applicable"
-    },
-    // no idea what the tag is
-    {
-        "description": "Contract Pricing Description",
-        "name": "CONTRACT_PRICING_DESCRIPTION",
-        "quotes": true,
-        "regex": ""
-    },
-    {
-        "description": "Current Contract Value",
-        "name": "CURRENT_CONTRACT_VALUE",
-        "quotes": false,
-        "regex": "\\[\\d+, \\d+]"
-    },
-    {
-        "description": "Evaluated Preference",
-        "name": "EVALUATED_PREF_DESCRIPTION",
-        "quotes": true,
-        "regex": "No Preference used|SDB Price Evaluation|SDB Preferential Consideration Partial SB Set Aside|HUBZone Price Evaluation|Combined HUB/SDB Preference"
-    },
-    {
-        "description": "Extent Competed",
-        "name": "EXTENT_COMPETED_DESCRIPTION",
-        "quotes": true,
-        "regex": "Full and Open Competition|Not Available for Competition|Not Competed|Full and Open Competition after exclusion of sources|Follow On to Competed Action|Competed under SAP|Not Competed under SAP|Competitive Delivery Order|Non-Competitive Delivery Order"
-    },
-    {
-        "description": "Fair Opportunity",
-        "name": "FAIR_OPPORTUNITY_DESCRIPTION",
-        "quotes": true,
-        "regex": "Urgency|Only One Source - Other|Follow-on Action Following Competitive Initial Action|Minimum Guarantee|Other Statutory Authority|Fair Opportunity Given|Competitive Set Aside|Sole Source"
-    },
-    {
-        "description": "Inherently Governmental Code",
-        "name": "INHERENTLY_GOVERNMENTAL_CODE",
-        "quotes": true,
-        "regex": "CL|CT|OT|CL,CT"
-    },
-    {
-        "description": "Inherently Governmental Description",
-        "name": "INHERENTLY_GOVERNMENTAL_DESC",
-        "quotes": true,
-        "regex": "Closely Associated|Critical Functions|Other Functions|Closely Associated,Critical Functions"
-    },
-    {
-        "description": "Initiative",
-        "name": "SPENDING_CATEGORY",
-        "quotes": true,
-        "regex": "American Recovery and Reinvestment Act"
-    },
-    // non-government dollars & non-traditional government contractor participation not found,
-    {
-        "description": "Number of Offers Received",
-        "name": "NUMBER_OF_OFFERS_RECEIVED",
-        "quotes": false,
-        "regex": "\\[\\d+, \\d+]"
-    },
-    {
-        "description": "Other than Full and Open Competition",
-        "name": "REASON_NOT_COMP_DESCRIPTION",
-        "quotes": true,
-        "regex": "Unique Source (FAR 6.302-1(b)(1))|Follow-On Contract (FAR 6.302-1(a)(2)(ii/iii))|Unsolicited Research Proposal (FAR 6.302-1(a)(2)(i)|Patent or Data Rights (FAR 6.302-1(b)(2))|Utilities (FAR 6.302-1(b)(3))|Standardization (FAR 6.302-1(b)(4))|Only One Source-Other (FAR 6.302-1 other)|Urgency (FAR 6.302-2)|Mobilization, Essential R&D (FAR 6.302-3)|International Agreement (FAR 6.302-4)|Authorized by Statute (FAR 6.302-5(a)(2)(i))|Authorized Resale (FAR 6.302-5(a)(2)(ii))|National Security (FAR 6.302-6)|Public Interest (FAR 6.302-7)|Less than or equal to the Micro-Purchase Threshold|SAP Non-Competition (FAR 13)|Brand Name Description (FAR 6.302-1(c))"
-    },
-    {
-        "description": "Other Transaction Fiscal Year",
-        "name": "FISCAL_YEAR",
-        "quotes": true,
-        "regex": "\\d{4}"
-    },
-    // not sure what the pattern is here
-    {
-        "description": "PSC Type",
-        "name": "PRODUCT_OR_SERVICE_TYPE",
-        "quotes": true
-    },
-    {
-        "description": "SBIR/STTR",
-        "name": "RESEARCH_DESCRIPTION",
-        "quotes": true,
-        "regex": "Small Business Innovation Research Program Phase I Action|Small Business Innovation Research Program Phase II Action|Small Business Innovation Research Program Phase III Action|Small Technology Transfer Research Program Phase I|Small Technology Transfer Research Program Phase II|Small Technology Transfer Research Program Phase III"
-    },
-    {
-        "description": "Simplified Procedures for Certain Commerical Products and Commerical Services",
-        "name": "CITP_DESC",
-        "quotes": true,
-        "regex": "Yes|No"
-    },
-    {
-        "description": "Small Business Competitiveness Demonstration Program",
-        "name": "SBC_DEMONSTRATION_PROGRAM_DESC",
-        "quotes": true,
-        "regex": "Yes|No"
-    },
-    {
-        "description": "Solicitation ID",
-        "name": "SOLICITATION_ID",
-        "quotes": true,
-        "regex": ".*"
-    },
-    {
-        "description": "Solicitation Procedures",
-        "name": "SOLICITATION_PROC_DESCRIPTION",
-        "quotes": true,
-        "regex": "Negotiated Proposal/Quote|Sealed Bid|Two Step|Simplified Acquisition|Architect-Engineer FAR 6.102|Basic Research|Alternative Sources|Only One Source|Subject to Multiple Award Fair Opportunity|DFARS 226.72 Demo Project"
-    },
-    {
-        "description": "Total Base And All Options Value ($)",
-        "name": "TOTAL_CURRENT_CONTRACT_VALUE",
-        "quotes": false,
-        "regex": "\\[\\d+, \\d+]"
-    },
-    {
-        "description": "Total Base and Exercised Options Value ($)",
-        "name": "TOTAL_ULTIMATE_CONTRACT_VALUE",
-        "quotes": false,
-        "regex": "\\[\\d+, \\d+]"
-    },
-    {
-        "description": "Total Dollars Obligated",
-        "name": "TOTAL_DOLLARS_OBLIGATED",
-        "quotes": false,
-        "regex": "\\[\\d+, \\d+]"
-    },
-    {
-        "description": "Total Non Government Value",
-        "name": "TOTAL_NON_GOVERNMENT_VALUE",
-        "quotes": false,
-        "regex": "\\[\\d+, \\d+]"
-    },
-    {
-        "description": "Treasury Account Symbol",
-        "name": "TREASURY_ACCOUNT_SYMBOL",
-        "quotes": true,
-        "regex": ".*"
-    },
-    {
-        "description": "Treasury Account Symbol Agency Identifier",
-        "name": "AGENCY_IDENTIFIER",
-        "quotes": true,
-        "regex": ".*"
-    },
-    {
-        "description": "Treasury Account Symbol Main Account Code",
-        "name": "MAIN_ACCOUNT_CODE",
-        "quotes": true,
-        "regex": ".*"
-    },
-    {
-        "description": "Treasury Account Symbol Sub Account Code",
-        "name": "SUB_ACCOUNT_CODE",
-        "quotes": true,
-        "regex": ".*"
-    },
-    {
-        "description": "Type of Set Aside",
-        "name": "TYPE_OF_SET_ASIDE_DESCRIPTION",
-        "quotes": true,
-        "regex": "No set aside used.|Small Business Set Aside - Total|8A Competed|Small Business Set-Aside -- Partial|HBCU or MI Set-Aside -- Total|HBCU or MI Set-Aside -- Partial|Very Small Business|Emerging Small Business Set-Aside|HUBZone Set-Aside|Service-Disabled Veteran-Owned Small Business Set-Aside|Buy Indian|Indian Economic Enterprise|Indian Small Business Economic Enterprise|HUBZone Sole Source|SDVOSB Sole Source|8(a) Sole Source|Reserved for Small Business|SDB Set-Aside 8(a)-(Will be deprecated in future)|Combination HUBZone and 8(a)-(Will be deprecated in future)|8(a) with HUBZone Preference|Veteran Set Aside|Veteran Sole Source|Women-Owned Small Business|Economically Disadvantaged Women-Owned Small Business|Women-Owned Small Business Sole Source|Economically Disadvantaged Women-Owned Small Business Sole Source"
     },
     {
         "description": "Version",
