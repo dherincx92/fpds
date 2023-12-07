@@ -4,11 +4,13 @@ Base classes for FPDS XML elements
 author: derek663@gmail.com
 last_updated: 12/03/2023
 """
+import asyncio
+import time
 from typing import Any, List, Optional, Union
 from xml.etree.ElementTree import ElementTree, fromstring
 
+import aiohttp
 import requests
-from tqdm import tqdm
 
 from fpds.config import FPDS_FIELDS_CONFIG as FIELDS
 from fpds.core import FPDS_ENTRY
@@ -55,6 +57,8 @@ class fpdsRequest(fpdsMixin):
     ):
         self.cli_run = cli_run
         self.content = []  # type: List[ElementTree]
+        # TEST
+        self.links = []
         self.target_database_url_env_key = target_database_url_env_key
         if kwargs:
             self.kwargs = kwargs
@@ -119,6 +123,29 @@ class fpdsRequest(fpdsMixin):
         content_tree = self.convert_to_lxml_tree(response.content.decode("utf-8"))
         self.content.append(content_tree)
 
+    async def fetch(self, session, link) -> None:
+        async with session.get(link) as response:
+            content = await response.read()
+            xml = fpdsXML(content=self.convert_to_lxml_tree(content))
+            return xml
+
+    async def fetch_all(self):
+        async with aiohttp.ClientSession() as session:
+            tasks = [self.fetch(session, link) for link in self.links]
+            return await asyncio.gather(*tasks)
+
+    async def compile_response(self):
+        start_time = time.time()
+        content = await self.fetch_all()
+        end_time = time.time()
+        print(f"Elapsed time: {end_time - start_time} seconds")
+        return content
+
+    def run(self):
+        loop = asyncio.get_event_loop()
+        records = loop.run_until_complete(self.compile_response())
+        return records
+
     def create_content_iterable(self) -> None:
         """Paginates through a response and creates an iterable of XML trees.
         This method will not have a return but rather, will set the `content`
@@ -131,14 +158,13 @@ class fpdsRequest(fpdsMixin):
         links = tree.pagination_links(params=params)
         if len(links) > 1:
             links.pop(0)
-            for link in links:
-                self.send_request(link)
+        self.links = links
 
     def parse_content(self) -> List[FPDS_ENTRY]:
         """Parses a content iterable and generates a list of records"""
         self.create_content_iterable()
         records = []
-        for tree in tqdm(self.content):
+        for tree in self.content:
             xml = fpdsXML(content=tree)
             records.extend(xml.jsonified_entries())
         return records
