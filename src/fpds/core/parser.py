@@ -14,7 +14,7 @@ from fpds.config import FPDS_FIELDS_CONFIG as FIELDS
 from fpds.core import FPDS_ENTRY
 from fpds.core.mixins import fpdsMixin
 from fpds.core.xml import fpdsXML
-from fpds.utilities import filter_config_dict, raw_literal_regex_match
+from fpds.utilities import validate_kwarg
 
 
 class fpdsRequest(fpdsMixin):
@@ -63,20 +63,8 @@ class fpdsRequest(fpdsMixin):
 
         # do not run class validations since CLI command has its own
         if not self.cli_run:
-            self.valid_fields = [field.get("name") for field in FIELDS]
             for kwarg, value in self.kwargs.items():
-                if kwarg not in self.valid_fields:
-                    raise ValueError(f"`{kwarg}` is not a valid FPDS parameter")
-                else:
-                    kwarg_dict = filter_config_dict(FIELDS, "name", kwarg)
-                    kwarg_regex = kwarg_dict.get("regex")
-                    match = raw_literal_regex_match(kwarg_regex, value)
-                    if not match:
-                        raise ValueError(
-                            f"`{value}` does not match regex: {kwarg_regex}"
-                        )
-                    if kwarg_dict.get("quotes"):
-                        self.kwargs[kwarg] = f'"{value}"'
+                self.kwargs[kwarg] = validate_kwarg(kwarg=kwarg, string=value)
 
     def __str__(self) -> str:
         """String representation of `fpdsRequest`"""
