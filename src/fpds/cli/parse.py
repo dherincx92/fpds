@@ -14,7 +14,6 @@ from click import UsageError
 
 from fpds import fpdsRequest
 from fpds.config import FPDS_DATA_DATE_DIR
-from fpds.config import FPDS_FIELDS_CONFIG as FIELDS
 from fpds.utilities import validate_kwarg
 
 
@@ -52,12 +51,11 @@ def parse(params, output):
             OUTPUT_PATH.mkdir(parents=True, exist_ok=True)
 
     params = [param.split("=") for param in params]
-    field_names = [field.get("name") for field in FIELDS]
 
     if not params:
         raise UsageError("Please provide at least one parameter")
 
-    for _param in params:   # _param is a tuple
+    for _param in params:  # _param is a tuple
         name, value = _param
         _param[1] = validate_kwarg(kwarg=name, string=value)
 
