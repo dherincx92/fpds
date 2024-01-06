@@ -24,12 +24,6 @@ Repository = "https://github.com/dherincx92/fpds"
 Issues = "https://github.com/dherincx92/fpds/issues"
 
 [project.optional-dependencies]
-postgres = [
-    "psycopg2==2.9.9"
-]
-mysql = [
-    "psycopg2==1.1.0"
-]
 dev = [
     "ipdb==0.13.9",
     "ipython==8.5.0",
