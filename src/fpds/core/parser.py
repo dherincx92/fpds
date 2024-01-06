@@ -49,7 +49,6 @@ class fpdsRequest(fpdsMixin):
     def __init__(self, cli_run: bool = False, **kwargs):
         self.cli_run = cli_run
         self.content = []  # type: List[ElementTree]
-        # TEST
         self.links = []
         if kwargs:
             self.kwargs = kwargs
@@ -82,29 +81,11 @@ class fpdsRequest(fpdsMixin):
         tree = ElementTree(fromstring(content))
         return tree
 
-    def send_request(self, url: Optional[str] = None) -> None:
-        """Sends request to FPDS Atom feed
-
-        Parameters
-        ----------
-        url: `str`, optional
-            A URL to send a GET request to. If not provided, this method
-            will default to using `url_base`
-        """
-        response = requests.get(
-            url=self.url_base if not url else url, params={"q": self.search_params}
-        )
-        response.raise_for_status()
-        content_tree = self.convert_to_lxml_tree(response.content.decode("utf-8"))
-        self.content.append(content_tree)
-
     def initial_request(self):
-        """Send initial request to FPDS Atom feed. This will be 
-        """
+        """Send initial request to FPDS Atom feed and returns first page."""
         pool = urllib3.PoolManager()
-        params = {"q": self.search_params}
-        encoded_params = urllib3.request.urlencode(params)
-        response = pool.request('GET', f"{self.url_base}?{encoded_params}")
+        encoded_params = urllib3.request.urlencode({"q": self.search_params})
+        response = pool.request('GET', f"{self.url_base}{encoded_params}")
 
         content_tree = self.convert_to_lxml_tree(response.data.decode("utf-8"))
         self.content.append(content_tree)
@@ -133,9 +114,9 @@ class fpdsRequest(fpdsMixin):
         return data
 
     def create_request_links(self) -> None:
-        """Paginates through a response and creates an iterable of XML trees.
-        This method will not have a return but rather, will set the `content`
-        attribute to an iterable of XML ElementTrees'
+        """Paginates through the first page of an FPDS response and creates a
+        list of all pagination links. This method will not have a return; it
+        will set the `links` attributes to an iterable of strings.
         """
         self.initial_request()
         params = self.search_params
