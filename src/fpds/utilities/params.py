@@ -11,6 +11,7 @@ from fpds.config import FPDS_FIELDS_CONFIG as FIELDS
 
 CONFIG_TYPE = List[Dict[str, Any]]
 
+
 def get_search_param_from_config(name: str, config: CONFIG_TYPE = FIELDS):
     """Finds the name of a kwarg in `fields.json`"""
     field_config = [field for field in config if field.get("name") == name]
@@ -33,6 +34,7 @@ def match_regex_with_literal_string_pattern(pattern, string):
     LITERAL_PATTERN = re.compile(raw_pattern)
     match = LITERAL_PATTERN.match(_string)
     return match
+
 
 def validate_kwarg(kwarg, string):
     """Validates a kwarg name and ensures value matches specified regex."""

@@ -5,11 +5,11 @@ author: derek663@gmail.com
 last_updated: 12/03/2023
 """
 import asyncio
+import urllib3
 from typing import Coroutine, List, Optional, Union
 from xml.etree.ElementTree import ElementTree, fromstring
 
 import aiohttp
-import requests
 from aiohttp import ClientSession
 
 from fpds.core import FPDS_ENTRY
@@ -46,11 +46,7 @@ class fpdsRequest(fpdsMixin):
         does not match the expected regex.
     """
 
-    def __init__(
-        self,
-        cli_run: bool = False,
-        **kwargs,
-    ):
+    def __init__(self, cli_run: bool = False, **kwargs):
         self.cli_run = cli_run
         self.content = []  # type: List[ElementTree]
         # TEST
@@ -69,11 +65,6 @@ class fpdsRequest(fpdsMixin):
         """String representation of `fpdsRequest`"""
         kwargs_str = " ".join([f"{key}={value}" for key, value in self.kwargs.items()])
         return f"<fpdsRequest {kwargs_str}>"
-
-    def __call__(self) -> Union[None, List[FPDS_ENTRY]]:
-        """Shortcut for making an API call and retrieving content"""
-        data = self.parse_content()
-        return data
 
     def __url__(self) -> str:
         """Custom magic method for request URL"""
@@ -107,6 +98,17 @@ class fpdsRequest(fpdsMixin):
         content_tree = self.convert_to_lxml_tree(response.content.decode("utf-8"))
         self.content.append(content_tree)
 
+    def initial_request(self):
+        """Send initial request to FPDS Atom feed. This will be 
+        """
+        pool = urllib3.PoolManager()
+        params = {"q": self.search_params}
+        encoded_params = urllib3.request.urlencode(params)
+        response = pool.request('GET', f"{self.url_base}?{encoded_params}")
+
+        content_tree = self.convert_to_lxml_tree(response.data.decode("utf-8"))
+        self.content.append(content_tree)
+
     async def convert(self, session: ClientSession, link: str):
         async with session.get(link) as response:
             content = await response.read()
@@ -114,37 +116,41 @@ class fpdsRequest(fpdsMixin):
             return xml
 
     async def fetch(self):
+        self.create_request_links()
         async with aiohttp.ClientSession() as session:
             tasks = [self.convert(session, link) for link in self.links]
             return await asyncio.gather(*tasks)
 
     async def compile(self):
-        await self.fetch()
+        return await self.fetch()
 
     def run(self):
         loop = asyncio.get_event_loop()
-        records = loop.run_until_complete(self.compile())
-        return records
+        data = loop.run_until_complete(self.compile())
 
-    def create_content_iterable(self) -> None:
+        self.content.extend(data)
+        data = self.parse_content()
+        return data
+
+    def create_request_links(self) -> None:
         """Paginates through a response and creates an iterable of XML trees.
         This method will not have a return but rather, will set the `content`
         attribute to an iterable of XML ElementTrees'
         """
-        self.send_request()
+        self.initial_request()
         params = self.search_params
         tree = fpdsXML(content=self.content[0])
 
         links = tree.pagination_links(params=params)
         if len(links) > 1:
-            links.pop(0)
+            links.pop(0)    # don't need to make initial request a second time
         self.links = links
 
     def parse_content(self) -> List[FPDS_ENTRY]:
         """Parses a content iterable and generates a list of records"""
-        self.create_content_iterable()
         records = []
         for tree in self.content:
             xml = fpdsXML(content=tree)
             records.extend(xml.jsonified_entries())
         return records
+
