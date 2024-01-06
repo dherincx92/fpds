@@ -5,14 +5,13 @@ author: derek663@gmail.com
 last_updated: 12/03/2023
 """
 import asyncio
-import time
-from typing import Any, List, Optional, Union
+from typing import Coroutine, List, Optional, Union
 from xml.etree.ElementTree import ElementTree, fromstring
 
 import aiohttp
 import requests
+from aiohttp import ClientSession
 
-from fpds.config import FPDS_FIELDS_CONFIG as FIELDS
 from fpds.core import FPDS_ENTRY
 from fpds.core.mixins import fpdsMixin
 from fpds.core.xml import fpdsXML
@@ -38,8 +37,6 @@ class fpdsRequest(fpdsMixin):
     cli_run: `bool`
         Flag indicating if this class is being isntantiated by a CLI run.
         Defaults to `False`.
-    target_database_url_env_key: `str`
-        Database URL environment key to insert data into.
 
     Raises
     ------
@@ -52,14 +49,12 @@ class fpdsRequest(fpdsMixin):
     def __init__(
         self,
         cli_run: bool = False,
-        target_database_url_env_key: Union[str, None] = None,
         **kwargs,
     ):
         self.cli_run = cli_run
         self.content = []  # type: List[ElementTree]
         # TEST
         self.links = []
-        self.target_database_url_env_key = target_database_url_env_key
         if kwargs:
             self.kwargs = kwargs
         else:
@@ -78,18 +73,7 @@ class fpdsRequest(fpdsMixin):
     def __call__(self) -> Union[None, List[FPDS_ENTRY]]:
         """Shortcut for making an API call and retrieving content"""
         data = self.parse_content()
-
-        if self.target_database_url_env_key:
-            from fpds.utilities.db import insert
-
-            insert(
-                data=data,
-                request_url=self.__url__(),
-                target_database_url_env_key=self.target_database_url_env_key,
-            )
-            return None
-        else:
-            return data
+        return data
 
     def __url__(self) -> str:
         """Custom magic method for request URL"""
@@ -123,27 +107,23 @@ class fpdsRequest(fpdsMixin):
         content_tree = self.convert_to_lxml_tree(response.content.decode("utf-8"))
         self.content.append(content_tree)
 
-    async def fetch(self, session, link) -> None:
+    async def convert(self, session: ClientSession, link: str):
         async with session.get(link) as response:
             content = await response.read()
             xml = fpdsXML(content=self.convert_to_lxml_tree(content))
             return xml
 
-    async def fetch_all(self):
+    async def fetch(self):
         async with aiohttp.ClientSession() as session:
-            tasks = [self.fetch(session, link) for link in self.links]
+            tasks = [self.convert(session, link) for link in self.links]
             return await asyncio.gather(*tasks)
 
-    async def compile_response(self):
-        start_time = time.time()
-        content = await self.fetch_all()
-        end_time = time.time()
-        print(f"Elapsed time: {end_time - start_time} seconds")
-        return content
+    async def compile(self):
+        await self.fetch()
 
     def run(self):
         loop = asyncio.get_event_loop()
-        records = loop.run_until_complete(self.compile_response())
+        records = loop.run_until_complete(self.compile())
         return records
 
     def create_content_iterable(self) -> None:
