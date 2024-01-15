@@ -2,7 +2,7 @@
 XML classes for parsing FPDS content.
 
 author: derek663@gmail.com
-last_updated: 05/10/2023
+last_updated: 01/15/2024
 """
 import re
 from typing import Dict, Iterator, List, Optional, Union

@@ -1,16 +1,19 @@
 """
-Base classes for FPDS XML elements
+Base classes for FPDS XML elements.
 
 author: derek663@gmail.com
-last_updated: 12/03/2023
+last_updated: 01/15/2024
 """
 import asyncio
-import urllib3
-from typing import Coroutine, List, Optional, Union
+import multiprocessing
+from asyncio import Semaphore
+from typing import List, Union
 from xml.etree.ElementTree import ElementTree, fromstring
 
 import aiohttp
+import urllib3
 from aiohttp import ClientSession
+from urllib3 import request
 
 from fpds.core import FPDS_ENTRY
 from fpds.core.mixins import fpdsMixin
@@ -49,7 +52,7 @@ class fpdsRequest(fpdsMixin):
     def __init__(self, cli_run: bool = False, **kwargs):
         self.cli_run = cli_run
         self.content = []  # type: List[ElementTree]
-        self.links = []
+        self.links = []  # type: List[str]
         if kwargs:
             self.kwargs = kwargs
         else:
@@ -76,7 +79,7 @@ class fpdsRequest(fpdsMixin):
         return " ".join(_params)
 
     @staticmethod
-    def convert_to_lxml_tree(content: str) -> ElementTree:
+    def convert_to_lxml_tree(content: Union[str, bytes]) -> ElementTree:
         """Returns lxml tree element from a bytes response"""
         tree = ElementTree(fromstring(content))
         return tree
@@ -84,9 +87,8 @@ class fpdsRequest(fpdsMixin):
     def initial_request(self):
         """Send initial request to FPDS Atom feed and returns first page."""
         pool = urllib3.PoolManager()
-        encoded_params = urllib3.request.urlencode({"q": self.search_params})
-        response = pool.request('GET', f"{self.url_base}{encoded_params}")
-
+        encoded_params = request.urlencode({"q": self.search_params})
+        response = pool.request("GET", f"{self.url_base}&{encoded_params}")
         content_tree = self.convert_to_lxml_tree(response.data.decode("utf-8"))
         self.content.append(content_tree)
 
@@ -98,9 +100,12 @@ class fpdsRequest(fpdsMixin):
 
     async def fetch(self):
         self.create_request_links()
-        async with aiohttp.ClientSession() as session:
-            tasks = [self.convert(session, link) for link in self.links]
-            return await asyncio.gather(*tasks)
+
+        semaphore = Semaphore(10)
+        async with semaphore:
+            async with aiohttp.ClientSession() as session:
+                tasks = [self.convert(session, link) for link in self.links]
+                return await asyncio.gather(*tasks)
 
     async def compile(self):
         return await self.fetch()
@@ -110,7 +115,6 @@ class fpdsRequest(fpdsMixin):
         data = loop.run_until_complete(self.compile())
 
         self.content.extend(data)
-        data = self.parse_content()
         return data
 
     def create_request_links(self) -> None:
@@ -121,17 +125,31 @@ class fpdsRequest(fpdsMixin):
         self.initial_request()
         params = self.search_params
         tree = fpdsXML(content=self.content[0])
-
         links = tree.pagination_links(params=params)
         if len(links) > 1:
-            links.pop(0)    # don't need to make initial request a second time
+            links.pop(0)  # don't need to make initial request a second time
         self.links = links
 
-    def parse_content(self) -> List[FPDS_ENTRY]:
-        """Parses a content iterable and generates a list of records"""
-        records = []
-        for tree in self.content:
-            xml = fpdsXML(content=tree)
-            records.extend(xml.jsonified_entries())
+    def process_tree(self, tree):
+        """Process a single tree and return the records"""
+        xml = fpdsXML(content=tree)
+        records = xml.jsonified_entries()
         return records
 
+    @staticmethod
+    def process_xml_and_jsonify(entry):
+        # Process the fpdsXML entry and call jsonified_entries
+        print(f"processing {entry.__str__()}")
+        return entry.jsonified_entries()
+
+    # @timeit
+    def join_records(self):
+        num_processes = multiprocessing.cpu_count()
+        data = self.run()
+
+        print("Finished retrieving data")
+        # Use a multiprocessing pool for parallel processing
+        with multiprocessing.Pool(processes=num_processes) as pool:
+            results = pool.map(self.process_xml_and_jsonify, data)
+
+        return results
