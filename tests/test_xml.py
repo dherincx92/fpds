@@ -3,7 +3,7 @@ from unittest import TestCase
 from xml.etree.ElementTree import ElementTree
 
 from fpds import fpdsXML
-from fpds.core.xml import Entry, fpdsElement
+from fpds.core.xml import fpdsElement
 from tests import FULL_RESPONSE_DATA_BYTES, TRUNCATED_RESPONSE_DATA_BYTES
 
 FPDS_REQUEST_PARAMS_DICT = {

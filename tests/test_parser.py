@@ -5,9 +5,6 @@ import xml
 from unittest import TestCase, mock
 from xml.etree.ElementTree import ElementTree, fromstring
 
-import requests
-
-import fpds
 from fpds import fpdsRequest
 from tests import FULL_RESPONSE_DATA_BYTES
 
