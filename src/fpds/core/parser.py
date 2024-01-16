@@ -7,6 +7,7 @@ last_updated: 01/15/2024
 import asyncio
 import multiprocessing
 from asyncio import Semaphore
+from itertools import chain
 from typing import List, Union
 from xml.etree.ElementTree import ElementTree, fromstring
 
@@ -40,6 +41,9 @@ class fpdsRequest(fpdsMixin):
     cli_run: `bool`
         Flag indicating if this class is being isntantiated by a CLI run.
         Defaults to `False`.
+    thread_count: `int`
+        The number of threads to send per search.
+        Default to 10.
 
     Raises
     ------
@@ -49,8 +53,9 @@ class fpdsRequest(fpdsMixin):
         does not match the expected regex.
     """
 
-    def __init__(self, cli_run: bool = False, **kwargs):
+    def __init__(self, cli_run: bool = False, thread_count: int = 10, **kwargs):
         self.cli_run = cli_run
+        self.thread_count = thread_count
         self.content = []  # type: List[ElementTree]
         self.links = []  # type: List[str]
         if kwargs:
@@ -68,7 +73,7 @@ class fpdsRequest(fpdsMixin):
         kwargs_str = " ".join([f"{key}={value}" for key, value in self.kwargs.items()])
         return f"<fpdsRequest {kwargs_str}>"
 
-    def __url__(self) -> str:
+    def __url__(self) -> str:  # pragma: no cover
         """Custom magic method for request URL"""
         return f"{self.url_base}&q={self.search_params}"
 
@@ -93,6 +98,7 @@ class fpdsRequest(fpdsMixin):
         self.content.append(content_tree)
 
     async def convert(self, session: ClientSession, link: str):
+        """Retrieves content from FPDS ATOM feed."""
         async with session.get(link) as response:
             content = await response.read()
             xml = fpdsXML(content=self.convert_to_lxml_tree(content))
@@ -100,20 +106,16 @@ class fpdsRequest(fpdsMixin):
 
     async def fetch(self):
         self.create_request_links()
+        semaphore = Semaphore(self.thread_count)
 
-        semaphore = Semaphore(10)
         async with semaphore:
             async with aiohttp.ClientSession() as session:
                 tasks = [self.convert(session, link) for link in self.links]
                 return await asyncio.gather(*tasks)
 
-    async def compile(self):
-        return await self.fetch()
-
-    def run(self):
+    def run_asyncio_loop(self):
         loop = asyncio.get_event_loop()
-        data = loop.run_until_complete(self.compile())
-
+        data = loop.run_until_complete(self.fetch())
         self.content.extend(data)
         return data
 
@@ -130,26 +132,13 @@ class fpdsRequest(fpdsMixin):
             links.pop(0)  # don't need to make initial request a second time
         self.links = links
 
-    def process_tree(self, tree):
-        """Process a single tree and return the records"""
-        xml = fpdsXML(content=tree)
-        records = xml.jsonified_entries()
-        return records
-
-    @staticmethod
-    def process_xml_and_jsonify(entry):
-        # Process the fpdsXML entry and call jsonified_entries
-        print(f"processing {entry.__str__()}")
-        return entry.jsonified_entries()
-
-    # @timeit
-    def join_records(self):
+    def process_records(self):
         num_processes = multiprocessing.cpu_count()
-        data = self.run()
+        data = self.run_asyncio_loop()
 
-        print("Finished retrieving data")
-        # Use a multiprocessing pool for parallel processing
+        # for parallel processing
         with multiprocessing.Pool(processes=num_processes) as pool:
-            results = pool.map(self.process_xml_and_jsonify, data)
+            results = pool.map(lambda entry: entry.jsonified_entries, data)
 
-        return results
+        data = list(chain.from_iterable(results))
+        return data

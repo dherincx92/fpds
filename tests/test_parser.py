@@ -1,10 +1,13 @@
 import pytest
 import unittest
+import urllib3
+import xml
 from unittest import TestCase, mock
-from xml.etree import ElementTree
+from xml.etree.ElementTree import ElementTree, fromstring
 
 import requests
 
+import fpds
 from fpds import fpdsRequest
 from tests import FULL_RESPONSE_DATA_BYTES
 
@@ -13,6 +16,10 @@ FPDS_REQUEST_PARAMS_DICT = {
     "LAST_MOD_DATE": "[2022/01/01, 2022/05/01]",
     "AGENCY_CODE": "7504",
 }
+
+FPDS_SEARCH_PARAMS_PROPERTY = (
+    "LAST_MOD_DATE:[2022/01/01, 2022/05/01] " 'AGENCY_CODE:"7504"'
+)
 # an invalid param combined with a valid param
 FPDS_REQUEST_INVALID_PARAM_DICT = {
     "INCORRECT_PARAM": "some-value",
@@ -23,7 +30,7 @@ FPDS_REQUEST_INVALID_REGEX_DICT = {
     "LAST_MOD_DATE": "[2022/01/01, 2022/05/01]",
     "AGENCY_CODE": "not-a-proper-regex",
 }
-CONTENT_TREE = ElementTree.fromstring(FULL_RESPONSE_DATA_BYTES)
+CONTENT_TREE = ElementTree(fromstring(FULL_RESPONSE_DATA_BYTES))
 
 
 class MockResponse(object):
@@ -70,29 +77,27 @@ class TestFpdsRequest(TestCase):
         )
         self.assertEqual(self._class.__str__(), object_as_string)
 
-    @mock.patch.object(requests, "get")
-    def test_send_request(self, mock_response):
-        mock_response.return_value = MockResponse(status_code=200)
-        self._class.send_request()
-        self.assertIn("content", self._class.__dict__)
+    def test_search_params_property(self):
+        self.assertEqual(FPDS_SEARCH_PARAMS_PROPERTY, self._class.search_params)
 
-    @mock.patch.object(fpdsRequest, "send_request")
-    @mock.patch("fpds.core.parser.fpdsXML")
-    def test_create_content_iterable(self, mock_xml, mock_response):
-        self._class.content = [CONTENT_TREE]
-        mock_xml.return_value = MockFpdsXML()
-        mock_response.return_value = MockResponse(status_code=200)
-        self._class.create_content_iterable()
-        self.assertEqual(mock_response.call_count, 3)
+    @mock.patch.object(xml.etree.ElementTree, "fromstring")
+    def test_convert_to_lxml_tree(self, mock_from_string):
+        mock_from_string.return_value = ElementTree(
+            fromstring(FULL_RESPONSE_DATA_BYTES)
+        )
+        tree = self._class.convert_to_lxml_tree(content=FULL_RESPONSE_DATA_BYTES)
+        self.assertIsInstance(tree, ElementTree)
 
-    def side_effect_create_content_iterable(self):
+    def side_effect_initial_request(self):
         self._class.content.append(CONTENT_TREE)
 
-    @mock.patch.object(fpdsRequest, "create_content_iterable")
-    def test_parse_content(self, mock_content):
-        mock_content.side_effect = self.side_effect_create_content_iterable()
-        records = self._class.parse_content()
-        self.assertEqual(len(records), 10)
+    @mock.patch("fpds.core.parser.fpdsXML")
+    @mock.patch.object(fpdsRequest, "initial_request")
+    def test_create_request_links(self, mock_request, mock_xml):
+        mock_request.side_effect = self.side_effect_initial_request()
+        mock_xml.return_value = MockFpdsXML()
+        self._class.create_request_links()
+        self.assertEqual(len(self._class.links), 2)
 
 
 if __name__ == "__main__":

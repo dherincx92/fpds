@@ -62,6 +62,7 @@ class TestFpdsXML(TestCase):
         entries = self._class.jsonified_entries()
         self.assertEqual(len(entries), 10)
 
+
 class TestFpdsElement(TestCase):
     def setUp(self):
         xml = fpdsXML(content=FULL_RESPONSE_DATA_BYTES)
