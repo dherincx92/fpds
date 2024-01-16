@@ -210,7 +210,7 @@ class _ElementAttributes(fpdsElement, fpdsXMLMixin):
         self.prefix = prefix
         super().__init__(*args, **kwargs)
 
-    def __str__(self) -> str:
+    def __str__(self) -> str:   # pragma: no cover
         return f"<_ElementAttributes {self.tag}>"
 
     def _generate_nested_attribute_dict(self) -> Dict[str, str]:
@@ -277,7 +277,7 @@ class Entry(fpdsElement):
     def __init__(self, *args, **kwargs) -> None:
         super().__init__(*args, **kwargs)
 
-    def __str__(self) -> str:
+    def __str__(self) -> str:   # pragma: no cover
         return f"<Entry {self.clean_tag}>"
 
     def __call__(self) -> FPDS_ENTRY:
