@@ -57,21 +57,13 @@ from fpds import fpdsRequest
 from fpds.utilities.db import insert_records
 
 request = fpdsRequest(
+    target_database_url_env_key="SOME_ENVIRONMENT_VAR",
     LAST_MOD_DATE="[2022/01/01, 2022/05/01]",
     AGENCY_CODE="7504"
 )
 
-# Records saved as a python list
-data = request()
-
-# or equivalently, explicity call the `parse_content` method
-data = request.parse_content()
-
-# insert records to a db
-insert(
-    data=data,
-    target_database_url_env_key=self.target_database_url_env_key,
-)
+# handles automatic conversion of XML --> JSON
+data = request.process_records()
 ```
 
 For linting and formatting, we use `flake8` and `black`.
@@ -93,45 +85,11 @@ $ make test
 ```
 
 ## What's New
-As of v1.2.0, tag names include their full XML tag hierarchy due to duplicate
-tag names being overwritten in v1.1.X. For example, the `content` XML below has the
-following duplicate tag names: `agencyID`, `PIID`, and `modNumber`.
-Based on the original hierarchy, it's clear that one set of tags represents
-the actual award info and the second, the award's referenced IDV.
+`fpds` now supports asynchronous requests! As of v1.3.0, users can instantiate
+the class as usual, but will now need to call the `process_records` method
+to get records as JSON. Note: due to some recursive function calls in the XML
+parsing, users might experience some high completion times for this function
+call. Recommendation is to limit the number of results.
 
-```
-<content xmlns:ns1="https://www.fpds.gov/FPDS" type="application/xml">
-    <ns1:awardID>
-        <ns1:awardContractID>
-            <ns1:agencyID name="ENVIRONMENTAL PROTECTION AGENCY">6800</ns1:agencyID>
-            <ns1:PIID>0002</ns1:PIID>
-            <ns1:modNumber>P00018</ns1:modNumber>
-            <ns1:transactionNumber>0</ns1:transactionNumber>
-        </ns1:awardContractID>
-        <ns1:referencedIDVID>
-            <ns1:agencyID name="ENVIRONMENTAL PROTECTION AGENCY">6800</ns1:agencyID>
-            <ns1:PIID>EPS31703</ns1:PIID>
-            <ns1:modNumber>0</ns1:modNumber>
-        </ns1:referencedIDVID>
-    </ns1:awardID>
-</content>
-```
-
-In lieu of this, the final JSON structure would represent this snippet of data
-the following (note that additional attributes like `name` in `agencyID` are
-still captured and represented by their proper hierarchy; the name of the
-attribute is appended to the end of the tag name):
-
-```
-{
-    "awardID__awardContractID__agenycID": "6800"
-    "awardID__awardContractID__agenycID__name": "ENVIRONMENTAL PROTECTION AGENCY"
-    "awardID__awardContractID__PIID": "0002"
-    "awardID__awardContractID__modNumber": "P00018"
-    "awardID__awardContractID__transactionNUmber: "0"
-    "referencedIDVID__awardContractID__agenycID": "6800"
-    "referencedIDVID__awardContractID__agenycID__name": "ENVIRONMENTAL PROTECTION AGENCY"
-    "referencedIDVID__awardContractID__PIID": "EPS31703"
-    "referencedIDVID__awardContractID__modNumber": "0"
-}
-```
+As of v1.3.0 `fpds` now supports the use of over 100 keyword tags when searching
+for contracts using the v1.5.3 ATOM feed.
