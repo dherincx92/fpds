@@ -1,18 +1,21 @@
 """
-Base classes for FPDS XML elements
+Base classes for FPDS XML elements.
 
 author: derek663@gmail.com
-last_updated: 12/03/2023
+last_updated: 01/15/2024
 """
 import asyncio
-import time
-from typing import Any, List, Optional, Union
+import multiprocessing
+from asyncio import Semaphore
+from itertools import chain
+from typing import List, Union
 from xml.etree.ElementTree import ElementTree, fromstring
 
 import aiohttp
-import requests
+import urllib3
+from aiohttp import ClientSession
+from urllib3 import request
 
-from fpds.config import FPDS_FIELDS_CONFIG as FIELDS
 from fpds.core import FPDS_ENTRY
 from fpds.core.mixins import fpdsMixin
 from fpds.core.xml import fpdsXML
@@ -38,8 +41,9 @@ class fpdsRequest(fpdsMixin):
     cli_run: `bool`
         Flag indicating if this class is being isntantiated by a CLI run.
         Defaults to `False`.
-    target_database_url_env_key: `str`
-        Database URL environment key to insert data into.
+    thread_count: `int`
+        The number of threads to send per search.
+        Default to 10.
 
     Raises
     ------
@@ -49,17 +53,11 @@ class fpdsRequest(fpdsMixin):
         does not match the expected regex.
     """
 
-    def __init__(
-        self,
-        cli_run: bool = False,
-        target_database_url_env_key: Union[str, None] = None,
-        **kwargs,
-    ):
+    def __init__(self, cli_run: bool = False, thread_count: int = 10, **kwargs):
         self.cli_run = cli_run
+        self.thread_count = thread_count
         self.content = []  # type: List[ElementTree]
-        # TEST
-        self.links = []
-        self.target_database_url_env_key = target_database_url_env_key
+        self.links = []  # type: List[str]
         if kwargs:
             self.kwargs = kwargs
         else:
@@ -75,23 +73,7 @@ class fpdsRequest(fpdsMixin):
         kwargs_str = " ".join([f"{key}={value}" for key, value in self.kwargs.items()])
         return f"<fpdsRequest {kwargs_str}>"
 
-    def __call__(self) -> Union[None, List[FPDS_ENTRY]]:
-        """Shortcut for making an API call and retrieving content"""
-        data = self.parse_content()
-
-        if self.target_database_url_env_key:
-            from fpds.utilities.db import insert
-
-            insert(
-                data=data,
-                request_url=self.__url__(),
-                target_database_url_env_key=self.target_database_url_env_key,
-            )
-            return None
-        else:
-            return data
-
-    def __url__(self) -> str:
+    def __url__(self) -> str:  # pragma: no cover
         """Custom magic method for request URL"""
         return f"{self.url_base}&q={self.search_params}"
 
@@ -102,69 +84,61 @@ class fpdsRequest(fpdsMixin):
         return " ".join(_params)
 
     @staticmethod
-    def convert_to_lxml_tree(content: str) -> ElementTree:
+    def convert_to_lxml_tree(content: Union[str, bytes]) -> ElementTree:
         """Returns lxml tree element from a bytes response"""
         tree = ElementTree(fromstring(content))
         return tree
 
-    def send_request(self, url: Optional[str] = None) -> None:
-        """Sends request to FPDS Atom feed
-
-        Parameters
-        ----------
-        url: `str`, optional
-            A URL to send a GET request to. If not provided, this method
-            will default to using `url_base`
-        """
-        response = requests.get(
-            url=self.url_base if not url else url, params={"q": self.search_params}
-        )
-        response.raise_for_status()
-        content_tree = self.convert_to_lxml_tree(response.content.decode("utf-8"))
+    def initial_request(self):
+        """Send initial request to FPDS Atom feed and returns first page."""
+        pool = urllib3.PoolManager()
+        encoded_params = request.urlencode({"q": self.search_params})
+        response = pool.request("GET", f"{self.url_base}&{encoded_params}")
+        content_tree = self.convert_to_lxml_tree(response.data.decode("utf-8"))
         self.content.append(content_tree)
 
-    async def fetch(self, session, link) -> None:
+    async def convert(self, session: ClientSession, link: str):
+        """Retrieves content from FPDS ATOM feed."""
         async with session.get(link) as response:
             content = await response.read()
             xml = fpdsXML(content=self.convert_to_lxml_tree(content))
             return xml
 
-    async def fetch_all(self):
-        async with aiohttp.ClientSession() as session:
-            tasks = [self.fetch(session, link) for link in self.links]
-            return await asyncio.gather(*tasks)
+    async def fetch(self):
+        self.create_request_links()
+        semaphore = Semaphore(self.thread_count)
 
-    async def compile_response(self):
-        start_time = time.time()
-        content = await self.fetch_all()
-        end_time = time.time()
-        print(f"Elapsed time: {end_time - start_time} seconds")
-        return content
+        async with semaphore:
+            async with aiohttp.ClientSession() as session:
+                tasks = [self.convert(session, link) for link in self.links]
+                return await asyncio.gather(*tasks)
 
-    def run(self):
+    def run_asyncio_loop(self):
         loop = asyncio.get_event_loop()
-        records = loop.run_until_complete(self.compile_response())
-        return records
+        data = loop.run_until_complete(self.fetch())
+        self.content.extend(data)
+        return data
 
-    def create_content_iterable(self) -> None:
-        """Paginates through a response and creates an iterable of XML trees.
-        This method will not have a return but rather, will set the `content`
-        attribute to an iterable of XML ElementTrees'
+    def create_request_links(self) -> None:
+        """Paginates through the first page of an FPDS response and creates a
+        list of all pagination links. This method will not have a return; it
+        will set the `links` attributes to an iterable of strings.
         """
-        self.send_request()
+        self.initial_request()
         params = self.search_params
         tree = fpdsXML(content=self.content[0])
-
         links = tree.pagination_links(params=params)
         if len(links) > 1:
-            links.pop(0)
+            links.pop(0)  # don't need to make initial request a second time
         self.links = links
 
-    def parse_content(self) -> List[FPDS_ENTRY]:
-        """Parses a content iterable and generates a list of records"""
-        self.create_content_iterable()
-        records = []
-        for tree in self.content:
-            xml = fpdsXML(content=tree)
-            records.extend(xml.jsonified_entries())
-        return records
+    def process_records(self):
+        num_processes = multiprocessing.cpu_count()
+        data = self.run_asyncio_loop()
+
+        # for parallel processing
+        with multiprocessing.Pool(processes=num_processes) as pool:
+            results = pool.map(lambda entry: entry.jsonified_entries, data)
+
+        data = list(chain.from_iterable(results))
+        return data

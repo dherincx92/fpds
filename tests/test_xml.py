@@ -1,6 +1,6 @@
 import pytest
 from unittest import TestCase
-from xml.etree.ElementTree import Element, ElementTree
+from xml.etree.ElementTree import ElementTree
 
 from fpds import fpdsXML
 from fpds.core.xml import fpdsElement
@@ -56,8 +56,11 @@ class TestFpdsXML(TestCase):
         entries = self._class.get_atom_feed_entries()
         # all entries should be of the same type
         entry_types = set([type(entry) for entry in entries])
-        self.assertEqual(len(entries), 10)
         self.assertEqual(len(entry_types), 1)
+
+    def test_jsonified_entries(self):
+        entries = self._class.jsonified_entries()
+        self.assertEqual(len(entries), 10)
 
 
 class TestFpdsElement(TestCase):

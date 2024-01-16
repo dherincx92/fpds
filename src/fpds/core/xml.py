@@ -2,7 +2,7 @@
 XML classes for parsing FPDS content.
 
 author: derek663@gmail.com
-last_updated: 05/10/2023
+last_updated: 01/15/2024
 """
 import re
 from typing import Dict, Iterator, List, Optional, Union
@@ -46,7 +46,7 @@ class fpdsXML(fpdsXMLMixin, fpdsMixin):
                 f"following: {module_names}."
             )
 
-    def __str__(self) -> str:
+    def __str__(self) -> str:  # pragma: no cover
         """The root represents the top of the XML tree from an instance of type
         `ElementTree`. Since `fpdsElement` inherits from this class, we overwrite
         this method in child classes since `getroot()` is not available for
@@ -210,7 +210,7 @@ class _ElementAttributes(fpdsElement, fpdsXMLMixin):
         self.prefix = prefix
         super().__init__(*args, **kwargs)
 
-    def __str__(self) -> str:
+    def __str__(self) -> str:  # pragma: no cover
         return f"<_ElementAttributes {self.tag}>"
 
     def _generate_nested_attribute_dict(self) -> Dict[str, str]:
@@ -277,7 +277,7 @@ class Entry(fpdsElement):
     def __init__(self, *args, **kwargs) -> None:
         super().__init__(*args, **kwargs)
 
-    def __str__(self) -> str:
+    def __str__(self) -> str:  # pragma: no cover
         return f"<Entry {self.clean_tag}>"
 
     def __call__(self) -> FPDS_ENTRY:
