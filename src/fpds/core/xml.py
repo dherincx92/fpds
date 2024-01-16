@@ -46,7 +46,7 @@ class fpdsXML(fpdsXMLMixin, fpdsMixin):
                 f"following: {module_names}."
             )
 
-    def __str__(self) -> str:
+    def __str__(self) -> str:   # pragma: no cover
         """The root represents the top of the XML tree from an instance of type
         `ElementTree`. Since `fpdsElement` inherits from this class, we overwrite
         this method in child classes since `getroot()` is not available for
