@@ -12,9 +12,9 @@ from typing import List, Union
 from xml.etree.ElementTree import ElementTree, fromstring
 
 import aiohttp
-import urllib3
 from aiohttp import ClientSession
-from urllib3 import request
+from urllib3 import PoolManager
+from urllib3.request import urlencode
 
 from fpds.core.mixins import fpdsMixin
 from fpds.core.xml import fpdsXML
@@ -90,8 +90,8 @@ class fpdsRequest(fpdsMixin):
 
     def initial_request(self) -> None:
         """Send initial request to FPDS Atom feed and returns first page."""
-        pool = urllib3.PoolManager()
-        encoded_params = request.urlencode({"q": self.search_params})
+        pool = PoolManager()
+        encoded_params = urlencode({"q": self.search_params})
         response = pool.request("GET", f"{self.url_base}&{encoded_params}")
         content_tree = self.convert_to_lxml_tree(response.data.decode("utf-8"))
         self.content.append(content_tree)
