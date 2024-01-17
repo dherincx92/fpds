@@ -16,7 +16,6 @@ import urllib3
 from aiohttp import ClientSession
 from urllib3 import request
 
-from fpds.core import FPDS_ENTRY
 from fpds.core.mixins import fpdsMixin
 from fpds.core.xml import fpdsXML
 from fpds.utilities import validate_kwarg
@@ -89,7 +88,7 @@ class fpdsRequest(fpdsMixin):
         tree = ElementTree(fromstring(content))
         return tree
 
-    def initial_request(self):
+    def initial_request(self) -> None:
         """Send initial request to FPDS Atom feed and returns first page."""
         pool = urllib3.PoolManager()
         encoded_params = request.urlencode({"q": self.search_params})
@@ -132,13 +131,18 @@ class fpdsRequest(fpdsMixin):
             links.pop(0)  # don't need to make initial request a second time
         self.links = links
 
+    @staticmethod
+    def multiprocess_jsonified_entries(entry):
+        """Wrapper around `jsonified_entries` method for avoiding pickle issue."""
+        return entry.jsonified_entries()
+
     def process_records(self):
         num_processes = multiprocessing.cpu_count()
         data = self.run_asyncio_loop()
 
         # for parallel processing
         with multiprocessing.Pool(processes=num_processes) as pool:
-            results = pool.map(lambda entry: entry.jsonified_entries, data)
+            results = pool.map(self.multiprocess_jsonified_entries, data)
 
         data = list(chain.from_iterable(results))
         return data

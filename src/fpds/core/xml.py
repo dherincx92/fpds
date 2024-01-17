@@ -395,8 +395,8 @@ class Parent(fpdsElement):
 
     def children(self):
         """Returns children if they exist"""
-        if self.element.getchildren():
-            return self.element.getchildren()
+        if list(self.element):
+            return list(self.element)
 
     def parent_child_hierarchy_name(self, delim="__"):
         if self.parent_name and self.parent_name not in self.tag_exclusions:
