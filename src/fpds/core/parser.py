@@ -19,7 +19,7 @@ from aiohttp import ClientSession
 
 from fpds.core.mixins import fpdsMixin
 from fpds.core.xml import fpdsXML
-from fpds.utilities import validate_kwarg
+from fpds.utilities import timeit, validate_kwarg
 
 
 class fpdsRequest(fpdsMixin):
@@ -138,6 +138,7 @@ class fpdsRequest(fpdsMixin):
         """Wrapper around `jsonified_entries` method for avoiding pickle issue."""
         return entry.jsonified_entries()
 
+    @timeit
     def process_records(self):
         num_processes = multiprocessing.cpu_count()
         data = self.run_asyncio_loop()

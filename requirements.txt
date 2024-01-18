@@ -1,2 +1,2 @@
-aiohttp==3.9.1,
+aiohttp==3.9.1
 click>=8.1.3
