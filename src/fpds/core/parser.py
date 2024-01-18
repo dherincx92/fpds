@@ -55,7 +55,6 @@ class fpdsRequest(fpdsMixin):
     def __init__(self, cli_run: bool = False, thread_count: int = 10, **kwargs):
         self.cli_run = cli_run
         self.thread_count = thread_count
-        self.content = []  # type: List[ElementTree]
         self.links = []  # type: List[str]
         if kwargs:
             self.kwargs = kwargs
@@ -95,7 +94,7 @@ class fpdsRequest(fpdsMixin):
             body = response.read()
 
         content_tree = self.convert_to_lxml_tree(body.decode("utf-8"))
-        self.content.append(content_tree)
+        return content_tree
 
     async def convert(self, session: ClientSession, link: str):
         """Retrieves content from FPDS ATOM feed."""
@@ -116,7 +115,6 @@ class fpdsRequest(fpdsMixin):
     def run_asyncio_loop(self):
         loop = asyncio.get_event_loop()
         data = loop.run_until_complete(self.fetch())
-        self.content.extend(data)
         return data
 
     def create_request_links(self) -> None:
@@ -124,12 +122,10 @@ class fpdsRequest(fpdsMixin):
         list of all pagination links. This method will not have a return; it
         will set the `links` attributes to an iterable of strings.
         """
-        self.initial_request()
+        first_page = self.initial_request()
         params = self.search_params
-        tree = fpdsXML(content=self.content[0])
+        tree = fpdsXML(content=first_page)
         links = tree.pagination_links(params=params)
-        if len(links) > 1:
-            links.pop(0)  # don't need to make initial request a second time
         self.links = links
 
     @staticmethod
