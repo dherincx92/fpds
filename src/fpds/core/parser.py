@@ -87,7 +87,7 @@ class fpdsRequest(fpdsMixin):
         tree = ElementTree(fromstring(content))
         return tree
 
-    def initial_request(self) -> None:
+    def initial_request(self) -> ElementTree:
         """Send initial request to FPDS Atom feed and returns first page."""
         encoded_params = parse.urlencode({"q": self.search_params})
         with urlopen(f"{self.url_base}&{encoded_params}") as response:

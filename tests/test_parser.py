@@ -33,10 +33,6 @@ class MockResponse(object):
     def __init__(self, status_code):
         self.status_code = status_code
 
-    @property
-    def content(self):
-        return FULL_RESPONSE_DATA_BYTES
-
     def raise_for_status(self):
         if self.status_code != 200:
             raise Exception
@@ -84,16 +80,11 @@ class TestFpdsRequest(TestCase):
         tree = self._class.convert_to_lxml_tree(content=FULL_RESPONSE_DATA_BYTES)
         self.assertIsInstance(tree, ElementTree)
 
-    def side_effect_initial_request(self):
-        self._class.content.append(CONTENT_TREE)
-
-    @mock.patch("fpds.core.parser.fpdsXML")
     @mock.patch.object(fpdsRequest, "initial_request")
-    def test_create_request_links(self, mock_request, mock_xml):
-        mock_request.side_effect = self.side_effect_initial_request()
-        mock_xml.return_value = MockFpdsXML()
+    def test_create_request_links(self, mock_request):
+        mock_request.return_value = FULL_RESPONSE_DATA_BYTES
         self._class.create_request_links()
-        self.assertEqual(len(self._class.links), 2)
+        self.assertEqual(len(self._class.links), 3)
 
 
 if __name__ == "__main__":
