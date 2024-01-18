@@ -5,6 +5,7 @@ contracts
 author: derek663@gmail.com
 last_updated: 12/30/2022
 """
+
 import json
 from pathlib import Path
 from uuid import uuid4

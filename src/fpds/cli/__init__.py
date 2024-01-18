@@ -1,4 +1,5 @@
 """CLI namespace"""
+
 import click
 
 from .parse import parse as _parse

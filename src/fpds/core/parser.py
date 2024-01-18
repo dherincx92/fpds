@@ -4,17 +4,18 @@ Base classes for FPDS XML elements.
 author: derek663@gmail.com
 last_updated: 01/15/2024
 """
+
 import asyncio
 import multiprocessing
 from asyncio import Semaphore
 from itertools import chain
 from typing import List, Union
+from urllib import parse
+from urllib.request import urlopen
 from xml.etree.ElementTree import ElementTree, fromstring
 
 import aiohttp
 from aiohttp import ClientSession
-from urllib import parse
-from urllib.request import urlopen
 
 from fpds.core.mixins import fpdsMixin
 from fpds.core.xml import fpdsXML
