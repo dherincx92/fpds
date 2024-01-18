@@ -5,17 +5,17 @@ contracts
 author: derek663@gmail.com
 last_updated: 12/30/2022
 """
+
 import json
 from pathlib import Path
 from uuid import uuid4
 
 import click
-from click import BadArgumentUsage, BadParameter, UsageError
+from click import UsageError
 
 from fpds import fpdsRequest
 from fpds.config import FPDS_DATA_DATE_DIR
-from fpds.config import FPDS_FIELDS_CONFIG as FIELDS
-from fpds.utilities import filter_config_dict, raw_literal_regex_match
+from fpds.utilities import validate_kwarg
 
 
 @click.command()
@@ -52,28 +52,13 @@ def parse(params, output):
             OUTPUT_PATH.mkdir(parents=True, exist_ok=True)
 
     params = [param.split("=") for param in params]
-    field_names = [field.get("name") for field in FIELDS]
 
     if not params:
         raise UsageError("Please provide at least one parameter")
 
-    for param_tuple in params:
-        # checks that every parameter provided is valid
-        param_name, param_input = param_tuple
-        if param_name not in field_names:
-            raise BadParameter(message=f"`{param_name}` is not a valid parameter")
-
-        kwarg_dict = filter_config_dict(FIELDS, "name", param_name)
-        kwarg_regex = kwarg_dict.get("regex")
-        match = raw_literal_regex_match(kwarg_regex, param_input)
-        if not match:
-            raise BadArgumentUsage(
-                message=f"`{param_input}` does not match regex: {kwarg_regex}"
-            )
-
-        # enclose param value in quotes, if required by the Atom feed
-        if kwarg_dict.get("quotes"):
-            param_tuple[1] = f'"{param_input}"'
+    for _param in params:  # _param is a tuple
+        name, value = _param
+        _param[1] = validate_kwarg(kwarg=name, string=value)
 
     params_kwargs = dict(params)
     click.echo(f"Params to be used for FPDS search: {params_kwargs}")

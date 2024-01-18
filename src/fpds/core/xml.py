@@ -2,8 +2,9 @@
 XML classes for parsing FPDS content.
 
 author: derek663@gmail.com
-last_updated: 05/10/2023
+last_updated: 01/15/2024
 """
+
 import re
 from typing import Dict, Iterator, List, Optional, Union
 from xml.etree.ElementTree import Element, ElementTree, fromstring
@@ -46,7 +47,7 @@ class fpdsXML(fpdsXMLMixin, fpdsMixin):
                 f"following: {module_names}."
             )
 
-    def __str__(self) -> str:
+    def __str__(self) -> str:  # pragma: no cover
         """The root represents the top of the XML tree from an instance of type
         `ElementTree`. Since `fpdsElement` inherits from this class, we overwrite
         this method in child classes since `getroot()` is not available for
@@ -157,7 +158,7 @@ class fpdsElement(fpdsXML):
         self.element = self.tree
         delattr(self, "tree")
 
-    def __str__(self):
+    def __str__(self) -> str:
         return f"<fpdsElement {self.tag}>"
 
     def parse_items(self) -> Iterator[Element]:
@@ -210,7 +211,7 @@ class _ElementAttributes(fpdsElement, fpdsXMLMixin):
         self.prefix = prefix
         super().__init__(*args, **kwargs)
 
-    def __str__(self) -> str:
+    def __str__(self) -> str:  # pragma: no cover
         return f"<_ElementAttributes {self.tag}>"
 
     def _generate_nested_attribute_dict(self) -> Dict[str, str]:
@@ -277,7 +278,7 @@ class Entry(fpdsElement):
     def __init__(self, *args, **kwargs) -> None:
         super().__init__(*args, **kwargs)
 
-    def __str__(self) -> str:
+    def __str__(self) -> str:  # pragma: no cover
         return f"<Entry {self.clean_tag}>"
 
     def __call__(self) -> FPDS_ENTRY:
@@ -298,7 +299,7 @@ class Entry(fpdsElement):
 
     def get_entry_data(self) -> Dict[str, str]:
         """Extracts award data from an entry"""
-        entry_tags = dict()
+        entry_tags = dict()  # type: Dict[str, str]
         hierarchy = self.content_tag_hierarchy()
 
         for prefix, tag in hierarchy.items():
@@ -313,7 +314,7 @@ class Entry(fpdsElement):
         self,
         element: Optional[Element] = None,
         parent: Optional[str] = None,
-        hierarchy: Dict = dict(),
+        hierarchy: Dict[str, str] = dict(),
     ) -> Dict[str, str]:
         """Added on v1.2.0
 
@@ -348,10 +349,10 @@ class Entry(fpdsElement):
 
         Parameters
         ----------
-        element: `Element`
+        element: `Optional[Element]`
             Per docs, to get children simply iterate over element
             https://lxml.de/api/lxml.etree._Element-class.html#getchildren
-        parent: `str`
+        parent: `Optional[str]`
             Name of `elements` XML parent
         hierarchy: `Dict[str, str]`
             The hierarchy dictionary structure to be passed through each
@@ -364,7 +365,7 @@ class Entry(fpdsElement):
 
         # continue parsing XML hierarchy because children exist and we want
         # to get every possible bit of data
-        if _parent.has_children:
+        if _parent.children():
             for child in _parent.children():
                 _child = Parent(content=child, parent_name=parent)
                 parent_tag_name = _child.parent_child_hierarchy_name()
@@ -385,7 +386,7 @@ class Parent(fpdsElement):
         self.parent_name = parent_name
 
     @property
-    def tag_exclusions(self):
+    def tag_exclusions(self) -> List[str]:
         """Tag names that should be excluded from the hierarchy tree. Because
         some of the XML hierarchy doesn't provide much value, we provide a
         mechanism for `award_tag_hierarchy` to avoid using such tags in the
@@ -393,14 +394,9 @@ class Parent(fpdsElement):
         """
         return ["content", "IDV", "award"]
 
-    @property
-    def has_children(self):
-        """Identifies if element has children"""
-        return bool(list(self.element))
-
     def children(self):
         """Returns children if they exist"""
-        if self.has_children:
+        if list(self.element):
             return list(self.element)
 
     def parent_child_hierarchy_name(self, delim="__"):

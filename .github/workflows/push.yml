@@ -19,7 +19,7 @@ jobs:
       - name: Install package
         run: |
           source .venv/bin/activate
-          pip install -e .[all]
+          pip install -e ".[dev, tests]"
       - name: Run linters
         run: |
           source .venv/bin/activate

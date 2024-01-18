@@ -4,6 +4,7 @@ Configurations and constants
 author: derek663@gmail.com
 last_updated: 12/27/2022
 """
+
 import json
 import sys
 from datetime import datetime

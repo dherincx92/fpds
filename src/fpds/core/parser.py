@@ -1,20 +1,24 @@
 """
-Base classes for FPDS XML elements
+Base classes for FPDS XML elements.
 
 author: derek663@gmail.com
-last_updated: 05/10/2023
+last_updated: 01/15/2024
 """
-from typing import List, Optional
+
+import asyncio
+import multiprocessing
+from asyncio import Semaphore
+from itertools import chain
+from typing import List, Union
+from urllib import parse
+from urllib.request import urlopen
 from xml.etree.ElementTree import ElementTree, fromstring
 
-import requests
-from tqdm import tqdm
+from aiohttp import ClientSession
 
-from fpds.config import FPDS_FIELDS_CONFIG as FIELDS
-from fpds.core import FPDS_ENTRY
 from fpds.core.mixins import fpdsMixin
 from fpds.core.xml import fpdsXML
-from fpds.utilities import filter_config_dict, raw_literal_regex_match
+from fpds.utilities import timeit, validate_kwarg
 
 
 class fpdsRequest(fpdsMixin):
@@ -34,8 +38,11 @@ class fpdsRequest(fpdsMixin):
     Parameters
     ----------
     cli_run: `bool`
-        Flag indicating if this class is being isntantiated by a CLI run
-        Defaults to `False`
+        Flag indicating if this class is being isntantiated by a CLI run.
+        Defaults to `False`.
+    thread_count: `int`
+        The number of threads to send per search.
+        Default to 10.
 
     Raises
     ------
@@ -45,9 +52,10 @@ class fpdsRequest(fpdsMixin):
         does not match the expected regex.
     """
 
-    def __init__(self, cli_run: bool = False, **kwargs):
+    def __init__(self, cli_run: bool = False, thread_count: int = 10, **kwargs):
         self.cli_run = cli_run
-        self.content = []  # type: List[ElementTree]
+        self.thread_count = thread_count
+        self.links = []  # type: List[str]
         if kwargs:
             self.kwargs = kwargs
         else:
@@ -55,79 +63,84 @@ class fpdsRequest(fpdsMixin):
 
         # do not run class validations since CLI command has its own
         if not self.cli_run:
-            self.valid_fields = [field.get("name") for field in FIELDS]
             for kwarg, value in self.kwargs.items():
-                if kwarg not in self.valid_fields:
-                    raise ValueError(f"`{kwarg}` is not a valid FPDS parameter")
-                else:
-                    kwarg_dict = filter_config_dict(FIELDS, "name", kwarg)
-                    kwarg_regex = kwarg_dict.get("regex")
-                    match = raw_literal_regex_match(kwarg_regex, value)
-                    if not match:
-                        raise ValueError(
-                            f"`{value}` does not match regex: {kwarg_regex}"
-                        )
-                    if kwarg_dict.get("quotes"):
-                        self.kwargs[kwarg] = f'"{value}"'
+                self.kwargs[kwarg] = validate_kwarg(kwarg=kwarg, string=value)
 
     def __str__(self) -> str:
         """String representation of `fpdsRequest`"""
         kwargs_str = " ".join([f"{key}={value}" for key, value in self.kwargs.items()])
         return f"<fpdsRequest {kwargs_str}>"
 
-    def __call__(self):
-        """Shortcut for making an API call and retrieving content"""
-        records = self.parse_content()
-        return records
+    def __url__(self) -> str:  # pragma: no cover
+        """Custom magic method for request URL"""
+        return f"{self.url_base}&q={self.search_params}"
 
     @property
-    def search_params(self):
+    def search_params(self) -> str:
         """Search parameters inputted by user"""
         _params = [f"{key}:{value}" for key, value in self.kwargs.items()]
         return " ".join(_params)
 
     @staticmethod
-    def convert_to_lxml_tree(content) -> ElementTree:
+    def convert_to_lxml_tree(content: Union[str, bytes]) -> ElementTree:
         """Returns lxml tree element from a bytes response"""
         tree = ElementTree(fromstring(content))
         return tree
 
-    def send_request(self, url: Optional[str] = None):
-        """Sends request to FPDS Atom feed
+    def initial_request(self) -> ElementTree:
+        """Send initial request to FPDS Atom feed and returns first page."""
+        encoded_params = parse.urlencode({"q": self.search_params})
+        with urlopen(f"{self.url_base}&{encoded_params}") as response:
+            body = response.read()
 
-        Parameters
-        ----------
-        url: `str`, optional
-            A URL to send a GET request to. If not provided, this method
-            will default to using `url_base`
-        """
-        response = requests.get(
-            url=self.url_base if not url else url, params={"q": self.search_params}
-        )
-        response.raise_for_status()
-        content_tree = self.convert_to_lxml_tree(response.content)
-        self.content.append(content_tree)
+        content_tree = self.convert_to_lxml_tree(body.decode("utf-8"))
+        return content_tree
 
-    def create_content_iterable(self):
-        """Paginates through a response and creates an iterable of XML trees.
-        This method will not have a return but rather, will set the `content`
-        attribute to an iterable of XML ElementTrees'
+    async def convert(self, session: ClientSession, link: str):
+        """Retrieves content from FPDS ATOM feed."""
+        async with session.get(link) as response:
+            content = await response.read()
+            xml = fpdsXML(content=self.convert_to_lxml_tree(content))
+            return xml
+
+    async def fetch(self):
+        self.create_request_links()
+        semaphore = Semaphore(self.thread_count)
+
+        async with semaphore:
+            async with ClientSession() as session:
+                tasks = [self.convert(session, link) for link in self.links]
+                return await asyncio.gather(*tasks)
+
+    def run_asyncio_loop(self):
+        loop = asyncio.get_event_loop()
+        data = loop.run_until_complete(self.fetch())
+        return data
+
+    def create_request_links(self) -> None:
+        """Paginates through the first page of an FPDS response and creates a
+        list of all pagination links. This method will not have a return; it
+        will set the `links` attributes to an iterable of strings.
         """
-        self.send_request()
+        first_page = self.initial_request()
         params = self.search_params
-        tree = fpdsXML(content=self.content[0])
-
+        tree = fpdsXML(content=first_page)
         links = tree.pagination_links(params=params)
-        if len(links) > 1:
-            links.pop(0)
-            for link in links:
-                self.send_request(link)
+        self.links = links
 
-    def parse_content(self) -> List[FPDS_ENTRY]:
-        """Parses a content iterable and generates a list of records"""
-        self.create_content_iterable()
-        records = []
-        for tree in tqdm(self.content):
-            xml = fpdsXML(content=tree)
-            records.extend(xml.jsonified_entries())
-        return records
+    @staticmethod
+    def multiprocess_jsonified_entries(entry):
+        """Wrapper around `jsonified_entries` method for avoiding pickle issue."""
+        return entry.jsonified_entries()
+
+    @timeit
+    def process_records(self):
+        num_processes = multiprocessing.cpu_count()
+        data = self.run_asyncio_loop()
+
+        # for parallel processing
+        with multiprocessing.Pool(processes=num_processes) as pool:
+            results = pool.map(self.multiprocess_jsonified_entries, data)
+
+        data = list(chain.from_iterable(results))
+        return data

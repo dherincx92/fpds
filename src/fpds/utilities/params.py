@@ -2,40 +2,50 @@
 Utility functions related to FPDS request parameters
 
 author: derek663@gmail.com
-last_updated: 12/24/2022
+last_updated: 01/15/2024
 """
+
 import re
-from typing import Dict, List, Union
+from typing import Any, Dict, List
+
+from fpds.config import FPDS_FIELDS_CONFIG as FIELDS
+
+CONFIG_TYPE = List[Dict[str, Any]]
 
 
-def filter_config_dict(
-    config: List[Dict[str, Union[str, bool]]], field: str, value: Union[str, bool]
-):
-    """Given a configuration object, return single object from config where
-    config[field] = value
-
-    Parameters
-    ----------
-    config: List[Dict[str, Union[str, bool]]]
-    field: str
-    value: Union[str, bool]
-    """
-    dct = [field_dict for field_dict in config if field_dict.get(field) == value]
-    if len(dct) > 1:
-        raise ValueError(f"Multiple objects match `{field}`=`{value}`")
-    else:
-        field_dict = dct[0]
-    return field_dict
+def get_search_param_from_config(name: str, config: CONFIG_TYPE = FIELDS):
+    """Finds the name of a kwarg in `fields.json`"""
+    field_config = [field for field in config if field.get("name") == name]
+    if not field_config:
+        raise ValueError(f"`{name}` is not a valid FPDS parameter")
+    elif len(field_config) > 1:
+        raise ValueError(f"Multiple records for parameter `{name}` found in config!")
+    return field_config[0]
 
 
-def raw_literal_regex_match(pattern, string):
+def match_regex_with_literal_string_pattern(pattern, string):
     """Converts a regex pattern into a raw literal string to be used by
     Python's regex module.
 
     This function was written out of a need of escaping single backslahes
     with double backslahes in JSON. See `constants/fields.json` for examples
     """
+    _string = str(string) if not isinstance(string, str) else string
     raw_pattern = rf"{pattern}".replace("\\\\", "\\")
     LITERAL_PATTERN = re.compile(raw_pattern)
-    match = LITERAL_PATTERN.match(string)
+    match = LITERAL_PATTERN.match(_string)
     return match
+
+
+def validate_kwarg(kwarg, string):
+    """Validates a kwarg name and ensures value matches specified regex."""
+    obj = get_search_param_from_config(name=kwarg)
+    pattern = obj.get("regex")
+    match = match_regex_with_literal_string_pattern(pattern=pattern, string=string)
+    if not match:
+        raise ValueError(f"`{string}` does not match regex: {pattern}")
+
+    if obj.get("quotes"):
+        return f'"{string}"'
+    else:
+        return string

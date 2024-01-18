@@ -11,15 +11,15 @@ class TestFpdsCLI(TestCase):
 
     def test_missing_cli_parameters(self):
         result = self.runner.invoke(cli, ["parse"])
-        assert "Please provide at least one parameter" in result.output
+        self.assertIn("Please provide at least one parameter", result.output)
 
     def test_invalid_cli_parameter(self):
         result = self.runner.invoke(cli, ["parse", "{an-invalid-param}={some-value}"])
-        assert "is not a valid parameter" in result.output
+        self.assertIn("is not a valid FPDS parameter", result.__str__())
 
     def test_invalid_cli_parameter_regex_pattern(self):
         result = self.runner.invoke(cli, ["parse", "AGENCY_CODE={not-valid}"])
-        assert "does not match regex" in result.output
+        self.assertIn("does not match regex", result.__str__())
 
 
 if __name__ == "__main__":

@@ -25,7 +25,7 @@ clean: ## Remove test and coverage artifacts
 	rm -fr .mypy_cache
 
 black: ## Format with black
-	black src tests setup.py
+	black src tests
 
 isort: ## Format and sort imports
 	isort src
