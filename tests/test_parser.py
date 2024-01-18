@@ -1,6 +1,5 @@
 import pytest
 import unittest
-import urllib3
 import xml
 from unittest import TestCase, mock
 from xml.etree.ElementTree import ElementTree, fromstring
