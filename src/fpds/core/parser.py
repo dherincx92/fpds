@@ -14,7 +14,6 @@ from urllib import parse
 from urllib.request import urlopen
 from xml.etree.ElementTree import ElementTree, fromstring
 
-import aiohttp
 from aiohttp import ClientSession
 
 from fpds.core.mixins import fpdsMixin
@@ -110,7 +109,7 @@ class fpdsRequest(fpdsMixin):
         semaphore = Semaphore(self.thread_count)
 
         async with semaphore:
-            async with aiohttp.ClientSession() as session:
+            async with ClientSession() as session:
                 tasks = [self.convert(session, link) for link in self.links]
                 return await asyncio.gather(*tasks)
 
