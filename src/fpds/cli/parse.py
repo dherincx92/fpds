@@ -65,7 +65,7 @@ def parse(params, output):
 
     request = fpdsRequest(**params_kwargs, cli_run=True)
     click.echo("Retrieving FPDS records from ATOM feed...")
-    records = request()
+    records = request.process_records()
 
     DATA_DIR = OUTPUT_PATH if output else FPDS_DATA_DATE_DIR
     DATA_FILE = DATA_DIR / f"{uuid4()}.json"
