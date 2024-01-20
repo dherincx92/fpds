@@ -66,6 +66,9 @@ class fpdsRequest(fpdsMixin):
             for kwarg, value in self.kwargs.items():
                 self.kwargs[kwarg] = validate_kwarg(kwarg=kwarg, string=value)
 
+    def __call__(self):
+        return self.process_records()
+
     def __str__(self) -> str:
         """String representation of `fpdsRequest`"""
         kwargs_str = " ".join([f"{key}={value}" for key, value in self.kwargs.items()])

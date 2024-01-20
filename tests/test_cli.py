@@ -21,6 +21,5 @@ class TestFpdsCLI(TestCase):
         result = self.runner.invoke(cli, ["parse", "AGENCY_CODE={not-valid}"])
         self.assertIn("does not match regex", result.__str__())
 
-
 if __name__ == "__main__":
     unittest.main()
