@@ -9,7 +9,7 @@ import asyncio
 import multiprocessing
 from asyncio import Semaphore
 from itertools import chain
-from typing import List, Union
+from typing import Dict, List, Union
 from urllib import parse
 from urllib.request import urlopen
 from xml.etree.ElementTree import ElementTree, fromstring
@@ -66,7 +66,7 @@ class fpdsRequest(fpdsMixin):
             for kwarg, value in self.kwargs.items():
                 self.kwargs[kwarg] = validate_kwarg(kwarg=kwarg, string=value)
 
-    def __call__(self):
+    def __call__(self) ->:
         return self.process_records()
 
     def __str__(self) -> str:
@@ -137,7 +137,7 @@ class fpdsRequest(fpdsMixin):
         return entry.jsonified_entries()
 
     @timeit
-    def process_records(self):
+    def process_records(self) -> List[Dict[str, Union[str, float]]]:
         num_processes = multiprocessing.cpu_count()
         data = self.run_asyncio_loop()
 
