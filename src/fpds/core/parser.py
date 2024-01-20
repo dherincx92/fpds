@@ -2,7 +2,7 @@
 Base classes for FPDS XML elements.
 
 author: derek663@gmail.com
-last_updated: 01/15/2024
+last_updated: 01/20/2024
 """
 
 import asyncio
@@ -66,10 +66,10 @@ class fpdsRequest(fpdsMixin):
             for kwarg, value in self.kwargs.items():
                 self.kwargs[kwarg] = validate_kwarg(kwarg=kwarg, string=value)
 
-    def __call__(self) ->:
+    def __call__(self) -> List[Dict[str, Union[str, float]]]:
         return self.process_records()
 
-    def __str__(self) -> str:
+    def __str__(self) -> str:  # pragma: no cover
         """String representation of `fpdsRequest`"""
         kwargs_str = " ".join([f"{key}={value}" for key, value in self.kwargs.items()])
         return f"<fpdsRequest {kwargs_str}>"

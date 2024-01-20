@@ -2,7 +2,7 @@
 XML classes for parsing FPDS content.
 
 author: derek663@gmail.com
-last_updated: 01/15/2024
+last_updated: 01/20/2024
 """
 
 import re
@@ -17,13 +17,13 @@ LAST_PAGE_REGEX = r"start=(.*?)$"
 
 
 class fpdsXML(fpdsXMLMixin, fpdsMixin):
-    """Parses FPDS request content received as bytes or `ElementTree`.
+    """Parses FPDS request content received as `bytes` or `ElementTree`.
     This class represents an entire XML document.
 
     Parameters
     ----------
     content: `Union[bytes, ElementTree]`
-        Bytes content or an `ElementTree` type that can be parsed into
+        `bytes` content or an `ElementTree` type that can be parsed into
         valid XML.
 
     Raises
@@ -68,7 +68,7 @@ class fpdsXML(fpdsXMLMixin, fpdsMixin):
         yield from self.tree.iter()
 
     def convert_to_lxml_tree(self) -> ElementTree:
-        """Returns an `ElementTree` object from a bytes response"""
+        """Returns an `ElementTree` object from a `bytes` response"""
         tree = ElementTree(fromstring(self.content))
         return tree
 
@@ -123,7 +123,7 @@ class fpdsXML(fpdsXMLMixin, fpdsMixin):
 
     def pagination_links(self, params: str) -> List[str]:
         """Builds pagination links for a single API response based on the
-        total record count value
+        total record count value.
         """
         resp_size = self.response_size
         offset = 0 if self.total_record_count < 10 else resp_size
@@ -135,12 +135,12 @@ class fpdsXML(fpdsXMLMixin, fpdsMixin):
         return page_links
 
     def get_atom_feed_entries(self) -> List[Element]:
-        """Returns tree entries that contain FPDS record data"""
+        """Returns tree entries that contain FPDS record data."""
         data_entries = self.tree.findall(".//ns0:entry", self.namespace_dict)
         return data_entries
 
     def jsonified_entries(self) -> List[FPDS_ENTRY]:
-        """Returns all paginated entries from an FPDS request"""
+        """Returns all paginated entries from an FPDS request."""
         entries = self.get_atom_feed_entries()
         json_data = [Entry(content=entry)() for entry in entries]
         return json_data
@@ -158,11 +158,11 @@ class fpdsElement(fpdsXML):
         self.element = self.tree
         delattr(self, "tree")
 
-    def __str__(self) -> str:
+    def __str__(self) -> str:  # pragma: no cover
         return f"<fpdsElement {self.tag}>"
 
     def parse_items(self) -> Iterator[Element]:
-        """Returns iteration of `Element` as a generator"""
+        """Returns iteration of `Element` as a generator."""
         yield from self.element.iter()
 
     @property
@@ -177,14 +177,14 @@ class fpdsElement(fpdsXML):
 
     @property
     def tag(self):
-        """Raw tag from `xml` library"""
+        """Raw tag from `xml` library."""
         return self.element.tag
 
     @property
     def clean_tag(self) -> str:
         """Tag name without the namespace. A tag like the following:
         `ns1:productOrServiceInformation` would simply return
-        `productOrServiceInformation`
+        `productOrServiceInformation`.
         """
         clean_tag = re.sub(self.NAMESPACE_REGEX_PATTERN, "", self.tag)
         return clean_tag
@@ -215,7 +215,7 @@ class _ElementAttributes(fpdsElement, fpdsXMLMixin):
         return f"<_ElementAttributes {self.tag}>"
 
     def _generate_nested_attribute_dict(self) -> Dict[str, str]:
-        """Returns all attributes of an Element
+        """Returns all attributes of an Element.
 
         Example
         -------
@@ -281,15 +281,15 @@ class Entry(fpdsElement):
     def __str__(self) -> str:  # pragma: no cover
         return f"<Entry {self.clean_tag}>"
 
-    def __call__(self) -> FPDS_ENTRY:
-        """Shortcut for the finalized data structure"""
+    def __call__(self) -> FPDS_ENTRY:  # pragma: no cover
+        """Shortcut for the finalized data structure."""
         data_with_attributes = self.get_entry_data()
         return data_with_attributes
 
     @property
     def contract_type(self) -> str:
         """Identifies the contract type for an individual award entry. Possible
-        options include: `AWARD` or `IDV`
+        options include: `AWARD` or `IDV`.
         """
         content = self.element.find(".//ns0:content", self.namespace_dict)
         if content:
@@ -298,7 +298,7 @@ class Entry(fpdsElement):
         return award_type.upper()
 
     def get_entry_data(self) -> Dict[str, str]:
-        """Extracts award data from an entry"""
+        """Extracts award data from an entry."""
         entry_tags = dict()  # type: Dict[str, str]
         hierarchy = self.content_tag_hierarchy()
 
