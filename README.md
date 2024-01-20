@@ -62,6 +62,9 @@ request = fpdsRequest(
 )
 
 # handles automatic conversion of XML --> JSON
+data = request()
+
+# or conversely, you can call the explicit `process_records` method
 data = request.process_records()
 
 # URL magic method for assitance / debugging

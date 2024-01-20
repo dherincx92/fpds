@@ -2,14 +2,14 @@
 Base classes for FPDS XML elements.
 
 author: derek663@gmail.com
-last_updated: 01/15/2024
+last_updated: 01/20/2024
 """
 
 import asyncio
 import multiprocessing
 from asyncio import Semaphore
 from itertools import chain
-from typing import List, Union
+from typing import Dict, List, Union
 from urllib import parse
 from urllib.request import urlopen
 from xml.etree.ElementTree import ElementTree, fromstring
@@ -66,24 +66,27 @@ class fpdsRequest(fpdsMixin):
             for kwarg, value in self.kwargs.items():
                 self.kwargs[kwarg] = validate_kwarg(kwarg=kwarg, string=value)
 
-    def __str__(self) -> str:
-        """String representation of `fpdsRequest`"""
+    def __call__(self) -> List[Dict[str, Union[str, float]]]:
+        return self.process_records()
+
+    def __str__(self) -> str:  # pragma: no cover
+        """String representation of `fpdsRequest`."""
         kwargs_str = " ".join([f"{key}={value}" for key, value in self.kwargs.items()])
         return f"<fpdsRequest {kwargs_str}>"
 
     def __url__(self) -> str:  # pragma: no cover
-        """Custom magic method for request URL"""
+        """Custom magic method for request URL."""
         return f"{self.url_base}&q={self.search_params}"
 
     @property
     def search_params(self) -> str:
-        """Search parameters inputted by user"""
+        """Search parameters inputted by user."""
         _params = [f"{key}:{value}" for key, value in self.kwargs.items()]
         return " ".join(_params)
 
     @staticmethod
     def convert_to_lxml_tree(content: Union[str, bytes]) -> ElementTree:
-        """Returns lxml tree element from a bytes response"""
+        """Returns lxml tree element from a `bytes` response."""
         tree = ElementTree(fromstring(content))
         return tree
 
@@ -134,7 +137,7 @@ class fpdsRequest(fpdsMixin):
         return entry.jsonified_entries()
 
     @timeit
-    def process_records(self):
+    def process_records(self) -> List[Dict[str, Union[str, float]]]:
         num_processes = multiprocessing.cpu_count()
         data = self.run_asyncio_loop()
 
