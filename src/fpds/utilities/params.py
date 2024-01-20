@@ -2,7 +2,7 @@
 Utility functions related to FPDS request parameters
 
 author: derek663@gmail.com
-last_updated: 01/15/2024
+last_updated: 01/20/2024
 """
 
 import re
@@ -14,7 +14,7 @@ CONFIG_TYPE = List[Dict[str, Any]]
 
 
 def get_search_param_from_config(name: str, config: CONFIG_TYPE = FIELDS):
-    """Finds the name of a kwarg in `fields.json`"""
+    """Finds the name of a kwarg in `fields.json`."""
     field_config = [field for field in config if field.get("name") == name]
     if not field_config:
         raise ValueError(f"`{name}` is not a valid FPDS parameter")
@@ -28,7 +28,7 @@ def match_regex_with_literal_string_pattern(pattern, string):
     Python's regex module.
 
     This function was written out of a need of escaping single backslahes
-    with double backslahes in JSON. See `constants/fields.json` for examples
+    with double backslahes in JSON. See `constants/fields.json` for examples.
     """
     _string = str(string) if not isinstance(string, str) else string
     raw_pattern = rf"{pattern}".replace("\\\\", "\\")

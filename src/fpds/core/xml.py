@@ -51,7 +51,7 @@ class fpdsXML(fpdsXMLMixin, fpdsMixin):
         """The root represents the top of the XML tree from an instance of type
         `ElementTree`. Since `fpdsElement` inherits from this class, we overwrite
         this method in child classes since `getroot()` is not available for
-        tags of type `Element`
+        tags of type `Element`.
         """
         if isinstance(self.tree, ElementTree):
             root = self.tree.getroot()
@@ -64,11 +64,11 @@ class fpdsXML(fpdsXMLMixin, fpdsMixin):
             return f"<fpdsXML query=`{query.text}` page=`{page.attrib['href']}`>"
 
     def parse_items(self) -> Iterator[Element]:
-        """Returns iteration of `Element` as a generator"""
+        """Returns iteration of `Element` as a generator."""
         yield from self.tree.iter()
 
     def convert_to_lxml_tree(self) -> ElementTree:
-        """Returns an `ElementTree` object from a `bytes` response"""
+        """Returns an `ElementTree` object from a `bytes` response."""
         tree = ElementTree(fromstring(self.content))
         return tree
 
@@ -81,21 +81,21 @@ class fpdsXML(fpdsXMLMixin, fpdsMixin):
         Parameters
         ----------
         element: `Element`
-            An lxml Element type
+            An lxml Element type.
         """
         namespace = re.match(NAMESPACE_REGEX, element.tag)
         return namespace.group(1) if namespace else ""
 
     @property
     def response_size(self) -> int:
-        """Max number of records in a single response"""
+        """Max number of records in a single response."""
         return 10
 
     @property
     def namespace_dict(self) -> Dict[str, str]:
         """The better way of parsing tree elements with namespaces, per the docs.
         Note that `namespaces` is a list, which retains parsing order of the
-        tree, which will be important in identifying Atom entries in `fpds`
+        tree, which will be important in identifying Atom entries in `fpds`.
 
         https://docs.python.org/3/library/xml.etree.elementtree.html#parsing-xml-with-namespaces
         """
@@ -351,12 +351,12 @@ class Entry(fpdsElement):
         ----------
         element: `Optional[Element]`
             Per docs, to get children simply iterate over element
-            https://lxml.de/api/lxml.etree._Element-class.html#getchildren
+            https://lxml.de/api/lxml.etree._Element-class.html#getchildren.
         parent: `Optional[str]`
-            Name of `elements` XML parent
+            Name of `elements` XML parent.
         hierarchy: `Dict[str, str]`
             The hierarchy dictionary structure to be passed through each
-            recursive function call
+            recursive function call.
         """
         if element is None:
             element = self.element  # type: ignore
@@ -395,7 +395,7 @@ class Parent(fpdsElement):
         return ["content", "IDV", "award"]
 
     def children(self):
-        """Returns children if they exist"""
+        """Returns children if they exist."""
         if list(self.element):
             return list(self.element)
 

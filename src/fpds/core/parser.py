@@ -70,23 +70,23 @@ class fpdsRequest(fpdsMixin):
         return self.process_records()
 
     def __str__(self) -> str:  # pragma: no cover
-        """String representation of `fpdsRequest`"""
+        """String representation of `fpdsRequest`."""
         kwargs_str = " ".join([f"{key}={value}" for key, value in self.kwargs.items()])
         return f"<fpdsRequest {kwargs_str}>"
 
     def __url__(self) -> str:  # pragma: no cover
-        """Custom magic method for request URL"""
+        """Custom magic method for request URL."""
         return f"{self.url_base}&q={self.search_params}"
 
     @property
     def search_params(self) -> str:
-        """Search parameters inputted by user"""
+        """Search parameters inputted by user."""
         _params = [f"{key}:{value}" for key, value in self.kwargs.items()]
         return " ".join(_params)
 
     @staticmethod
     def convert_to_lxml_tree(content: Union[str, bytes]) -> ElementTree:
-        """Returns lxml tree element from a bytes response"""
+        """Returns lxml tree element from a `bytes` response."""
         tree = ElementTree(fromstring(content))
         return tree
 
