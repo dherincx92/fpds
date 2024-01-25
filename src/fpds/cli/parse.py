@@ -19,9 +19,12 @@ from fpds.utilities import validate_kwarg
 
 
 @click.command()
+@click.option(
+    "-t", "--threads", default=10, help="The number of threads used for search"
+)
 @click.option("-o", "--output", required=False, help="Output directory")
 @click.argument("params", nargs=-1)
-def parse(params, output):
+def parse(params, threads, output):
     """
     Parsing command for the FPDS Atom feed
 
@@ -63,7 +66,7 @@ def parse(params, output):
     params_kwargs = dict(params)
     click.echo(f"Params to be used for FPDS search: {params_kwargs}")
 
-    request = fpdsRequest(**params_kwargs, cli_run=True)
+    request = fpdsRequest(**params_kwargs, thread_count=threads, cli_run=True)
     click.echo("Retrieving FPDS records from ATOM feed...")
     records = request()
 
