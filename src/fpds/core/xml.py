@@ -2,7 +2,7 @@
 XML classes for parsing FPDS content.
 
 author: derek663@gmail.com
-last_updated: 01/20/2024
+last_updated: 06/05/2024
 """
 
 import re
@@ -299,7 +299,7 @@ class Entry(fpdsElement):
 
     def get_entry_data(self) -> Dict[str, str]:
         """Extracts award data from an entry."""
-        entry_tags = dict()  # type: Dict[str, str]
+        entry_tags = dict()
         hierarchy = self.content_tag_hierarchy()
 
         for prefix, tag in hierarchy.items():
@@ -314,7 +314,7 @@ class Entry(fpdsElement):
         self,
         element: Optional[Element] = None,
         parent: Optional[str] = None,
-        hierarchy: Dict[str, str] = dict(),
+        hierarchy: Optional[Dict[str, str]] = None,
     ) -> Dict[str, str]:
         """Added on v1.2.0
 
@@ -358,11 +358,13 @@ class Entry(fpdsElement):
             The hierarchy dictionary structure to be passed through each
             recursive function call.
         """
+        if hierarchy is None:
+            hierarchy = {}
+
         if element is None:
             element = self.element  # type: ignore
 
         _parent = Parent(content=element)
-
         # continue parsing XML hierarchy because children exist and we want
         # to get every possible bit of data
         if _parent.children():
@@ -370,8 +372,11 @@ class Entry(fpdsElement):
                 _child = Parent(content=child, parent_name=parent)
                 parent_tag_name = _child.parent_child_hierarchy_name()
                 hierarchy[parent_tag_name] = child
+
                 self.content_tag_hierarchy(
-                    element=child, parent=parent_tag_name, hierarchy=hierarchy
+                    element=child,
+                    parent=parent_tag_name,
+                    hierarchy=hierarchy,
                 )
         return hierarchy
 
@@ -385,22 +390,13 @@ class Parent(fpdsElement):
         super().__init__(*args, **kwargs)
         self.parent_name = parent_name
 
-    @property
-    def tag_exclusions(self) -> List[str]:
-        """Tag names that should be excluded from the hierarchy tree. Because
-        some of the XML hierarchy doesn't provide much value, we provide a
-        mechanism for `award_tag_hierarchy` to avoid using such tags in the
-        final string concatenation.
-        """
-        return ["content", "IDV", "award"]
-
     def children(self):
         """Returns children if they exist."""
         if list(self.element):
             return list(self.element)
 
     def parent_child_hierarchy_name(self, delim="__"):
-        if self.parent_name and self.parent_name not in self.tag_exclusions:
+        if self.parent_name:
             name = self.parent_name + delim + self.clean_tag
         else:
             name = self.clean_tag

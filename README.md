@@ -1,6 +1,6 @@
 # fpds
-A no-frills parser for the Federal Procurement Data System (FPDS)
-at https://www.fpds.gov/fpdsng_cms/index.php/en/.
+A no-frills parser for the Federal Procurement Data System (FPDS) found
+[here](https://www.fpds.gov/fpdsng_cms/index.php/en/).
 
 
 ## Motivation
@@ -17,15 +17,14 @@ To install this package for development, create a virtual environment
 and install dependencies.
 
 ```
-$ python3 -m venv venv
+$ python3.8 -m venv venv
 $ source venv/bin/activate
 $ pip install -e .
 ```
 
-
 ## Usage
 For a list of valid search criteria parameters, consult FPDS documentation
-found at: https://www.fpds.gov/wiki/index.php/Atom_Feed_Usage. Parameters
+found [here](https://www.fpds.gov/wiki/index.php/Atom_Feed_Usage). Parameters
 will follow the `URL String` format shown in the link above, with the
 following exceptions:
 
@@ -36,12 +35,10 @@ entire criteria string in quotes.
 
  For example, `AGENCY_CODE:”3600”` should be used as `"AGENCY_CODE=3600"`.
 
-
 Via CLI:
 ```
 $  fpds parse "LAST_MOD_DATE=[2022/01/01, 2022/05/01]" "AGENCY_CODE=7504"
 ```
-
 
 By default, data will be dumped into an `.fpds` folder at the user's
 `$HOME` directory. If you wish to override this behavior, provide the `-o`
@@ -56,19 +53,22 @@ Same request via python interpreter:
 from fpds import fpdsRequest
 
 request = fpdsRequest(
-    target_database_url_env_key="SOME_ENVIRONMENT_VAR",
     LAST_MOD_DATE="[2022/01/01, 2022/05/01]",
     AGENCY_CODE="7504"
 )
-
-# handles automatic conversion of XML --> JSON
 data = request()
 
 # or conversely, you can call the explicit `process_records` method
 data = request.process_records()
 
-# URL magic method for assitance / debugging
-url = request.__url__()
+
+# if you wish to bypass `multiprocessing`
+request = fpdsRequest(
+    LAST_MOD_DATE="[2022/01/01, 2022/05/01]",
+    AGENCY_CODE="7504"
+)
+data = request.run_asyncio_loop()
+records = [xml.jsonified_entries() for xml in data]
 ```
 
 For linting and formatting, we use `flake8` and `black`.
@@ -90,6 +90,8 @@ $ make test
 ```
 
 ## What's New
+As of 06/05/2024, `v1.3.2` patches a bug that was caching attributes due to a misuse of a mutable default argument.
+
 `fpds` now supports asynchronous requests! As of `v1.3.0`, users can instantiate
 the class as usual, but will now need to call the `process_records` method
 to get records as JSON. Note: due to some recursive function calls in the XML
