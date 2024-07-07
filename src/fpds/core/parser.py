@@ -9,7 +9,7 @@ import asyncio
 import multiprocessing
 from asyncio import Semaphore
 from itertools import chain
-from typing import Dict, List, Union
+from typing import Dict, List, Optional, Union
 from urllib import parse
 from urllib.request import urlopen
 from xml.etree.ElementTree import ElementTree, fromstring
@@ -52,9 +52,16 @@ class fpdsRequest(fpdsMixin):
         does not match the expected regex.
     """
 
-    def __init__(self, cli_run: bool = False, thread_count: int = 10, **kwargs):
+    def __init__(
+        self,
+        cli_run: bool = False,
+        thread_count: int = 10,
+        page: Optional[int] = None,
+        **kwargs
+    ):
         self.cli_run = cli_run
         self.thread_count = thread_count
+        self.page = page
         self.links = []  # type: List[str]
         if kwargs:
             self.kwargs = kwargs
@@ -93,6 +100,7 @@ class fpdsRequest(fpdsMixin):
     def initial_request(self) -> ElementTree:
         """Send initial request to FPDS Atom feed and returns first page."""
         encoded_params = parse.urlencode({"q": self.search_params})
+        print(f"{self.url_base}&{encoded_params}")
         with urlopen(f"{self.url_base}&{encoded_params}") as response:
             body = response.read()
 
@@ -120,6 +128,11 @@ class fpdsRequest(fpdsMixin):
         data = loop.run_until_complete(self.fetch())
         return data
 
+    def page_index(self):
+        idx = 0 if self.page == 0 else self.page - 1
+        return idx
+
+
     def create_request_links(self) -> None:
         """Paginates through the first page of an FPDS response and creates a
         list of all pagination links. This method will not have a return; it
@@ -129,6 +142,9 @@ class fpdsRequest(fpdsMixin):
         params = self.search_params
         tree = fpdsXML(content=first_page)
         links = tree.pagination_links(params=params)
+
+        if self.page:
+            self.links = links[self.page_index]
         self.links = links
 
     @staticmethod
@@ -136,14 +152,14 @@ class fpdsRequest(fpdsMixin):
         """Wrapper around `jsonified_entries` method for avoiding pickle issue."""
         return entry.jsonified_entries()
 
-    @timeit
-    def process_records(self) -> List[Dict[str, Union[str, float]]]:
+    async def process_records(self) -> List[Dict[str, Union[str, float]]]:
         num_processes = multiprocessing.cpu_count()
-        data = self.run_asyncio_loop()
+        data = await self.fetch()
 
         # for parallel processing
         with multiprocessing.Pool(processes=num_processes) as pool:
             results = pool.map(self.multiprocess_jsonified_entries, data)
 
         data = list(chain.from_iterable(results))
+        print(f" data length: {len(data)}")
         return data
