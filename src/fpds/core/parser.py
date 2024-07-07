@@ -129,7 +129,7 @@ class fpdsRequest(fpdsMixin):
         return data
 
     def page_index(self):
-        idx = 0 if self.page == 0 else self.page - 1
+        idx = 0 if self.page == 1 else self.page - 1
         return idx
 
 
@@ -141,10 +141,10 @@ class fpdsRequest(fpdsMixin):
         first_page = self.initial_request()
         params = self.search_params
         tree = fpdsXML(content=first_page)
-        links = tree.pagination_links(params=params)
 
+        links = tree.pagination_links(params=params)
         if self.page:
-            self.links = links[self.page_index]
+            links = [links[self.page_index()]]
         self.links = links
 
     @staticmethod
