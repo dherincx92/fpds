@@ -100,7 +100,6 @@ class fpdsRequest(fpdsMixin):
     def initial_request(self) -> ElementTree:
         """Send initial request to FPDS Atom feed and returns first page."""
         encoded_params = parse.urlencode({"q": self.search_params})
-        print(f"{self.url_base}&{encoded_params}")
         with urlopen(f"{self.url_base}&{encoded_params}") as response:
             body = response.read()
 
@@ -161,5 +160,4 @@ class fpdsRequest(fpdsMixin):
             results = pool.map(self.multiprocess_jsonified_entries, data)
 
         data = list(chain.from_iterable(results))
-        print(f" data length: {len(data)}")
         return data
