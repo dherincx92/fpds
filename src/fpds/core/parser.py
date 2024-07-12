@@ -91,6 +91,10 @@ class fpdsRequest(fpdsMixin):
         _params = [f"{key}:{value}" for key, value in self.kwargs.items()]
         return " ".join(_params)
 
+    @property
+    def max_pages(self) -> int:
+        return len(self.links)
+
     @staticmethod
     def convert_to_lxml_tree(content: Union[str, bytes]) -> ElementTree:
         """Returns lxml tree element from a `bytes` response."""
@@ -142,9 +146,12 @@ class fpdsRequest(fpdsMixin):
         tree = fpdsXML(content=first_page)
 
         links = tree.pagination_links(params=params)
-        if self.page:
-            links = [links[self.page_index()]]
         self.links = links
+
+        if self.page:
+            if self.page > self.max_pages:
+                raise ValueError(f"Max response page count is {self.max_pages}!")
+            self.links = [links[self.page_index()]]
 
     @staticmethod
     def multiprocess_jsonified_entries(entry):
