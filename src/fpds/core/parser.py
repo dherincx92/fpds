@@ -8,6 +8,7 @@ last_updated: 01/20/2024
 import asyncio
 import multiprocessing
 from asyncio import Semaphore
+from concurrent.futures import ProcessPoolExecutor
 from itertools import chain
 from typing import Dict, List, Optional, Union
 from urllib import parse
@@ -18,7 +19,7 @@ from aiohttp import ClientSession
 
 from fpds.core.mixins import fpdsMixin
 from fpds.core.xml import fpdsXML
-from fpds.utilities import timeit, validate_kwarg
+from fpds.utilities import validate_kwarg
 
 
 class fpdsRequest(fpdsMixin):
@@ -35,7 +36,7 @@ class fpdsRequest(fpdsMixin):
             AGENCY_CODE="7504"
         )
 
-    Parameters
+    Attributes
     ----------
     cli_run: `bool`
         Flag indicating if this class is being isntantiated by a CLI run.
@@ -57,7 +58,7 @@ class fpdsRequest(fpdsMixin):
         cli_run: bool = False,
         thread_count: int = 10,
         page: Optional[int] = None,
-        **kwargs
+        **kwargs,
     ):
         self.cli_run = cli_run
         self.thread_count = thread_count
@@ -93,6 +94,7 @@ class fpdsRequest(fpdsMixin):
 
     @property
     def max_pages(self) -> int:
+        """Total number of FPDS pages contained in request."""
         return len(self.links)
 
     @staticmethod
@@ -110,7 +112,7 @@ class fpdsRequest(fpdsMixin):
         content_tree = self.convert_to_lxml_tree(body.decode("utf-8"))
         return content_tree
 
-    async def convert(self, session: ClientSession, link: str):
+    async def convert(self, session: ClientSession, link: str) -> fpdsXML:
         """Retrieves content from FPDS ATOM feed."""
         async with session.get(link) as response:
             content = await response.read()
@@ -126,15 +128,10 @@ class fpdsRequest(fpdsMixin):
                 tasks = [self.convert(session, link) for link in self.links]
                 return await asyncio.gather(*tasks)
 
-    def run_asyncio_loop(self):
-        loop = asyncio.get_event_loop()
-        data = loop.run_until_complete(self.fetch())
-        return data
-
     def page_index(self):
+        """Converts `page` to index integer."""
         idx = 0 if self.page == 1 else self.page - 1
         return idx
-
 
     def create_request_links(self) -> None:
         """Paginates through the first page of an FPDS response and creates a
@@ -154,17 +151,17 @@ class fpdsRequest(fpdsMixin):
             self.links = [links[self.page_index()]]
 
     @staticmethod
-    def multiprocess_jsonified_entries(entry):
-        """Wrapper around `jsonified_entries` method for avoiding pickle issue."""
-        return entry.jsonified_entries()
+    def _jsonify(entry):
+        """Wrapper around `jsonify` method for avoiding pickle issue."""
+        return entry.jsonify()
 
-    async def process_records(self) -> List[Dict[str, Union[str, float]]]:
+    async def data(self) -> List[Dict[str, Union[str, float]]]:
         num_processes = multiprocessing.cpu_count()
         data = await self.fetch()
 
         # for parallel processing
-        with multiprocessing.Pool(processes=num_processes) as pool:
-            results = pool.map(self.multiprocess_jsonified_entries, data)
+        with ProcessPoolExecutor(max_workers=num_processes) as pool:
+            results = pool.map(self._jsonify, data)
 
         data = list(chain.from_iterable(results))
         return data

@@ -20,7 +20,7 @@ class fpdsXML(fpdsXMLMixin, fpdsMixin):
     """Parses FPDS request content received as `bytes` or `ElementTree`.
     This class represents an entire XML document.
 
-    Parameters
+    Attributes
     ----------
     content: `Union[bytes, ElementTree]`
         `bytes` content or an `ElementTree` type that can be parsed into
@@ -139,7 +139,7 @@ class fpdsXML(fpdsXMLMixin, fpdsMixin):
         data_entries = self.tree.findall(".//ns0:entry", self.namespace_dict)
         return data_entries
 
-    def jsonified_entries(self) -> List[FPDS_ENTRY]:
+    def jsonify(self) -> List[FPDS_ENTRY]:
         """Returns all paginated entries from an FPDS request."""
         entries = self.get_atom_feed_entries()
         json_data = [Entry(content=entry)() for entry in entries]
@@ -196,7 +196,7 @@ class _ElementAttributes(fpdsElement, fpdsXMLMixin):
     by `xml.etree.ElementTree.Element`. This class should ideally not be
     instantiated by users.
 
-    Parameters
+    Attributes
     ----------
     element: `xml.etree.ElementTree.Element`
         An XML element.
