@@ -17,6 +17,7 @@ from xml.etree.ElementTree import ElementTree, fromstring
 
 from aiohttp import ClientSession
 
+from fpds.core import FPDS_ENTRY
 from fpds.core.mixins import fpdsMixin
 from fpds.core.xml import fpdsXML
 from fpds.utilities import validate_kwarg
@@ -125,9 +126,11 @@ class fpdsRequest(fpdsMixin):
                 tasks = [self.convert(session, link) for link in self.links]
                 return await asyncio.gather(*tasks)
 
-    def page_index(self) -> int:
+    def page_index(self) -> Optional[int]:
         """Converts `page` to index integer."""
-        idx = 0 if self.page == 1 else self.page - 1
+        idx = None
+        if self.page:
+            idx = 0 if self.page == 1 else self.page - 1
         return idx
 
     def create_request_links(self) -> None:
@@ -143,22 +146,23 @@ class fpdsRequest(fpdsMixin):
         self.links = links
 
         if self.page:
-            if self.page > self.page_count:
-                raise ValueError(f"Max response page count is {self.page_count}!")
-            self.links = [links[self.page_index()]]
+            idx = self.page_index()
+            if idx:
+                if self.page > self.page_count:
+                    raise ValueError(f"Max response page count is {self.page_count}!")
+                self.links = [links[idx]]
 
     @staticmethod
-    def _jsonify(entry) -> Dict[str, str]:
+    def _jsonify(entry) -> List[FPDS_ENTRY]:
         """Wrapper around `jsonify` method for avoiding pickle issue."""
         return entry.jsonify()
 
-    async def data(self) -> List[Dict[str, Union[str, float]]]:
+    async def data(self) -> List[FPDS_ENTRY]:
         num_processes = multiprocessing.cpu_count()
         data = await self.fetch()
 
         # for parallel processing
         with ProcessPoolExecutor(max_workers=num_processes) as pool:
-            results = pool.map(self._jsonify, data)
+            results = list(pool.map(self._jsonify, data))
 
-        data = list(chain.from_iterable(results))
-        return data
+        return list(chain.from_iterable(results))
