@@ -74,9 +74,6 @@ class fpdsRequest(fpdsMixin):
             for kwarg, value in self.kwargs.items():
                 self.kwargs[kwarg] = validate_kwarg(kwarg=kwarg, string=value)
 
-    def __call__(self) -> List[Dict[str, Union[str, float]]]:
-        return self.process_records()
-
     def __str__(self) -> str:  # pragma: no cover
         """String representation of `fpdsRequest`."""
         kwargs_str = " ".join([f"{key}={value}" for key, value in self.kwargs.items()])
