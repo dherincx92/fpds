@@ -2,7 +2,7 @@
 Base classes for FPDS XML elements.
 
 author: derek663@gmail.com
-last_updated: 01/20/2024
+last_updated: 07/13/2024
 """
 
 import asyncio
@@ -116,7 +116,7 @@ class fpdsRequest(fpdsMixin):
             xml = fpdsXML(content=self.convert_to_lxml_tree(content))
             return xml
 
-    async def fetch(self):
+    async def fetch(self) -> List[fpdsXML]:
         self.create_request_links()
         semaphore = Semaphore(self.thread_count)
 
@@ -125,7 +125,7 @@ class fpdsRequest(fpdsMixin):
                 tasks = [self.convert(session, link) for link in self.links]
                 return await asyncio.gather(*tasks)
 
-    def page_index(self):
+    def page_index(self) -> int:
         """Converts `page` to index integer."""
         idx = 0 if self.page == 1 else self.page - 1
         return idx
@@ -148,7 +148,7 @@ class fpdsRequest(fpdsMixin):
             self.links = [links[self.page_index()]]
 
     @staticmethod
-    def _jsonify(entry):
+    def _jsonify(entry) -> Dict[str, str]:
         """Wrapper around `jsonify` method for avoiding pickle issue."""
         return entry.jsonify()
 
