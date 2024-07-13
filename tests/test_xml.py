@@ -35,17 +35,17 @@ class TestFpdsXML(TestCase):
         namespace_dict = self._class.namespace_dict
         self.assertEqual(namespace_dict, TEST_NAMESPACE_DICT)
 
-    def test_total_record_count(self):
-        total = self._class.total_record_count
+    def test_lower_limit(self):
+        total = self._class.lower_limit
         self.assertEqual(total, 20)
 
-    def test_total_record_count_truncated_response(self):
+    def test_lower_limit_count_truncated_response(self):
         """A truncated response won't have a `last` link tag. This test
         ensures that if the response size is less than 10 that the
-        `total_record_count` property is still generated correctly.
+        `lower_limit` property is still generated correctly.
         """
         _class = fpdsXML(TRUNCATED_RESPONSE_DATA_BYTES)
-        total = _class.total_record_count
+        total = _class.lower_limit
         self.assertEqual(total, 1)
 
     def test_pagination_links(self):
@@ -58,8 +58,8 @@ class TestFpdsXML(TestCase):
         entry_types = set([type(entry) for entry in entries])
         self.assertEqual(len(entry_types), 1)
 
-    def test_jsonified_entries(self):
-        entries = self._class.jsonified_entries()
+    def test_jsonify(self):
+        entries = self._class.jsonify()
         self.assertEqual(len(entries), 10)
 
 
