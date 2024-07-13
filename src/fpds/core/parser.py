@@ -93,7 +93,7 @@ class fpdsRequest(fpdsMixin):
         return " ".join(_params)
 
     @property
-    def max_pages(self) -> int:
+    def page_count(self) -> int:
         """Total number of FPDS pages contained in request."""
         return len(self.links)
 
@@ -146,8 +146,8 @@ class fpdsRequest(fpdsMixin):
         self.links = links
 
         if self.page:
-            if self.page > self.max_pages:
-                raise ValueError(f"Max response page count is {self.max_pages}!")
+            if self.page > self.page_count:
+                raise ValueError(f"Max response page count is {self.page_count}!")
             self.links = [links[self.page_index()]]
 
     @staticmethod
