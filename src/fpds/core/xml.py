@@ -109,8 +109,10 @@ class fpdsXML(fpdsXMLMixin, fpdsMixin):
         return namespace_dict
 
     @property
-    def total_record_count(self) -> int:
-        """Total number of records across all pagination links."""
+    def lower_limit(self) -> int:
+        """Lower limit of record count (i.e. if 40, it means there is a total of
+        40-49 records).
+        """
         last_link = self.tree.find(".//ns0:link[@rel='last']", self.namespace_dict)
         if isinstance(last_link, Element):
             # length of last_link should always be 1
@@ -126,8 +128,8 @@ class fpdsXML(fpdsXMLMixin, fpdsMixin):
         total record count value.
         """
         resp_size = self.response_size
-        offset = 0 if self.total_record_count < 10 else resp_size
-        page_range = list(range(0, self.total_record_count + offset, resp_size))
+        offset = 0 if self.lower_limit < 10 else resp_size
+        page_range = list(range(0, self.lower_limit + offset, resp_size))
         page_links = []
         for num in page_range:
             link = f"{self.url_base}&q={params}&start={num}"
