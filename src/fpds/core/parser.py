@@ -2,7 +2,7 @@
 Base classes for FPDS XML elements.
 
 author: derek663@gmail.com
-last_updated: 01/20/2024
+last_updated: 07/13/2024
 """
 
 import asyncio
@@ -17,6 +17,7 @@ from xml.etree.ElementTree import ElementTree, fromstring
 
 from aiohttp import ClientSession
 
+from fpds.core import FPDS_ENTRY
 from fpds.core.mixins import fpdsMixin
 from fpds.core.xml import fpdsXML
 from fpds.utilities import validate_kwarg
@@ -74,9 +75,6 @@ class fpdsRequest(fpdsMixin):
             for kwarg, value in self.kwargs.items():
                 self.kwargs[kwarg] = validate_kwarg(kwarg=kwarg, string=value)
 
-    def __call__(self) -> List[Dict[str, Union[str, float]]]:
-        return self.process_records()
-
     def __str__(self) -> str:  # pragma: no cover
         """String representation of `fpdsRequest`."""
         kwargs_str = " ".join([f"{key}={value}" for key, value in self.kwargs.items()])
@@ -93,7 +91,7 @@ class fpdsRequest(fpdsMixin):
         return " ".join(_params)
 
     @property
-    def max_pages(self) -> int:
+    def page_count(self) -> int:
         """Total number of FPDS pages contained in request."""
         return len(self.links)
 
@@ -119,7 +117,7 @@ class fpdsRequest(fpdsMixin):
             xml = fpdsXML(content=self.convert_to_lxml_tree(content))
             return xml
 
-    async def fetch(self):
+    async def fetch(self) -> List[fpdsXML]:
         self.create_request_links()
         semaphore = Semaphore(self.thread_count)
 
@@ -128,9 +126,11 @@ class fpdsRequest(fpdsMixin):
                 tasks = [self.convert(session, link) for link in self.links]
                 return await asyncio.gather(*tasks)
 
-    def page_index(self):
+    def page_index(self) -> Optional[int]:
         """Converts `page` to index integer."""
-        idx = 0 if self.page == 1 else self.page - 1
+        idx = None
+        if self.page:
+            idx = 0 if self.page == 1 else self.page - 1
         return idx
 
     def create_request_links(self) -> None:
@@ -146,22 +146,23 @@ class fpdsRequest(fpdsMixin):
         self.links = links
 
         if self.page:
-            if self.page > self.max_pages:
-                raise ValueError(f"Max response page count is {self.max_pages}!")
-            self.links = [links[self.page_index()]]
+            idx = self.page_index()
+            if idx:
+                if self.page > self.page_count:
+                    raise ValueError(f"Max response page count is {self.page_count}!")
+                self.links = [links[idx]]
 
     @staticmethod
-    def _jsonify(entry):
+    def _jsonify(entry) -> List[FPDS_ENTRY]:
         """Wrapper around `jsonify` method for avoiding pickle issue."""
         return entry.jsonify()
 
-    async def data(self) -> List[Dict[str, Union[str, float]]]:
+    async def data(self) -> List[FPDS_ENTRY]:
         num_processes = multiprocessing.cpu_count()
         data = await self.fetch()
 
         # for parallel processing
         with ProcessPoolExecutor(max_workers=num_processes) as pool:
-            results = pool.map(self._jsonify, data)
+            results = list(pool.map(self._jsonify, data))
 
-        data = list(chain.from_iterable(results))
-        return data
+        return list(chain.from_iterable(results))

@@ -57,7 +57,6 @@ request = fpdsRequest(
     LAST_MOD_DATE="[2022/01/01, 2022/05/01]",
     AGENCY_CODE="7504"
 )
-
 data = asyncio.run(request.data())
 ```
 
