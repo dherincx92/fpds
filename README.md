@@ -50,25 +50,15 @@ $  fpds parse "LAST_MOD_DATE=[2022/01/01, 2022/05/01]" "AGENCY_CODE=7504" -o {so
 
 Same request via python interpreter:
 ```
+import asyncio
 from fpds import fpdsRequest
 
 request = fpdsRequest(
     LAST_MOD_DATE="[2022/01/01, 2022/05/01]",
     AGENCY_CODE="7504"
 )
-data = request()
 
-# or conversely, you can call the explicit `process_records` method
-data = request.process_records()
-
-
-# if you wish to bypass `multiprocessing`
-request = fpdsRequest(
-    LAST_MOD_DATE="[2022/01/01, 2022/05/01]",
-    AGENCY_CODE="7504"
-)
-data = request.run_asyncio_loop()
-records = [xml.jsonified_entries() for xml in data]
+data = asyncio.run(request.data())
 ```
 
 For linting and formatting, we use `flake8` and `black`.
