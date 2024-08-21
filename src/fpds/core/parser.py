@@ -40,30 +40,34 @@ class fpdsRequest(fpdsMixin):
     Attributes
     ----------
     cli_run: `bool`
-        Flag indicating if this class is being isntantiated by a CLI run.
         Defaults to `False`.
+        Flag indicating if this class is being isntantiated by a CLI run.
+    skip_validation: `bool`
+        Defaults to `False`.
+        Skips validation for API parameters. Use with caution.
     thread_count: `int`
+        Defaults to 10.
         The number of threads to send per search.
-        Default to 10.
 
     Raises
     ------
     ValueError:
         Raised if no keyword argument(s) are provided, a keyword argument
         is not a valid FPDS parameter, or the value of a keyword argument
-        does not match the expected regex.
+        does not match the expected regex. NOTE: only raised if `skip_validation`
+        is `False`.
     """
 
     def __init__(
         self,
         cli_run: bool = False,
+        skip_validation: bool = False,
         thread_count: int = 10,
-        page: Optional[int] = None,
-        **kwargs,
+        **kwargs
     ):
         self.cli_run = cli_run
         self.thread_count = thread_count
-        self.page = page
+        self.skip_validation = skip_validation
         self.links = []  # type: List[str]
         if kwargs:
             self.kwargs = kwargs
@@ -72,8 +76,9 @@ class fpdsRequest(fpdsMixin):
 
         # do not run class validations since CLI command has its own
         if not self.cli_run:
-            for kwarg, value in self.kwargs.items():
-                self.kwargs[kwarg] = validate_kwarg(kwarg=kwarg, string=value)
+            if not self.skip_validation:
+                for kwarg, value in self.kwargs.items():
+                    self.kwargs[kwarg] = validate_kwarg(kwarg=kwarg, string=value)
 
     def __str__(self) -> str:  # pragma: no cover
         """String representation of `fpdsRequest`."""
