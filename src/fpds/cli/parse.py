@@ -6,7 +6,9 @@ author: derek663@gmail.com
 last_updated: 12/30/2022
 """
 
+import asyncio
 import json
+from itertools import chain
 from pathlib import Path
 from uuid import uuid4
 
@@ -65,7 +67,9 @@ def parse(params, output):
 
     request = fpdsRequest(**params_kwargs, cli_run=True)
     click.echo("Retrieving FPDS records from ATOM feed...")
-    records = request()
+
+    data = asyncio.run(request.data())
+    records = list(chain.from_iterable(data))
 
     DATA_DIR = OUTPUT_PATH if output else FPDS_DATA_DATE_DIR
     DATA_FILE = DATA_DIR / f"{uuid4()}.json"

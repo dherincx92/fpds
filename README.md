@@ -51,13 +51,17 @@ $  fpds parse "LAST_MOD_DATE=[2022/01/01, 2022/05/01]" "AGENCY_CODE=7504" -o my-
 Same request via python interpreter:
 ```
 import asyncio
+from itertools import chain
 from fpds import fpdsRequest
 
 request = fpdsRequest(
     LAST_MOD_DATE="[2022/01/01, 2022/05/01]",
     AGENCY_CODE="7504"
 )
-data = list(asyncio.run(request.data()))
+
+# results are nested lists so de-nest
+data = asyncio.run(request.data())
+records = list(chain.from_iterable(data))
 ```
 
 For linting and formatting, we use `flake8` and `black`.
