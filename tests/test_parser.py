@@ -5,6 +5,11 @@ from unittest import TestCase, mock
 from xml.etree.ElementTree import ElementTree, fromstring
 
 from fpds import fpdsRequest
+from fpds.errors import (
+    fpdsMismatchedParameterRegexError,
+    fpdsInvalidParameter,
+    fpdsMissingKeywordParameterError,
+)
 from tests import FULL_RESPONSE_DATA_BYTES
 
 # valid params and values
@@ -52,15 +57,15 @@ class TestFpdsRequest(TestCase):
         self._class = fpdsRequest(**FPDS_REQUEST_PARAMS_DICT)
 
     def test_params_exist(self):
-        with pytest.raises(ValueError):
+        with pytest.raises(fpdsMissingKeywordParameterError):
             fpdsRequest({})
 
     def test_invalid_param(self):
-        with pytest.raises(ValueError):
+        with pytest.raises(fpdsInvalidParameter):
             fpdsRequest(**FPDS_REQUEST_INVALID_PARAM_DICT)
 
     def test_invalid_param_regex(self):
-        with pytest.raises(ValueError):
+        with pytest.raises(fpdsMismatchedParameterRegexError):
             fpdsRequest(**FPDS_REQUEST_INVALID_REGEX_DICT)
 
     def test_str_magic_method(self):
