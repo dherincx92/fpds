@@ -63,16 +63,30 @@ class fpdsRequest(fpdsMixin):
         cli_run: bool = False,
         skip_validation: bool = False,
         thread_count: int = 10,
-        **kwargs
+        page: Optional[int] = None,
+        **kwargs,
     ):
         self.cli_run = cli_run
         self.thread_count = thread_count
         self.skip_validation = skip_validation
+        self.page = page
         self.links = []  # type: List[str]
+
         if kwargs:
             self.kwargs = kwargs
         else:
             raise ValueError("You must provide at least one keyword parameter")
+
+        tree = fpdsXML(content=self.initial_request())
+        links = tree.pagination_links(params=self.search_params)
+        self.links = links
+
+        if self.page:
+            idx = self.page_index()
+            if idx is not None and self.links:
+                if self.page > self.page_count:
+                    raise ValueError(f"Max response page count is {self.page_count}!")
+                self.links = [links[idx]]
 
         # do not run class validations since CLI command has its own
         if not self.cli_run:
@@ -123,8 +137,10 @@ class fpdsRequest(fpdsMixin):
             return xml
 
     async def fetch(self) -> List[fpdsXML]:
-        self.create_request_links()
         semaphore = Semaphore(self.thread_count)
+
+        if not self.links:
+            return []
 
         async with semaphore:
             async with ClientSession() as session:
@@ -137,25 +153,6 @@ class fpdsRequest(fpdsMixin):
         if self.page:
             idx = 0 if self.page == 1 else self.page - 1
         return idx
-
-    def create_request_links(self) -> None:
-        """Paginates through the first page of an FPDS response and creates a
-        list of all pagination links. This method will not have a return; it
-        will set the `links` attributes to an iterable of strings.
-        """
-        first_page = self.initial_request()
-        params = self.search_params
-        tree = fpdsXML(content=first_page)
-
-        links = tree.pagination_links(params=params)
-        self.links = links
-
-        if self.page:
-            idx = self.page_index()
-            if idx:
-                if self.page > self.page_count:
-                    raise ValueError(f"Max response page count is {self.page_count}!")
-                self.links = [links[idx]]
 
     @staticmethod
     def _jsonify(entry) -> List[FPDS_ENTRY]:

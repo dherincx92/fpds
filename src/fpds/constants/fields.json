@@ -345,7 +345,7 @@
         "description": "Action Obligation",
         "name": "OBLIGATED_AMOUNT",
         "quotes": true,
-        "regex": "\\[\\d+, \\d+]"
+        "regex": "\\[\\d+, \\d+\\]"
     },
     {
         "description": "Contract ID",
