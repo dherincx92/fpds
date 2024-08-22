@@ -9,8 +9,7 @@ import asyncio
 import multiprocessing
 from asyncio import Semaphore
 from concurrent.futures import ProcessPoolExecutor
-from itertools import chain
-from typing import List, Optional, Union
+from typing import Iterator, List, Optional, Union
 from urllib import parse
 from urllib.request import urlopen
 from xml.etree.ElementTree import ElementTree, fromstring
@@ -20,6 +19,7 @@ from aiohttp import ClientSession
 from fpds.core import FPDS_ENTRY
 from fpds.core.mixins import fpdsMixin
 from fpds.core.xml import fpdsXML
+from fpds.errors import fpdsMaxPageLengthExceededError, fpdsMissingKeywordParameterError
 from fpds.utilities import validate_kwarg
 
 
@@ -42,40 +42,47 @@ class fpdsRequest(fpdsMixin):
     cli_run: `bool`
         Defaults to `False`.
         Flag indicating if this class is being isntantiated by a CLI run.
-    skip_validation: `bool`
-        Defaults to `False`.
-        Skips validation for API parameters. Use with caution.
     thread_count: `int`
         Defaults to 10.
         The number of threads to send per search.
+    page: `Optional[int]`
+        Defaults to `None`.
+        The results page to retrieve.
 
     Raises
     ------
-    ValueError:
-        Raised if no keyword argument(s) are provided, a keyword argument
-        is not a valid FPDS parameter, or the value of a keyword argument
-        does not match the expected regex. NOTE: only raised if `skip_validation`
-        is `False`.
+    fpdsDuplicateParameterConfiguration:
+        Raised if duplicate configurations for a single parameter exist.
+
+    fpdsInvalidParameter:
+        Raised if an invalid parameter is provided.
+
+    fpdsMaxPageLengthExceededError:
+        Raised if user requests a page of results that doesn't exist.
+
+    fpdsMismatchedParameterRegexError:
+        Raised if parameter value does not match expected regex pattern.
+
+    fpdsMissingKeywordParameterError:
+        Raised if no keyword argument(s) are provided.
     """
 
     def __init__(
         self,
         cli_run: bool = False,
-        skip_validation: bool = False,
         thread_count: int = 10,
         page: Optional[int] = None,
         **kwargs,
     ):
         self.cli_run = cli_run
         self.thread_count = thread_count
-        self.skip_validation = skip_validation
         self.page = page
         self.links = []  # type: List[str]
 
         if kwargs:
             self.kwargs = kwargs
         else:
-            raise ValueError("You must provide at least one keyword parameter")
+            raise fpdsMissingKeywordParameterError
 
         tree = fpdsXML(content=self.initial_request())
         links = tree.pagination_links(params=self.search_params)
@@ -85,14 +92,13 @@ class fpdsRequest(fpdsMixin):
             idx = self.page_index()
             if idx is not None and self.links:
                 if self.page > self.page_count:
-                    raise ValueError(f"Max response page count is {self.page_count}!")
+                    raise fpdsMaxPageLengthExceededError(page_count=self.page_count)
                 self.links = [links[idx]]
 
         # do not run class validations since CLI command has its own
         if not self.cli_run:
-            if not self.skip_validation:
-                for kwarg, value in self.kwargs.items():
-                    self.kwargs[kwarg] = validate_kwarg(kwarg=kwarg, string=value)
+            for kwarg, value in self.kwargs.items():
+                self.kwargs[kwarg] = validate_kwarg(kwarg=kwarg, string=value)
 
     def __str__(self) -> str:  # pragma: no cover
         """String representation of `fpdsRequest`."""
@@ -159,12 +165,12 @@ class fpdsRequest(fpdsMixin):
         """Wrapper around `jsonify` method for avoiding pickle issue."""
         return entry.jsonify()
 
-    async def data(self) -> List[FPDS_ENTRY]:
+    async def data(self) -> Iterator:
+        """Returns FPDS data."""
         num_processes = multiprocessing.cpu_count()
         data = await self.fetch()
 
         # for parallel processing
         with ProcessPoolExecutor(max_workers=num_processes) as pool:
-            results = list(pool.map(self._jsonify, data))
-
-        return list(chain.from_iterable(results))
+            results = pool.map(self._jsonify, data)
+        return results

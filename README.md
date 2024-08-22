@@ -57,7 +57,7 @@ request = fpdsRequest(
     LAST_MOD_DATE="[2022/01/01, 2022/05/01]",
     AGENCY_CODE="7504"
 )
-data = asyncio.run(request.data())
+data = list(asyncio.run(request.data()))
 ```
 
 For linting and formatting, we use `flake8` and `black`.
@@ -79,7 +79,9 @@ $ make local-test
 ```
 
 ## What's New
-As of 06/05/2024, `v1.3.2` patches a bug that was caching attributes due to a misuse of a mutable default argument.
+As of 08/21/2024, `v1.4.0` data is returned as a generator, providing more flexibility
+for memory constrained devices. Users also have the ability to select specific
+pages of results with the `page` parameter.
 
 `fpds` now supports asynchronous requests! As of `v1.3.0`, users can instantiate
 the class as usual, but will now need to call the `process_records` method

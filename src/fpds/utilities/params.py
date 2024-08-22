@@ -9,6 +9,11 @@ import re
 from typing import Any, Dict, List
 
 from fpds.config import FPDS_FIELDS_CONFIG as FIELDS
+from fpds.errors import (
+    fpdsDuplicateParameterConfiguration,
+    fpdsInvalidParameter,
+    fpdsMismatchedParameterRegexError,
+)
 
 CONFIG_TYPE = List[Dict[str, Any]]
 
@@ -17,9 +22,9 @@ def get_search_param_from_config(name: str, config: CONFIG_TYPE = FIELDS):
     """Finds the name of a kwarg in `fields.json`."""
     field_config = [field for field in config if field.get("name") == name]
     if not field_config:
-        raise ValueError(f"`{name}` is not a valid FPDS parameter")
+        raise fpdsInvalidParameter(name=name)
     elif len(field_config) > 1:
-        raise ValueError(f"Multiple records for parameter `{name}` found in config!")
+        raise fpdsDuplicateParameterConfiguration(name=name)
     return field_config[0]
 
 
@@ -43,7 +48,7 @@ def validate_kwarg(kwarg, string):
     pattern = obj.get("regex")
     match = match_regex_with_literal_string_pattern(pattern=pattern, string=string)
     if not match:
-        raise ValueError(f"`{string}` does not match regex: {pattern}")
+        raise fpdsMismatchedParameterRegexError(string=string, pattern=pattern)
 
     if obj.get("quotes"):
         return f'"{string}"'
