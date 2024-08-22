@@ -80,5 +80,6 @@ class TestFpdsRequest(TestCase):
         tree = self._class.convert_to_lxml_tree(content=FULL_RESPONSE_DATA_BYTES)
         self.assertIsInstance(tree, ElementTree)
 
+
 if __name__ == "__main__":
     unittest.main()
