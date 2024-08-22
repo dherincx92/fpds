@@ -69,7 +69,7 @@
         "description": "Base and Exercised Options Value",
         "name": "BASE_EXERCISED_OPTIONS_VALUE",
         "quotes": false,
-        "regex": "\\[\\d+, \\d+]"
+        "regex": "\\[\\d+, \\d+\\]|\\[\\d+,\\)"
     },
     {
         "description": "Cage Code",
@@ -165,7 +165,7 @@
         "description": "Current Contract Value",
         "name": "CURRENT_CONTRACT_VALUE",
         "quotes": false,
-        "regex": "\\[\\d+, \\d+]"
+        "regex": "\\[\\d+, \\d+\\]|\\[\\d+,\\)"
     },
     {
         "description": "Department ID",
@@ -339,13 +339,13 @@
         "description": "Number of Offers Received",
         "name": "NUMBER_OF_OFFERS_RECEIVED",
         "quotes": false,
-        "regex": "\\[\\d+, \\d+]"
+        "regex": "\\[\\d+, \\d+\\]|\\[\\d+,\\)"
     },
     {
         "description": "Action Obligation",
         "name": "OBLIGATED_AMOUNT",
         "quotes": true,
-        "regex": "\\[\\d+, \\d+\\]"
+        "regex": "\\[\\d+, \\d+\\]|\\[\\d+,\\)"
     },
     {
         "description": "Contract ID",
@@ -476,25 +476,25 @@
         "description": "Total Base And All Options Value ($)",
         "name": "TOTAL_CURRENT_CONTRACT_VALUE",
         "quotes": false,
-        "regex": "\\[\\d+, \\d+]"
+        "regex": "\\[\\d+, \\d+\\]|\\[\\d+,\\)"
     },
     {
         "description": "Total Dollars Obligated",
         "name": "TOTAL_DOLLARS_OBLIGATED",
         "quotes": false,
-        "regex": "\\[\\d+, \\d+]"
+        "regex": "\\[\\d+, \\d+\\]|\\[\\d+,\\)"
     },
     {
         "description": "Total Non Government Value",
         "name": "TOTAL_NON_GOVERNMENT_VALUE",
         "quotes": false,
-        "regex": "\\[\\d+, \\d+]"
+        "regex": "\\[\\d+, \\d+\\]|\\[\\d+,\\)"
     },
     {
         "description": "Total Base and Exercised Options Value ($)",
         "name": "TOTAL_ULTIMATE_CONTRACT_VALUE",
         "quotes": false,
-        "regex": "\\[\\d+, \\d+]"
+        "regex": "\\[\\d+, \\d+\\]|\\[\\d+,\\)"
     },
     {
         "description": "Treasury Account Symbol",
