@@ -6,7 +6,7 @@ readme = "README.md"
 license = {file = "LICENSE"}
 requires-python = ">=3.8"
 keywords = ["fpds", "python", "atom feed", "cli", "xml"]
-version = "1.4.0"
+version = "1.4.1"
 classifiers = [
     "Intended Audience :: Developers",
     "Natural Language :: English",

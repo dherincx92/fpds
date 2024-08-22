@@ -51,13 +51,17 @@ $  fpds parse "LAST_MOD_DATE=[2022/01/01, 2022/05/01]" "AGENCY_CODE=7504" -o my-
 Same request via python interpreter:
 ```
 import asyncio
+from itertools import chain
 from fpds import fpdsRequest
 
 request = fpdsRequest(
     LAST_MOD_DATE="[2022/01/01, 2022/05/01]",
     AGENCY_CODE="7504"
 )
-data = list(asyncio.run(request.data()))
+
+# results are nested lists so de-nest
+data = asyncio.run(request.data())
+records = list(chain.from_iterable(data))
 ```
 
 For linting and formatting, we use `flake8` and `black`.
@@ -79,9 +83,11 @@ $ make local-test
 ```
 
 ## What's New
-As of 08/21/2024, `v1.4.0` data is returned as a generator, providing more flexibility
+As of 08/21/2024, `v1.4.1` data is returned as a generator, providing more flexibility
 for memory constrained devices. Users also have the ability to select specific
 pages of results with the `page` parameter.
+
+Parameters in `fields.json` have been updated to support unbounded values. Previously, range-based parameters had to define an upper & lower bound (i.e. `[4250, 7500]`). In the most current version of this library, you can now specify the following patterns for all range parameters: `[4250,)` or `(, 7500]`. This even works for dates: `[2022/08/22,)` or `(, 2022/08/01]`!
 
 `fpds` now supports asynchronous requests! As of `v1.3.0`, users can instantiate
 the class as usual, but will now need to call the `process_records` method
