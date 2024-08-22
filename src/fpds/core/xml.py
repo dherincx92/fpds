@@ -2,7 +2,7 @@
 XML classes for parsing FPDS content.
 
 author: derek663@gmail.com
-last_updated: 06/05/2024
+last_updated: 07/13/2024
 """
 
 import re
@@ -20,7 +20,7 @@ class fpdsXML(fpdsXMLMixin, fpdsMixin):
     """Parses FPDS request content received as `bytes` or `ElementTree`.
     This class represents an entire XML document.
 
-    Parameters
+    Attributes
     ----------
     content: `Union[bytes, ElementTree]`
         `bytes` content or an `ElementTree` type that can be parsed into
@@ -109,8 +109,10 @@ class fpdsXML(fpdsXMLMixin, fpdsMixin):
         return namespace_dict
 
     @property
-    def total_record_count(self) -> int:
-        """Total number of records across all pagination links."""
+    def lower_limit(self) -> int:
+        """Lower limit of record count (i.e. if 40, it means there is a total of
+        40-49 records).
+        """
         last_link = self.tree.find(".//ns0:link[@rel='last']", self.namespace_dict)
         if isinstance(last_link, Element):
             # length of last_link should always be 1
@@ -126,8 +128,8 @@ class fpdsXML(fpdsXMLMixin, fpdsMixin):
         total record count value.
         """
         resp_size = self.response_size
-        offset = 0 if self.total_record_count < 10 else resp_size
-        page_range = list(range(0, self.total_record_count + offset, resp_size))
+        offset = 0 if self.lower_limit < 10 else resp_size
+        page_range = list(range(0, self.lower_limit + offset, resp_size))
         page_links = []
         for num in page_range:
             link = f"{self.url_base}&q={params}&start={num}"
@@ -139,7 +141,7 @@ class fpdsXML(fpdsXMLMixin, fpdsMixin):
         data_entries = self.tree.findall(".//ns0:entry", self.namespace_dict)
         return data_entries
 
-    def jsonified_entries(self) -> List[FPDS_ENTRY]:
+    def jsonify(self) -> List[FPDS_ENTRY]:
         """Returns all paginated entries from an FPDS request."""
         entries = self.get_atom_feed_entries()
         json_data = [Entry(content=entry)() for entry in entries]
@@ -196,7 +198,7 @@ class _ElementAttributes(fpdsElement, fpdsXMLMixin):
     by `xml.etree.ElementTree.Element`. This class should ideally not be
     instantiated by users.
 
-    Parameters
+    Attributes
     ----------
     element: `xml.etree.ElementTree.Element`
         An XML element.

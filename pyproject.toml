@@ -6,7 +6,7 @@ readme = "README.md"
 license = {file = "LICENSE"}
 requires-python = ">=3.8"
 keywords = ["fpds", "python", "atom feed", "cli", "xml"]
-version = "1.3.2"
+version = "1.4.0"
 classifiers = [
     "Intended Audience :: Developers",
     "Natural Language :: English",
@@ -43,7 +43,7 @@ tests = [
 packaging = [
     "build==0.8.0",
     "wheel==0.37.1",
-    "twine==4.0.1",
+    "twine==5.1.1",
 ]
 
 [project.scripts]

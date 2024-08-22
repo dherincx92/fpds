@@ -17,7 +17,7 @@ To install this package for development, create a virtual environment
 and install dependencies.
 
 ```
-$ python3.8 -m venv venv
+$ python3.10 -m venv venv
 $ source venv/bin/activate
 $ pip install -e .
 ```
@@ -33,7 +33,7 @@ following exceptions:
 automatically determine if quotes are needed, so simply enclose your
 entire criteria string in quotes.
 
- For example, `AGENCY_CODE:”3600”` should be used as `"AGENCY_CODE=3600"`.
+ For example, `AGENCY_CODE:"3600"` should be used as `"AGENCY_CODE=3600"`.
 
 Via CLI:
 ```
@@ -45,30 +45,19 @@ By default, data will be dumped into an `.fpds` folder at the user's
 option. The directory will be created if it doesn't exist:
 
 ```
-$  fpds parse "LAST_MOD_DATE=[2022/01/01, 2022/05/01]" "AGENCY_CODE=7504" -o {some-directory}
+$  fpds parse "LAST_MOD_DATE=[2022/01/01, 2022/05/01]" "AGENCY_CODE=7504" -o my-preferred-directory
 ```
 
 Same request via python interpreter:
 ```
+import asyncio
 from fpds import fpdsRequest
 
 request = fpdsRequest(
     LAST_MOD_DATE="[2022/01/01, 2022/05/01]",
     AGENCY_CODE="7504"
 )
-data = request()
-
-# or conversely, you can call the explicit `process_records` method
-data = request.process_records()
-
-
-# if you wish to bypass `multiprocessing`
-request = fpdsRequest(
-    LAST_MOD_DATE="[2022/01/01, 2022/05/01]",
-    AGENCY_CODE="7504"
-)
-data = request.run_asyncio_loop()
-records = [xml.jsonified_entries() for xml in data]
+data = list(asyncio.run(request.data()))
 ```
 
 For linting and formatting, we use `flake8` and `black`.
@@ -86,11 +75,13 @@ $ make clean
 
 ### Testing
 ```
-$ make test
+$ make local-test
 ```
 
 ## What's New
-As of 06/05/2024, `v1.3.2` patches a bug that was caching attributes due to a misuse of a mutable default argument.
+As of 08/21/2024, `v1.4.0` data is returned as a generator, providing more flexibility
+for memory constrained devices. Users also have the ability to select specific
+pages of results with the `page` parameter.
 
 `fpds` now supports asynchronous requests! As of `v1.3.0`, users can instantiate
 the class as usual, but will now need to call the `process_records` method

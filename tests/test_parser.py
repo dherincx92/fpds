@@ -5,6 +5,11 @@ from unittest import TestCase, mock
 from xml.etree.ElementTree import ElementTree, fromstring
 
 from fpds import fpdsRequest
+from fpds.errors import (
+    fpdsMismatchedParameterRegexError,
+    fpdsInvalidParameter,
+    fpdsMissingKeywordParameterError,
+)
 from tests import FULL_RESPONSE_DATA_BYTES
 
 # valid params and values
@@ -52,15 +57,15 @@ class TestFpdsRequest(TestCase):
         self._class = fpdsRequest(**FPDS_REQUEST_PARAMS_DICT)
 
     def test_params_exist(self):
-        with pytest.raises(ValueError):
+        with pytest.raises(fpdsMissingKeywordParameterError):
             fpdsRequest({})
 
     def test_invalid_param(self):
-        with pytest.raises(ValueError):
+        with pytest.raises(fpdsInvalidParameter):
             fpdsRequest(**FPDS_REQUEST_INVALID_PARAM_DICT)
 
     def test_invalid_param_regex(self):
-        with pytest.raises(ValueError):
+        with pytest.raises(fpdsMismatchedParameterRegexError):
             fpdsRequest(**FPDS_REQUEST_INVALID_REGEX_DICT)
 
     def test_str_magic_method(self):
@@ -79,12 +84,6 @@ class TestFpdsRequest(TestCase):
         )
         tree = self._class.convert_to_lxml_tree(content=FULL_RESPONSE_DATA_BYTES)
         self.assertIsInstance(tree, ElementTree)
-
-    @mock.patch.object(fpdsRequest, "initial_request")
-    def test_create_request_links(self, mock_request):
-        mock_request.return_value = FULL_RESPONSE_DATA_BYTES
-        self._class.create_request_links()
-        self.assertEqual(len(self._class.links), 3)
 
 
 if __name__ == "__main__":
