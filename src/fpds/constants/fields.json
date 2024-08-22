@@ -94,6 +94,7 @@
         "name": "CLOSED_DATE",
         "quotes": false,
         "regex": "\\[\\d{4}\\/\\d{2}\\/\\d{2}\\s*,\\s*\\d{4}\\/\\d{2}\\/\\d{2}\\]|\\[\\d{4}\\/\\d{2}\\/\\d{2},\\)|\\(,\\d{4}\\/\\d{2}\\/\\d{2}\\]"
+    },
     {
         "description": "Closed Status",
         "name": "CLOSED_STATUS",
