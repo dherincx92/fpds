@@ -2,7 +2,7 @@
 Base classes for FPDS XML elements.
 
 author: derek663@gmail.com
-last_updated: 07/13/2024
+last_updated: 08/21/2024
 """
 
 import asyncio
@@ -10,7 +10,7 @@ import multiprocessing
 from asyncio import Semaphore
 from concurrent.futures import ProcessPoolExecutor
 from itertools import chain
-from typing import Dict, List, Optional, Union
+from typing import List, Optional, Union
 from urllib import parse
 from urllib.request import urlopen
 from xml.etree.ElementTree import ElementTree, fromstring
