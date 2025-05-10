@@ -7,6 +7,7 @@ last_updated: 08/21/2024
 
 import asyncio
 import multiprocessing
+import warnings
 from asyncio import Semaphore
 from concurrent.futures import ProcessPoolExecutor
 from typing import Iterator, List, Optional, Union
@@ -70,11 +71,13 @@ class fpdsRequest(fpdsMixin):
     def __init__(
         self,
         cli_run: bool = False,
+        skip_regex_validation: bool = False,
         thread_count: int = 10,
         page: Optional[int] = None,
         **kwargs,
     ):
         self.cli_run = cli_run
+        self.skip_regex_validation = skip_regex_validation
         self.thread_count = thread_count
         self.page = page
         self.links = []  # type: List[str]
@@ -97,8 +100,11 @@ class fpdsRequest(fpdsMixin):
 
         # do not run class validations since CLI command has its own
         if not self.cli_run:
-            for kwarg, value in self.kwargs.items():
-                self.kwargs[kwarg] = validate_kwarg(kwarg=kwarg, string=value)
+            if not self.skip_regex_validation:
+                for kwarg, value in self.kwargs.items():
+                    self.kwargs[kwarg] = validate_kwarg(kwarg=kwarg, string=value)
+            else:
+                warnings.warn("Opting out of regex validation!")
 
     def __str__(self) -> str:  # pragma: no cover
         """String representation of `fpdsRequest`."""
@@ -171,6 +177,13 @@ class fpdsRequest(fpdsMixin):
         data = await self.fetch()
 
         # for parallel processing
-        with ProcessPoolExecutor(max_workers=num_processes) as pool:
+        from tqdm import tqdm
+        from multiprocessing import RLock
+        tqdm.set_lock(RLock())
+        with ProcessPoolExecutor(
+            initializer=tqdm.set_lock,
+            initargs=(tqdm.get_lock(),),
+            max_workers=num_processes,
+        ) as pool:
             results = pool.map(self._jsonify, data)
         return results
