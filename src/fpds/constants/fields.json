@@ -21,7 +21,7 @@
         "description": "Agency Code",
         "name": "AGENCY_CODE",
         "quotes": true,
-        "regex": "^\\d{4}$"
+        "regex": "^[A-Za-z0-9]{4}$"
     },
     {
         "description": "Treasury Account Symbol Agency Identifier",
