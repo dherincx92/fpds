@@ -10,6 +10,7 @@ import multiprocessing
 import warnings
 from asyncio import Semaphore
 from concurrent.futures import ProcessPoolExecutor
+from multiprocessing import RLock
 from typing import Iterator, List, Optional, Union
 from urllib import parse
 from urllib.request import urlopen
@@ -22,6 +23,7 @@ from fpds.core.mixins import fpdsMixin
 from fpds.core.xml import fpdsXML
 from fpds.errors import fpdsMaxPageLengthExceededError, fpdsMissingKeywordParameterError
 from fpds.utilities import validate_kwarg
+from tqdm import tqdm
 
 
 class fpdsRequest(fpdsMixin):
@@ -177,8 +179,6 @@ class fpdsRequest(fpdsMixin):
         data = await self.fetch()
 
         # for parallel processing
-        from tqdm import tqdm
-        from multiprocessing import RLock
         tqdm.set_lock(RLock())
         with ProcessPoolExecutor(
             initializer=tqdm.set_lock,
