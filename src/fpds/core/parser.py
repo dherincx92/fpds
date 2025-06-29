@@ -178,12 +178,18 @@ class fpdsRequest(fpdsMixin):
         num_processes = multiprocessing.cpu_count()
         data = await self.fetch()
 
-        # for parallel processing
-        tqdm.set_lock(RLock())
-        with ProcessPoolExecutor(
-            initializer=tqdm.set_lock,
-            initargs=(tqdm.get_lock(),),
-            max_workers=num_processes,
-        ) as pool:
-            results = pool.map(self._jsonify, data)
+        with ProcessPoolExecutor(max_workers=num_processes) as pool:
+            with tqdm(total=len(data)) as progress:
+                futures = []
+
+                # allows tqdm progress bar to display correctly
+                for record in data:
+                    future = pool.submit(self._jsonify, record)
+                    future.add_done_callback(lambda p: progress.update())
+                    futures.append(future)
+
+                results = []
+                for future in futures:
+                    result = future.result()
+                    results.append(result)
         return results
