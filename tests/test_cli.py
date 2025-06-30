@@ -2,6 +2,7 @@ import unittest
 from unittest import TestCase
 
 from click.testing import CliRunner
+
 from fpds.cli import cli
 
 

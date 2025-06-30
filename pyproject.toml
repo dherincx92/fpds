@@ -51,6 +51,9 @@ all = [
 [project.scripts]
 fpds = "fpds.cli:cli"
 
+[tool.pytest.ini_options]
+pythonpath = ["."]
+
 [tool.setuptools.packages.find]
 where = ["src"]
 
@@ -67,6 +70,20 @@ requires = [
 [tool.ruff]
 line-length = 88
 indent-width = 4
+# include = '\.pyi?$'
+# exclude = '''
+# /(
+#     \.git
+#   | \.hg
+#   | \.mypy_cache
+#   | \.tox
+#   | \.venv
+#   | _build
+#   | buck-out
+#   | build
+#   | dist
+# )/
+# '''
 
 [tool.ruff.lint]
 select = ["E", "F"]
@@ -91,32 +108,6 @@ quote-style = "double"
 indent-style = "space"
 skip-magic-trailing-comma = false
 line-ending = "auto"
-
-
-
-
-[tool.black]
-line-length = 88
-include = '\.pyi?$'
-exclude = '''
-/(
-    \.git
-  | \.hg
-  | \.mypy_cache
-  | \.tox
-  | \.venv
-  | _build
-  | buck-out
-  | build
-  | dist
-)/
-'''
-
-[tool.isort]
-skip_gitignore = true
-multi_line_output = 3
-line_length = 88
-include_trailing_comma = true
 
 [tool.coverage.run]
 branch = false

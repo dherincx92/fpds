@@ -2,7 +2,7 @@
 Base classes for FPDS XML elements.
 
 author: derek663@gmail.com
-last_updated: 08/21/2024
+last_updated: 2025-06-29
 """
 
 import asyncio
@@ -10,20 +10,19 @@ import multiprocessing
 import warnings
 from asyncio import Semaphore
 from concurrent.futures import ProcessPoolExecutor
-from multiprocessing import RLock
 from typing import Iterator, List, Optional, Union
 from urllib import parse
 from urllib.request import urlopen
 from xml.etree.ElementTree import ElementTree, fromstring
 
 from aiohttp import ClientSession
+from tqdm import tqdm
 
 from fpds.core import FPDS_ENTRY
 from fpds.core.mixins import fpdsMixin
 from fpds.core.xml import fpdsXML
 from fpds.errors import fpdsMaxPageLengthExceededError, fpdsMissingKeywordParameterError
 from fpds.utilities import validate_kwarg
-from tqdm import tqdm
 
 
 class fpdsRequest(fpdsMixin):
@@ -45,6 +44,9 @@ class fpdsRequest(fpdsMixin):
     cli_run: `bool`
         Defaults to `False`.
         Flag indicating if this class is being isntantiated by a CLI run.
+    skip_regex_validation: `bool`
+        Defaults to `False`.
+        If `True`, opts out of regex validation for specified parameters.
     thread_count: `int`
         Defaults to 10.
         The number of threads to send per search.

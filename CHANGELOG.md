@@ -1,6 +1,26 @@
 # 🚀 Changelog
 
+## 1.5.0 (2024-06-29)
+
+**New**
+- Manages dependencies using `uv`
+- Implements formatting via `ruff`
+- Implements matrix strategy on test-package GHA pipeline to run tests on python 3.11, 3.12, and 3.13
+- Adds new `skip_regex_validation` to `fpdsParser` allowing users to bypass
+regex validation performed on query parameters. This will also help users query using
+new parameters that don't exist in `constants/fields.json`
+
+**Improved**
+- Removes library support for python >=3.8.X, <3.11.X
+- Deprecates `black` and `isort` (in lieu of `ruff`)
+
+**Fixes**
+- Fixes missing `tqdm` progress bar from within `ProcessPoolExecutor`
+
 ## 1.4.1 (2024-08-22)
+
+**Improved**
+- Data records from `fpdsParser` are now returned as a generator
 
 ## 1.4.0 (2024-08-21)
 
@@ -14,12 +34,17 @@ from failing
 
 ## 1.3.0 (2025-01-18)
 
+**New**
+- Supports asynchronous requests via `asyncio` / `aiohttp`
+
 **Fixes**
 - Addresses mypy type issues with core library
 
 **Improved**
-- Removes dependency on `requests` in favor of `asyncio`/ `aiohttp`
+- Deprecates dependency on `requests`
 - Restructures `utilities/params.py` and its references in the CLI namespace.
+- Reduces query completion time by 84.89%
+- Adds support for unbounded values in `fields.json`. Previously, range-based parameters had to define an upper & lower bound (i.e. `[4250, 7500]`). Users can now specify the following patterns for all range parameters: `[4250,)` or `(, 7500]`. This even works for dates: `[2022/08/22,)` or `(, 2022/08/01]`!
 
 **New**
 - Adds support for asynchronous API calls and XML multiprocessing

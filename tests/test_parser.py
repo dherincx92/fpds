@@ -1,13 +1,14 @@
-import pytest
 import unittest
 import xml
 from unittest import TestCase, mock
 from xml.etree.ElementTree import ElementTree, fromstring
 
+import pytest
+
 from fpds import fpdsRequest
 from fpds.errors import (
-    fpdsMismatchedParameterRegexError,
     fpdsInvalidParameter,
+    fpdsMismatchedParameterRegexError,
     fpdsMissingKeywordParameterError,
 )
 from tests import FULL_RESPONSE_DATA_BYTES
@@ -19,7 +20,7 @@ FPDS_REQUEST_PARAMS_DICT = {
 }
 
 FPDS_SEARCH_PARAMS_PROPERTY = (
-    "LAST_MOD_DATE:[2022/01/01, 2022/05/01] " 'AGENCY_CODE:"7504"'
+    'LAST_MOD_DATE:[2022/01/01, 2022/05/01] AGENCY_CODE:"7504"'
 )
 # an invalid param combined with a valid param
 FPDS_REQUEST_INVALID_PARAM_DICT = {
@@ -70,7 +71,7 @@ class TestFpdsRequest(TestCase):
 
     def test_str_magic_method(self):
         object_as_string = (
-            "<fpdsRequest LAST_MOD_DATE=[2022/01/01, 2022/05/01] " 'AGENCY_CODE="7504">'
+            '<fpdsRequest LAST_MOD_DATE=[2022/01/01, 2022/05/01] AGENCY_CODE="7504">'
         )
         self.assertEqual(self._class.__str__(), object_as_string)
 

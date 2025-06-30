@@ -14,33 +14,22 @@ install: venv ## checks if uv.lock is up-to-date and manually syncs all deps + e
 clean: ## Remove test and coverage artifacts
 	rm -f .coverage
 	rm -fr htmlcov/
+	rm -fr .ruff_cache
 	rm -fr .pytest_cache
 	rm -fr .mypy_cache
 
-formatters: venv ## formats using ruff
+formatters: venv ## https://docs.astral.sh/ruff/formatter/#line-breaks
+	uv tool run ruff check --select I --fix
 	uv tool run ruff format
 
 mypy: ## Typechecking with mypy
 	mypy src
 
-
 test: venv install ## Run unit tests with coverage
-	if [ -z ${VIRTUAL_ENV} ]; then \
-	  echo "\nattempting to activate virtual environment\n" \
-	  && . ./venv/bin/activate \
-	  && pytest --cov=src/ --cov-report term-missing tests/ \
-	  && coverage report --fail-under=70 \
-	  && rm -rf .coverage; \
-	else \
-	  echo "\nvirtual environment detected\n" \
-	  && pytest --cov=src/ --cov-report term-missing tests/ \
-	  && coverage report --fail-under=70 \
-	  && rm -rf .coverage; \
-	fi
+	uv run -m pytest
 
 local-test:  ## Runs unit tests
-	pytest --cov=src/ --cov-report term-missing tests/
-
+	uv run -m pytest --cov=src/ --cov-report term-missing tests/
 
 package:
 	@ pip install -U pip

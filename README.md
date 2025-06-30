@@ -13,14 +13,15 @@ equivalent XML data.
 
 
 ## Setup
-To install this package for development, create a virtual environment
-and install dependencies.
+As of version 1.5.0, this library manages dependencies using `uv`. It is
+_highly_ recommended since this library is tested with it.
 
-```
-$ python3.10 -m venv venv
-$ source venv/bin/activate
-$ pip install -e .
-```
+### Installing `uv`
+
+You can follow any of the methods found [here](https://docs.astral.sh/uv/getting-started/installation/)
+or use the `make install` found in this project, which will create a virtual environment,
+check the status of the `uv.lock` file, and install all project dependencies + extras.
+
 
 ## Usage
 For a list of valid search criteria parameters, consult FPDS documentation
@@ -81,19 +82,6 @@ $ make clean
 ```
 $ make local-test
 ```
-
-## What's New
-As of 08/21/2024, `v1.4.1` data is returned as a generator, providing more flexibility
-for memory constrained devices. Users also have the ability to select specific
-pages of results with the `page` parameter.
-
-Parameters in `fields.json` have been updated to support unbounded values. Previously, range-based parameters had to define an upper & lower bound (i.e. `[4250, 7500]`). In the most current version of this library, you can now specify the following patterns for all range parameters: `[4250,)` or `(, 7500]`. This even works for dates: `[2022/08/22,)` or `(, 2022/08/01]`!
-
-`fpds` now supports asynchronous requests! As of `v1.3.0`, users can instantiate
-the class as usual, but will now need to call the `process_records` method
-to get records as JSON. Note: due to some recursive function calls in the XML
-parsing, users might experience some high completion times for this function
-call. Recommendation is to limit the number of results.
 
 #### Timing Benchmarks (in seconds):
 
