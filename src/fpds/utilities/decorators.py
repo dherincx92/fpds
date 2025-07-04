@@ -2,7 +2,7 @@
 General utility decorators
 
 author: derek663@gmail.com
-last_updated: 01/20/2024
+last_updated: 2024/07/03
 """
 
 import time

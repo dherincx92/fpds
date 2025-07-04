@@ -5,6 +5,7 @@ author: derek663@gmail.com
 last_updated: 2024-06-05
 """
 
+from typing import Iterator, List, Tuple, Type
 from xml.etree.ElementTree import Element, ElementTree
 
 
@@ -17,12 +18,12 @@ class fpdsMixin:
 
 class fpdsXMLMixin:
     @property
-    def xml_child_classes(self):
+    def xml_child_classes(self) -> Tuple[Type[ElementTree], Type[Element]]:
         """Classes from the `xml` API that inherit from `ElementTree` module"""
         return (ElementTree, Element)
 
     @property
-    def xml_child_classes_with_modules(self):
+    def xml_child_classes_with_modules(self) -> List[str]:
         """Fully qualified module name for classes in `xml_child_classes`"""
         classes = (ElementTree, Element)
         with_modules = [cls.__module__ + f".{cls.__qualname__}" for cls in classes]
@@ -34,3 +35,8 @@ class fpdsXMLMixin:
         # yeah, f-strings don't do well with backslashes
         PATTERN = r"\{(" + namespaces + r")\}"  # noqa
         return PATTERN
+
+    @staticmethod
+    def parse_items(element: Element) -> Iterator[Element]:
+        """Returns iteration of `Element` as a generator."""
+        yield from element.iter()

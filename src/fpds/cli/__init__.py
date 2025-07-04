@@ -6,7 +6,7 @@ from .parse import parse as _parse
 
 
 @click.group()
-def cli():
+def cli() -> None:
     """
     CLI for parsing the FPDS ATOM feed found at
     https://www.fpds.gov/fpdsng_cms/index.php/en/

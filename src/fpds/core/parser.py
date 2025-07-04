@@ -33,6 +33,10 @@ class fpdsRequest(fpdsMixin):
     will validate argument names and values and raise a `ValueError` if any
     error exists.
 
+    If you encounter new keyword parameters and/or an altered regex pattern,
+    use :param:`skip_regex_validation` to skip regex validation. Feel free
+    to submit an issue or open up a PR.
+
     Example:
         request = fpdsRequest(
             LAST_MOD_DATE="[2022/01/01, 2022/05/01]",
@@ -53,6 +57,8 @@ class fpdsRequest(fpdsMixin):
     page: `Optional[int]`
         Defaults to `None`.
         The results page to retrieve.
+    **kwargs:
+        Any valid FPDS keyword search parameter.
 
     Raises
     ------
@@ -91,24 +97,24 @@ class fpdsRequest(fpdsMixin):
         else:
             raise fpdsMissingKeywordParameterError
 
-        tree = fpdsXML(content=self.initial_request())
-        links = tree.pagination_links(params=self.search_params)
-        self.links = links
+        # tree = fpdsXML(content=self.initial_request())
+        # links = tree.pagination_links(params=self.search_params)
+        # self.links = links
 
-        if self.page:
-            idx = self.page_index()
-            if idx is not None and self.links:
-                if self.page > self.page_count:
-                    raise fpdsMaxPageLengthExceededError(page_count=self.page_count)
-                self.links = [links[idx]]
+        # if self.page:
+        #     idx = self.page_index()
+        #     if idx is not None and self.links:
+        #         if self.page > self.page_count:
+        #             raise fpdsMaxPageLengthExceededError(page_count=self.page_count)
+        #         self.links = [links[idx]]
 
-        # do not run class validations since CLI command has its own
-        if not self.cli_run:
-            if not self.skip_regex_validation:
-                for kwarg, value in self.kwargs.items():
-                    self.kwargs[kwarg] = validate_kwarg(kwarg=kwarg, string=value)
-            else:
-                warnings.warn("Opting out of regex validation!")
+        # # do not run class validations since CLI command has its own
+        # if not self.cli_run:
+        #     if not self.skip_regex_validation:
+        #         for kwarg, value in self.kwargs.items():
+        #             self.kwargs[kwarg] = validate_kwarg(kwarg=kwarg, string=value)
+        #     else:
+        #         warnings.warn("Opting out of regex validation!")
 
     def __str__(self) -> str:  # pragma: no cover
         """String representation of `fpdsRequest`."""
@@ -142,8 +148,11 @@ class fpdsRequest(fpdsMixin):
         with urlopen(f"{self.url_base}&{encoded_params}") as response:
             body = response.read()
 
-        content_tree = self.convert_to_lxml_tree(body.decode("utf-8"))
-        return content_tree
+        from fpds.core.xml import fpdsTree
+        tree = fpdsTree(content=body)
+        return tree
+        # content_tree = self.convert_to_lxml_tree(body.decode("utf-8"))
+        # return content_tree
 
     async def convert(self, session: ClientSession, link: str) -> fpdsXML:
         """Retrieves content from FPDS ATOM feed."""

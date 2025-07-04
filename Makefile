@@ -5,7 +5,11 @@ help:
 	@python -c "$$PRINT_HELP_PYSCRIPT" < $(MAKEFILE_LIST)
 
 venv: ## defaults to creating virtual environment in current directory under .venv
-	uv venv
+	@if [ -d .venv ]; then \
+		echo ".venv already exists. Skipping creation."; \
+	else \
+		uv venv; \
+	fi
 
 install: venv ## checks if uv.lock is up-to-date and manually syncs all deps + extras
 	uv lock --check
@@ -23,7 +27,7 @@ formatters: venv ## https://docs.astral.sh/ruff/formatter/#line-breaks
 	uv tool run ruff format
 
 mypy: ## Typechecking with mypy
-	mypy src
+	uv tool run mypy src/
 
 test: venv install ## Run unit tests with coverage
 	uv run -m pytest
