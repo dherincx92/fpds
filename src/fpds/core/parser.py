@@ -20,7 +20,7 @@ from tqdm import tqdm
 
 from fpds.core import FPDS_ENTRY
 from fpds.core.mixins import fpdsMixin
-from fpds.core.xml import fpdsXML
+from fpds.core.xml import fpdsElement, fpdsSubTree, fpdsTree
 from fpds.errors import fpdsMaxPageLengthExceededError, fpdsMissingKeywordParameterError
 from fpds.utilities import validate_kwarg
 
@@ -97,24 +97,24 @@ class fpdsRequest(fpdsMixin):
         else:
             raise fpdsMissingKeywordParameterError
 
-        # tree = fpdsXML(content=self.initial_request())
-        # links = tree.pagination_links(params=self.search_params)
-        # self.links = links
+        tree = fpdsTree(content=self.initial_request())
+        links = tree.pagination_links(params=self.search_params)
+        self.links = links
 
-        # if self.page:
-        #     idx = self.page_index()
-        #     if idx is not None and self.links:
-        #         if self.page > self.page_count:
-        #             raise fpdsMaxPageLengthExceededError(page_count=self.page_count)
-        #         self.links = [links[idx]]
+        if self.page:
+            idx = self.page_index()
+            if idx is not None and self.links:
+                if self.page > self.page_count:
+                    raise fpdsMaxPageLengthExceededError(page_count=self.page_count)
+                self.links = [links[idx]]
 
-        # # do not run class validations since CLI command has its own
-        # if not self.cli_run:
-        #     if not self.skip_regex_validation:
-        #         for kwarg, value in self.kwargs.items():
-        #             self.kwargs[kwarg] = validate_kwarg(kwarg=kwarg, string=value)
-        #     else:
-        #         warnings.warn("Opting out of regex validation!")
+        # do not run class validations since CLI command has its own
+        if not self.cli_run:
+            if not self.skip_regex_validation:
+                for kwarg, value in self.kwargs.items():
+                    self.kwargs[kwarg] = validate_kwarg(kwarg=kwarg, string=value)
+            else:
+                warnings.warn("Opting out of regex validation!")
 
     def __str__(self) -> str:  # pragma: no cover
         """String representation of `fpdsRequest`."""
@@ -142,26 +142,22 @@ class fpdsRequest(fpdsMixin):
         tree = ElementTree(fromstring(content))
         return tree
 
-    def initial_request(self) -> ElementTree:
-        """Send initial request to FPDS Atom feed and returns first page."""
+    def initial_request(self) -> bytes:
+        """Returns the root XML tree from the initial request."""
         encoded_params = parse.urlencode({"q": self.search_params})
         with urlopen(f"{self.url_base}&{encoded_params}") as response:
-            body = response.read()
+            content_tree = response.read()
+        return content_tree
 
-        from fpds.core.xml import fpdsTree
-        tree = fpdsTree(content=body)
-        return tree
-        # content_tree = self.convert_to_lxml_tree(body.decode("utf-8"))
-        # return content_tree
-
-    async def convert(self, session: ClientSession, link: str) -> fpdsXML:
+    # subtrees are trees built off of paginated links from initial request
+    async def convert(self, session: ClientSession, link: str) -> fpdsSubTree:
         """Retrieves content from FPDS ATOM feed."""
         async with session.get(link) as response:
             content = await response.read()
-            xml = fpdsXML(content=self.convert_to_lxml_tree(content))
+            xml = fpdsSubTree(content=content)
             return xml
 
-    async def fetch(self) -> List[fpdsXML]:
+    async def fetch(self) -> List[fpdsSubTree]:
         semaphore = Semaphore(self.thread_count)
 
         if not self.links:

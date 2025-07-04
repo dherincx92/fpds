@@ -6,7 +6,7 @@ last_updated: 01/20/2024
 """
 
 import re
-from typing import Any, cast, Dict, List, Optional, TypedDict, Union
+from typing import Any, Dict, List, Optional, TypedDict, Union, cast
 
 from fpds.config import FPDS_FIELDS_CONFIG as FIELDS
 from fpds.errors import (
@@ -17,6 +17,7 @@ from fpds.errors import (
 
 CONFIG_TYPE = List[Dict[str, Any]]
 
+
 class ParameterConfig(TypedDict):
     description: str
     name: str
@@ -24,7 +25,9 @@ class ParameterConfig(TypedDict):
     regex: str
 
 
-def get_search_param_from_config(name: str, config: CONFIG_TYPE = FIELDS) -> ParameterConfig:
+def get_search_param_from_config(
+    name: str, config: CONFIG_TYPE = FIELDS
+) -> ParameterConfig:
     """Finds the name of a kwarg in `fields.json`."""
     field_config = [field for field in config if field.get("name") == name]
     if not field_config:

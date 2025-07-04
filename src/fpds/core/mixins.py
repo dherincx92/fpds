@@ -35,8 +35,3 @@ class fpdsXMLMixin:
         # yeah, f-strings don't do well with backslashes
         PATTERN = r"\{(" + namespaces + r")\}"  # noqa
         return PATTERN
-
-    @staticmethod
-    def parse_items(element: Element) -> Iterator[Element]:
-        """Returns iteration of `Element` as a generator."""
-        yield from element.iter()

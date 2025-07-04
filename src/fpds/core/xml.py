@@ -2,11 +2,11 @@
 XML classes for parsing FPDS content.
 
 author: derek663@gmail.com
-last_updated: 2025-07-03
+last_updated: 2025-07-04
 """
 
 import re
-from typing import Any, Dict, Iterator, List, Optional, Union, Unpack
+from typing import Dict, Iterator, List, Optional, Union, Unpack
 from xml.etree.ElementTree import Element, ElementTree, fromstring
 
 from fpds.core import FPDS_ENTRY
@@ -18,146 +18,20 @@ LAST_PAGE_REGEX = r"start=(.*?)$"
 CONTENT_TYPES = Union[ElementTree, Element, bytes]
 
 
-class fpdsXML(fpdsXMLMixin, fpdsMixin):
-    """Parses FPDS request content received as `bytes` or `ElementTree`.
-    This class represents an entire XML document.
+class fpdsElement:
+    """Representation of a single FPDS XML element with its assigned namespace.
 
     Attributes
     ----------
-    content: `Union[bytes, ElementTree]`
-        `bytes` content or an `ElementTree` type that can be parsed into
-        valid XML.
-
-    Raises
-    ------
-    TypeError:
-        If `content` is not of type `bytes` or an instance of `ElementTree`.
+    element: `Element`
+        An instance of `Element` from the native xml lib.
+    namespaces: `Dict[str, str]`
+        XML namespaces.
     """
 
-    def __init__(self, content: CONTENT_TYPES) -> None:
-        if isinstance(content, bytes):
-            self.content = content
-            self.tree = self.convert_to_lxml_tree()
-        if isinstance(content, self.xml_child_classes):
-            self.tree = content
-        if not isinstance(content, self.xml_child_classes + (bytes,)):
-            module_names = ",".join(
-                [f"`{mod}`" for mod in self.xml_child_classes_with_modules]
-            )
-            raise TypeError(
-                f"You must provide bytes content or an instance of the "
-                f"following: {module_names}."
-            )
-
-    def __str__(self) -> str:  # pragma: no cover
-        """The root represents the top of the XML tree from an instance of type
-        `ElementTree`. Since `fpdsElement` inherits from this class, we overwrite
-        this method in child classes since `getroot()` is not available for
-        tags of type `Element`.
-        """
-        if isinstance(self.tree, ElementTree):
-            root = self.tree.getroot()
-            assert root is not None
-            query = root.find(".//ns0:title", self.namespace_dict)
-            assert isinstance(query, Element)
-
-            page = root.find(".ns0:link[@rel='alternate']", self.namespace_dict)
-            assert isinstance(page, Element)
-
-            return f"<fpdsXML query=`{query.text}` page=`{page.attrib['href']}`>"
-
-    def parse_items(self) -> Iterator[Element]:
-        """Returns iteration of `Element` as a generator."""
-        yield from self.tree.iter()
-
-    def convert_to_lxml_tree(self) -> ElementTree:
-        """Returns an `ElementTree` object from a `bytes` response."""
-        tree = ElementTree(fromstring(self.content))
-        return tree
-
-    @staticmethod
-    def _get_full_namespace(element: Element) -> str:
-        """For some odd reason, the `xml` API doesn't have a method to provide
-        namespaces natively unless an XML file is saved locally. To avoid this,
-        we just do some regex work.
-
-        Parameters
-        ----------
-        element: `Element`
-            An lxml Element type.
-        """
-        namespace = re.match(NAMESPACE_REGEX, element.tag)
-        return namespace.group(1) if namespace else ""
-
-    @property
-    def response_size(self) -> int:
-        """Max number of records in a single response."""
-        return 10
-
-    @property
-    def namespace_dict(self) -> Dict[str, str]:
-        """The better way of parsing tree elements with namespaces, per the docs.
-        Note that `namespaces` is a list, which retains parsing order of the
-        tree, which will be important in identifying Atom entries in `fpds`.
-
-        https://docs.python.org/3/library/xml.etree.elementtree.html#parsing-xml-with-namespaces
-        """
-        namespaces = list()
-        for element in self.parse_items():
-            _namespace = self._get_full_namespace(element)
-            if _namespace not in namespaces:
-                namespaces.append(_namespace)
-
-        namespace_dict = {f"ns{idx}": ns for idx, ns in enumerate(namespaces)}
-        return namespace_dict
-
-    @property
-    def lower_limit(self) -> int:
-        """Lower limit of record count (i.e. if 40, it means there is a total of
-        40-49 records).
-        """
-        last_link = self.tree.find(".//ns0:link[@rel='last']", self.namespace_dict)
-        if isinstance(last_link, Element):
-            # length of last_link should always be 1
-            match = re.search(LAST_PAGE_REGEX, last_link.attrib["href"])
-            assert match is not None
-            record_count = int(match.group(1))
-        else:
-            record_count = len(self.get_atom_feed_entries())
-        return record_count
-
-    def pagination_links(self, params: str) -> List[str]:
-        """Builds pagination links for a single API response based on the
-        total record count value.
-        """
-        resp_size = self.response_size
-        offset = 0 if self.lower_limit < 10 else resp_size
-        page_range = list(range(0, self.lower_limit + offset, resp_size))
-        page_links = []
-        for num in page_range:
-            link = f"{self.url_base}&q={params}&start={num}"
-            page_links.append(link)
-        return page_links
-
-    def get_atom_feed_entries(self) -> List[Element]:
-        """Returns tree entries that contain FPDS record data."""
-        data_entries = self.tree.findall(".//ns0:entry", self.namespace_dict)
-        return data_entries
-
-    def jsonify(self) -> List[FPDS_ENTRY]:
-        """Returns all paginated entries from an FPDS request."""
-        entries = self.get_atom_feed_entries()
-        json_data = [Entry(content=entry)() for entry in entries]
-        return json_data
-
-
-class fpdsElement(fpdsXML):
-    """Representation of a single FPDS XML element. This utility class helps us
-    retrieve the name of XML tags without the namespace.
-    """
-
-    def __init__(self, element: Element) -> None:
+    def __init__(self, element: Element, namespace_dict: Dict[str, str]) -> None:
         self.element = element
+        self.namespace_dict = namespace_dict
 
     def __iter__(self):
         return iter(self.element)
@@ -170,10 +44,6 @@ class fpdsElement(fpdsXML):
 
     def __str__(self) -> str:  # pragma: no cover
         return f"<fpdsElement {self.tag}>"
-
-    def __getattr__(self, attr):
-        element = object.__getattribute__(self, "element")
-        return getattr(element, attr)
 
     def parse_items(self) -> Iterator[Element]:
         """Returns iteration of `Element` as a generator."""
@@ -203,9 +73,16 @@ class fpdsElement(fpdsXML):
         clean_tag = re.sub(self.NAMESPACE_REGEX_PATTERN, "", self.tag)
         return clean_tag
 
+
 class fpdsTree(fpdsXMLMixin, fpdsMixin):
-    """Represents the entire fpds response as an xml ElementTree."""
-    # fpds brings in bytes
+    """Representation of initial FPDS response as an ElementTree.
+
+    Attributes
+    ----------
+    content: `bytes`
+        XML bytes content.
+    """
+
     def __init__(self, content: bytes) -> None:
         if isinstance(content, bytes):
             self.content = content
@@ -280,13 +157,13 @@ class fpdsTree(fpdsXMLMixin, fpdsMixin):
             page_links.append(link)
         return page_links
 
-    def get_atom_feed_entries(self) -> List[fpdsElement]:
+    def get_atom_feed_entries(self) -> List[Element]:
         """Returns tree entries that contain FPDS record data."""
-        fpds_elements = [
-            fpdsElement(element=element) for element in
-            self.tree.findall(".//ns0:entry", self.namespace_dict)
+        entries = [
+            element
+            for element in self.tree.findall(".//ns0:entry", self.namespace_dict)
         ]
-        return fpds_elements
+        return entries
 
     def parse_items(self) -> Iterator[Element]:
         """Returns iteration of `Element` as a generator."""
@@ -295,11 +172,20 @@ class fpdsTree(fpdsXMLMixin, fpdsMixin):
     def jsonify(self) -> List[FPDS_ENTRY]:
         """Returns all paginated entries from an FPDS request."""
         entries = self.get_atom_feed_entries()
-        json_data = [Entry(element=entry)() for entry in entries]
+        json_data = [
+            Entry(element=element, namespace_dict=self.namespace_dict)()
+            for element in entries
+        ]
         return json_data
 
 
-class _ElementAttributes(fpdsElement, fpdsXMLMixin):
+class fpdsSubTree(fpdsTree):
+    """A class denoting XML trees built off of the pagination links from :class:`fpdsTree`."""
+
+    pass
+
+
+class _ElementAttributes:
     """
     Utility class that helps parse out extra features of XML tags generated
     by `xml.etree.ElementTree.Element`. This class should ideally not be
@@ -316,10 +202,9 @@ class _ElementAttributes(fpdsElement, fpdsXMLMixin):
         duplicate tags like `PIID` are distinguished in the data.
     """
 
-    def __init__(self, prefix: str, element: Element, **kwargs) -> None:
+    def __init__(self, prefix: str, element: Element) -> None:
         self.prefix = prefix
         self.element = element
-        # super().__init__(content, **kwargs)
 
     def __str__(self) -> str:  # pragma: no cover
         return f"<_ElementAttributes {self.tag}>"
@@ -474,12 +359,16 @@ class Entry(fpdsElement):
         if element is None:
             element = self.element
 
-        _parent = Parent(element=element)
+        _parent = Parent(element=element, namespace_dict=self.namespace_dict)
         # continue parsing XML hierarchy because children exist and we want
         # to get every possible bit of data
         if _parent.children():
             for child in _parent.children():
-                _child = Parent(element=child, parent_name=parent)
+                _child = Parent(
+                    element=child,
+                    parent_name=parent,
+                    namespace_dict=self.namespace_dict,
+                )
                 parent_tag_name = _child.parent_child_hierarchy_name()
                 hierarchy[parent_tag_name] = child
 
@@ -489,6 +378,16 @@ class Entry(fpdsElement):
                     hierarchy=hierarchy,
                 )
         return hierarchy
+
+    # TODO: fix inheritance
+    def jsonify(self) -> List[FPDS_ENTRY]:
+        """Returns all paginated entries from an FPDS request."""
+        entries = self.get_atom_feed_entries()
+        json_data = [
+            Entry(content=entry, namespace_dict=self.namespace_dict)()
+            for entry in entries
+        ]
+        return json_data
 
 
 class Parent(fpdsElement):
