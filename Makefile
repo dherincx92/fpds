@@ -36,9 +36,7 @@ local-test:  ## Runs unit tests
 	uv run -m pytest --cov=src/ --cov-report term-missing tests/
 
 package:
-	@ pip install -U pip
-	@ pip install .[packaging]
-	@ python -m build --sdist --wheel --outdir dist/ .
+	uv build
 
 publish: venv login
-	twine upload --verbose dist/*
+	uv publish --token ${{ secrets.PYPI_API_TOKEN }}
