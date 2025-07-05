@@ -38,5 +38,5 @@ local-test:  ## Runs unit tests
 package:
 	uv build
 
-publish: venv login
+publish: package
 	uv publish --token ${{ secrets.PYPI_API_TOKEN }}
