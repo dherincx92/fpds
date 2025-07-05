@@ -4,12 +4,9 @@ A no-frills parser for the Federal Procurement Data System (FPDS) found
 
 
 ## Motivation
-The only programmatic access to this data via an ATOM feed limits each
-request to 10 records, which forces users to deal with pagination.
-Additonally, data is exported as XML, which proves annoying for most
-developers. `fpds` will handle all pagination and data
+The FPDS ATOM feed limits each request to 10 records, which forces users to deal with pagination. Additonally, data is exported as XML, which proves annoying for most developers. `fpds` will handle all pagination and data
 transformation to provide users with a nice JSON representation of the
-equivalent XML data.
+equivalent XML data and attributes.
 
 
 ## Setup
@@ -18,8 +15,14 @@ _highly_ recommended since this library is tested with it.
 
 ### Installing `uv`
 
-You can follow any of the methods found [here](https://docs.astral.sh/uv/getting-started/installation/)
-or use the `make install` found in this project, which will create a virtual environment,
+You can follow any of the methods found [here](https://docs.astral.sh/uv/getting-started/installation/). If on Linux or MacOS,
+we recommend using Homebrew:
+
+```
+$ brew install uv
+```
+
+Once `uv` is installed, you can use the project Makefile to ensure your local environment is synced with the latest library installation. Start by running `make install` -- this will
 check the status of the `uv.lock` file, and install all project dependencies + extras.
 
 
@@ -50,7 +53,7 @@ $  fpds parse "LAST_MOD_DATE=[2022/01/01, 2022/05/01]" "AGENCY_CODE=7504" -o my-
 ```
 
 Same request via python interpreter:
-```
+```{python}
 import asyncio
 from itertools import chain
 from fpds import fpdsRequest
@@ -60,21 +63,22 @@ request = fpdsRequest(
     AGENCY_CODE="7504"
 )
 
-# returns records as a generator
+# returns records as an async generator
 gen = request.iter_data()
+
+# evaluating generator entries
 records = []
 async for entry in gen:
     records.append(entry)
 
-# or if you prefer to evaluate your results immediately
-# call the :method:`data`
+# or letting `data` method evaluate generator for you
 records = asyncio.run(request.data())
 ```
 
-For linting and formatting, we use `flake8` and `black`.
+For linting and formatting, we use `ruff`. See `pyproject.toml`
+for specific configuration.
 
 ```
-$ make lint
 $ make formatters
 ```
 

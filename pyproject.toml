@@ -70,20 +70,6 @@ requires = [
 [tool.ruff]
 line-length = 88
 indent-width = 4
-# include = '\.pyi?$'
-# exclude = '''
-# /(
-#     \.git
-#   | \.hg
-#   | \.mypy_cache
-#   | \.tox
-#   | \.venv
-#   | _build
-#   | buck-out
-#   | build
-#   | dist
-# )/
-# '''
 
 [tool.ruff.lint]
 select = ["E", "F"]
