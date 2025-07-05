@@ -31,4 +31,4 @@ jobs:
         run: make install
 
       - name: Run Tests
-        run: uv run pytest tests
+        run: make test
