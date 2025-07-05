@@ -375,7 +375,6 @@ wheels = [
 
 [[package]]
 name = "fpds"
-version = "1.4.1"
 source = { editable = "." }
 dependencies = [
     { name = "aiohttp" },
@@ -395,6 +394,7 @@ all = [
     { name = "ruff" },
     { name = "twine" },
     { name = "types-tqdm" },
+    { name = "versioningit" },
     { name = "wheel" },
 ]
 dev = [
@@ -403,6 +403,7 @@ dev = [
     { name = "mypy" },
     { name = "ruff" },
     { name = "types-tqdm" },
+    { name = "versioningit" },
 ]
 packaging = [
     { name = "build" },
@@ -433,6 +434,7 @@ requires-dist = [
     { name = "tqdm", specifier = ">=4.67.1,<5.0.0" },
     { name = "twine", marker = "extra == 'packaging'", specifier = "==5.1.1" },
     { name = "types-tqdm", marker = "extra == 'dev'", specifier = "==4.64.7.9" },
+    { name = "versioningit", marker = "extra == 'dev'", specifier = ">=3.0.0,<4.0.0" },
     { name = "wheel", marker = "extra == 'packaging'", specifier = "==0.37.1" },
 ]
 provides-extras = ["dev", "tests", "packaging", "all"]
@@ -1327,6 +1329,18 @@ source = { registry = "https://pypi.org/simple" }
 sdist = { url = "https://files.pythonhosted.org/packages/8a/78/16493d9c386d8e60e442a35feac5e00f0913c0f4b7c217c11e8ec2ff53e0/urllib3-2.4.0.tar.gz", hash = "sha256:414bc6535b787febd7567804cc015fee39daab8ad86268f1310a9250697de466", size = 390672, upload-time = "2025-04-10T15:23:39.232Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/6b/11/cc635220681e93a0183390e26485430ca2c7b5f9d33b15c74c2861cb8091/urllib3-2.4.0-py3-none-any.whl", hash = "sha256:4e16665048960a0900c702d4a66415956a584919c03361cac9f1df5c5dd7e813", size = 128680, upload-time = "2025-04-10T15:23:37.377Z" },
+]
+
+[[package]]
+name = "versioningit"
+version = "3.3.0"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "packaging" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/89/f4/bc578cc80989c572231a36cc03cc097091176fa3fb8b4e2af1deb4370eb7/versioningit-3.3.0.tar.gz", hash = "sha256:b91ad7d73e73d21220e69540f20213f2b729a1f9b35c04e9e137eaf28d2214da", size = 220280, upload-time = "2025-06-27T20:13:23.368Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/1c/59/964ecb8008722d27d8a835baea81f56a91cea8e097b3be992bc6ccde6367/versioningit-3.3.0-py3-none-any.whl", hash = "sha256:23b1db3c4756cded9bd6b0ddec6643c261e3d0c471707da3e0b230b81ce53e4b", size = 38439, upload-time = "2025-06-27T20:13:21.927Z" },
 ]
 
 [[package]]

@@ -6,7 +6,8 @@ readme = "README.md"
 license = {file = "LICENSE"}
 requires-python = ">=3.11"
 keywords = ["fpds", "python", "atom feed", "cli", "xml"]
-version = "1.4.1"
+# version = "1.4.1"
+dynamic = ["version"]
 classifiers = [
     "Intended Audience :: Developers",
     "Natural Language :: English",
@@ -31,6 +32,7 @@ dev = [
     "ruff==0.12.1",
     "mypy>=0.910",
     "types-tqdm==4.64.7.9",
+    "versioningit>=3.0.0,<4.0.0",
 ]
 tests = [
   "pytest==7.1.3",
@@ -65,7 +67,11 @@ requires = [
     'setuptools >= 44',
     'wheel >= 0.30',
     'setuptools_scm[toml]>=3.4',
+    'versioningit>=3.0.0,<4.0.0',
 ]
+
+[tool.versioningit.vcs]
+method = "git"
 
 [tool.ruff]
 line-length = 88

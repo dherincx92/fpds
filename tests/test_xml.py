@@ -20,10 +20,6 @@ class TestFpdsTree(TestCase):
     def setUp(self):
         self._class = fpdsTree(FULL_RESPONSE_DATA_BYTES)
 
-    # def test_invalid_content_type(self):
-    #     with pytest.raises(TypeError):
-    #         fpdsTree(content="a-string-not-bytes-or-tree")
-
     def test_convert_to_lxml_tree(self):
         content = self._class.convert_to_lxml_tree()
         self.assertIsInstance(content, ElementTree)
@@ -68,7 +64,3 @@ class TestFpdsElement(TestCase):
         xml = fpdsTree(content=FULL_RESPONSE_DATA_BYTES)
         element = xml.get_atom_feed_entries()[0]
         self._class = fpdsElement(content=element)
-
-    # def test_str_magic_method(self):
-    #     object_as_string = "<fpdsElement {http://www.w3.org/2005/Atom}entry>"
-    #     self.assertEqual(self._class.__str__(), object_as_string)
