@@ -9,10 +9,21 @@
 - Adds new `skip_regex_validation` to `fpdsParser` allowing users to bypass
 regex validation performed on query parameters. This will also help users query using
 new parameters that don't exist in `constants/fields.json`
+- Adds `tqdm` progress bar functionality in `iter_data` method
+- Adds new `iter_data` method on `fpdsParser` class to allow users access to records as an AsyncGenerator
 
 **Improved**
 - Removes library support for python >=3.8.X, <3.11.X
 - Deprecates `black` and `isort` (in lieu of `ruff`)
+- Modifies `data` method on `fpdsParser` to use `iter_data` method and automatically de-nests records
+- Sets `dynamic` attribute in `pyproject.toml`
+- Adds `versioningit` to build system requirements
+- Updates CLI `parse` command due to restructure of `iter_data` and `data` methods
+- Removes `fpdsXML` class in lieu of `fpdsElement` class which better denotes class function.
+- Updates XML classes to inherit from `fpdsElement`
+- Adds new `fpdsTree` and `fpdsSubTree` classes to better differentiate main XML tree structure and
+subtree structure from pagination links
+- Addresses `mypy` type issues across entire `core` namespace
 
 **Fixes**
 - Fixes missing `tqdm` progress bar from within `ProcessPoolExecutor`

@@ -1,6 +1,5 @@
 import unittest
-import xml
-from unittest import TestCase, mock
+from unittest import TestCase
 from xml.etree.ElementTree import ElementTree, fromstring
 
 import pytest
@@ -77,14 +76,6 @@ class TestFpdsRequest(TestCase):
 
     def test_search_params_property(self):
         self.assertEqual(FPDS_SEARCH_PARAMS_PROPERTY, self._class.search_params)
-
-    @mock.patch.object(xml.etree.ElementTree, "fromstring")
-    def test_convert_to_lxml_tree(self, mock_from_string):
-        mock_from_string.return_value = ElementTree(
-            fromstring(FULL_RESPONSE_DATA_BYTES)
-        )
-        tree = self._class.convert_to_lxml_tree(content=FULL_RESPONSE_DATA_BYTES)
-        self.assertIsInstance(tree, ElementTree)
 
 
 if __name__ == "__main__":

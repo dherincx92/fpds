@@ -10,10 +10,9 @@ import multiprocessing
 import warnings
 from asyncio import Semaphore
 from concurrent.futures import ProcessPoolExecutor
-from typing import AsyncGenerator, List, Optional, Union
+from typing import AsyncGenerator, List, Optional
 from urllib import parse
 from urllib.request import urlopen
-from xml.etree.ElementTree import ElementTree, fromstring
 
 from aiohttp import ClientSession
 from tqdm import tqdm
@@ -35,7 +34,7 @@ class fpdsRequest(fpdsMixin):
 
     If you encounter new keyword parameters and/or an altered regex pattern,
     use :param:`skip_regex_validation` to skip regex validation. Feel free
-    to submit an issue or open up a PR.
+    to submit an issue or open up a PR with new fields.
 
     Example:
         request = fpdsRequest(
@@ -50,14 +49,14 @@ class fpdsRequest(fpdsMixin):
         Flag indicating if this class is being isntantiated by a CLI run.
     skip_regex_validation: `bool`
         Defaults to `False`.
-        If `True`, opts out of regex validation for specified parameters.
+        If `True`, opts out of regex validation.
     thread_count: `int`
         Defaults to 10.
         The number of threads to send per search.
     page: `Optional[int]`
         Defaults to `None`.
         The results page to retrieve.
-    **kwargs:
+    **kwargs: `str`
         Any valid FPDS keyword search parameter.
 
     Raises
@@ -126,6 +125,11 @@ class fpdsRequest(fpdsMixin):
         return f"{self.url_base}&q={self.search_params}"
 
     @property
+    def url_base(self) -> str:
+        """Base URL for all ATOM feed requests"""
+        return "https://www.fpds.gov/ezsearch/FEEDS/ATOM?FEEDNAME=PUBLIC"
+
+    @property
     def search_params(self) -> str:
         """Search parameters inputted by user."""
         _params = [f"{key}:{value}" for key, value in self.kwargs.items()]
@@ -135,12 +139,6 @@ class fpdsRequest(fpdsMixin):
     def page_count(self) -> int:
         """Total number of FPDS pages contained in request."""
         return len(self.links)
-
-    @staticmethod
-    def convert_to_lxml_tree(content: Union[str, bytes]) -> ElementTree:
-        """Returns lxml tree element from a `bytes` response."""
-        tree = ElementTree(fromstring(content))
-        return tree
 
     def initial_request(self) -> bytes:
         """Returns the root XML tree from the initial request."""
@@ -153,10 +151,11 @@ class fpdsRequest(fpdsMixin):
         """Retrieves content from FPDS ATOM feed."""
         async with session.get(link) as response:
             content = await response.read()
-            xml = fpdsSubTree(content=content)
-            return xml
+            subtree = fpdsSubTree(content=content)
+            return subtree
 
     async def fetch(self) -> List[fpdsSubTree]:
+        """Asynchronously parses all ATOM feed pages for current request."""
         semaphore = Semaphore(self.thread_count)
 
         if not self.links:
@@ -178,7 +177,6 @@ class fpdsRequest(fpdsMixin):
     def _jsonify(entry: fpdsSubTree) -> List[FPDS_ENTRY]:
         """Wrapper around `jsonify` method for avoiding pickle issue."""
         return entry.jsonify()
-
 
     async def iter_data(self) -> AsyncGenerator[FPDS_ENTRY, None]:
         """Lazily yields FPDS records as an asynchronous generator.

@@ -6,15 +6,15 @@ last_updated: 2025-07-05
 """
 
 import re
-from typing import Dict, Iterator, List, Optional, TypedDict, Union, Unpack
+from typing import Dict, Iterator, List, Optional, TypedDict, Unpack
 from xml.etree.ElementTree import Element, ElementTree, fromstring
 
 from fpds.core import FPDS_ENTRY
-from fpds.core.mixins import fpdsMixin, fpdsXMLMixin
+from fpds.core.mixins import fpdsMixin
 
 NAMESPACE_REGEX = r"\{(.*)\}"
 LAST_PAGE_REGEX = r"start=(.*?)$"
-CONTENT_TYPES = Union[ElementTree, Element, bytes]
+
 
 class fpdsElementAttributes(TypedDict):
     element: Element
@@ -54,9 +54,7 @@ class fpdsElement:
 
     @property
     def NAMESPACE_REGEX_PATTERN(self) -> str:
-        """A single regex pattern string that allows us to remove all
-        namespaces from tags, irrespective of namespace value.
-        """
+        """Regex pattern identifying a namespace within a tag element."""
         namespaces = "|".join(self.namespace_dict.values())
         # yeah, f-strings don't do well with backslashes
         PATTERN = r"\{(" + namespaces + r")\}"  # noqa
@@ -69,15 +67,16 @@ class fpdsElement:
 
     @property
     def clean_tag(self) -> str:
-        """Tag name without the namespace. A tag like the following:
-        `ns1:productOrServiceInformation` would simply return
-        `productOrServiceInformation`.
+        """Tag name without the namespace.
+
+        A tag like the following: `ns1:productOrServiceInformation`
+        would simply return `productOrServiceInformation`.
         """
         clean_tag = re.sub(self.NAMESPACE_REGEX_PATTERN, "", self.tag)
         return clean_tag
 
 
-class fpdsTree(fpdsXMLMixin, fpdsMixin):
+class fpdsTree(fpdsMixin):
     """Representation of initial FPDS response as an ElementTree.
 
     Attributes
@@ -148,9 +147,7 @@ class fpdsTree(fpdsXMLMixin, fpdsMixin):
         return record_count
 
     def pagination_links(self, params: str) -> List[str]:
-        """Builds pagination links for a single API response based on the
-        total record count value.
-        """
+        """Builds pagination links from initial request."""
         resp_size = self.response_size
         offset = 0 if self.lower_limit < 10 else resp_size
         page_range = list(range(0, self.lower_limit + offset, resp_size))
@@ -196,13 +193,11 @@ class _ElementAttributes:
 
     Attributes
     ----------
-    element: `xml.etree.ElementTree.Element`
-        An XML element.
-    namespaces: `Dict[str, str]`
-        A namespace dictionary that allows module to parse FPDS elements.
     prefix: `str`
         Prefix to append to attribute dictionary. This will ensure that
         duplicate tags like `PIID` are distinguished in the data.
+    element: `xml.etree.ElementTree.Element`
+        An lxml Element type.
     """
 
     def __init__(self, prefix: str, element: Element) -> None:
@@ -247,13 +242,12 @@ class _ElementAttributes:
 
 
 class Entry(fpdsElement):
-    """New as of v1.2.0
+    """An ATOM feed data entry.
 
-    Representation of a single FPDS award item. In terms of XML, it is the
-    outermost container for award data. Each entry contains four children tags --
-    `title`, `link`, `modified`, and `content`. The `content` tag will contain
-    the bulk of data to be extracted, but tags like `title` and `modified`
-    also contain useful info.
+     In terms of XML, it is the outermost container for award data.
+     Each entry contains four children tags -- `title`, `link`, `modified`,
+     and `content`. The `content` tag will contain the bulk of data to be
+     extracted, but tags like `title` and `modified` also contain useful info.
 
     Example:
     --------
@@ -269,9 +263,14 @@ class Entry(fpdsElement):
                 <ns1:awardID>
                     <ns1:awardContractID>
                         <ns1:agencyID name="PUBLIC BUILDINGS SERVICE">4740</ns1:agencyID>
+                    </ns1:awardContractID>
+                </ns1:awardID>
+            </ns1:award
+        </content>
     </entry>
     """
-    def __init__(self,  **kwargs: Unpack[fpdsElementAttributes]) -> None:
+
+    def __init__(self, **kwargs: Unpack[fpdsElementAttributes]) -> None:
         super().__init__(**kwargs)
 
     def __str__(self) -> str:  # pragma: no cover
@@ -313,7 +312,7 @@ class Entry(fpdsElement):
         parent: Optional[str] = None,
         hierarchy: Optional[Dict[str, Element]] = None,
     ) -> Dict[str, Element]:
-        """Added on v1.2.0
+        """Generates hierarchy within the content tag.
 
         For each FPDS request made, the `entry` tag represents an individual
         award -- `AWARD` or `IDV`. The `content` tag contains a nested structure
@@ -383,14 +382,10 @@ class Entry(fpdsElement):
 
 
 class Parent(fpdsElement):
-    """Identifies an xml tag as a parent. In this package, a parent tag
-    is considered to have children elements.
-    """
+    """Representation of any XML tag containing children tags."""
 
     def __init__(
-        self,
-        parent_name: Optional[str] = None,
-        **kwargs: Unpack[fpdsElementAttributes]
+        self, parent_name: Optional[str] = None, **kwargs: Unpack[fpdsElementAttributes]
     ) -> None:
         super().__init__(**kwargs)
         self.parent_name = parent_name
