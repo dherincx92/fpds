@@ -2,7 +2,7 @@
 XML classes for parsing FPDS content.
 
 author: derek663@gmail.com
-last_updated: 2025-07-04
+last_updated: 2025-07-05
 """
 
 import re
@@ -14,7 +14,6 @@ from fpds.core.mixins import fpdsMixin, fpdsXMLMixin
 
 NAMESPACE_REGEX = r"\{(.*)\}"
 LAST_PAGE_REGEX = r"start=(.*?)$"
-
 CONTENT_TYPES = Union[ElementTree, Element, bytes]
 
 class fpdsElementAttributes(TypedDict):
@@ -23,7 +22,7 @@ class fpdsElementAttributes(TypedDict):
 
 
 class fpdsElement:
-    """Representation of a single FPDS XML element with its assigned namespace.
+    """Representation of a single XML element.
 
     Attributes
     ----------

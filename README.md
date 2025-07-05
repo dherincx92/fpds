@@ -60,9 +60,15 @@ request = fpdsRequest(
     AGENCY_CODE="7504"
 )
 
-# results are nested lists so de-nest
-data = asyncio.run(request.data())
-records = list(chain.from_iterable(data))
+# returns records as a generator
+gen = request.iter_data()
+records = []
+async for entry in gen:
+    records.append(entry)
+
+# or if you prefer to evaluate your results immediately
+# call the :method:`data`
+records = asyncio.run(request.data())
 ```
 
 For linting and formatting, we use `flake8` and `black`.

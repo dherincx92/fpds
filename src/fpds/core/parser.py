@@ -10,7 +10,7 @@ import multiprocessing
 import warnings
 from asyncio import Semaphore
 from concurrent.futures import ProcessPoolExecutor
-from typing import Dict, List, Optional, Union
+from typing import AsyncGenerator, List, Optional, Union
 from urllib import parse
 from urllib.request import urlopen
 from xml.etree.ElementTree import ElementTree, fromstring
@@ -26,10 +26,10 @@ from fpds.utilities import validate_kwarg
 
 
 class fpdsRequest(fpdsMixin):
-    """Makes a GET request to the FPDS ATOM feed. Takes an unlimited number of
-    arguments. All query parameters should be submitted as strings. If new
-    arguments are added to the feed, add the argument to the
-    `fpds/core/constants.json` file. During class instantiation, this class
+    """Makes a GET request to the FPDS ATOM feed.
+
+    Takes an unlimited number of arguments. All query parameters should be
+    submitted as strings. During class instantiation, this class
     will validate argument names/values and raise a `ValueError` if any
     error exists.
 
@@ -149,7 +149,6 @@ class fpdsRequest(fpdsMixin):
             content_tree = response.read()
         return content_tree
 
-    # subtrees are trees built off of paginated links from initial request
     async def convert(self, session: ClientSession, link: str) -> fpdsSubTree:
         """Retrieves content from FPDS ATOM feed."""
         async with session.get(link) as response:
@@ -180,10 +179,17 @@ class fpdsRequest(fpdsMixin):
         """Wrapper around `jsonify` method for avoiding pickle issue."""
         return entry.jsonify()
 
-    async def data(self) -> List[List[FPDS_ENTRY]]:
-        """Returns FPDS data."""
+
+    async def iter_data(self) -> AsyncGenerator[FPDS_ENTRY, None]:
+        """Lazily yields FPDS records as an asynchronous generator.
+
+        Yields
+        ------
+        `FPDS_ENTRY`
+            A single FPDS record as it becomes available.
+        """
         num_processes = multiprocessing.cpu_count()
-        data = await self.fetch()
+        data = await self.fetch()  # List[fpdsSubTree]
 
         with ProcessPoolExecutor(max_workers=num_processes) as pool:
             with tqdm(total=len(data)) as progress:
@@ -195,8 +201,20 @@ class fpdsRequest(fpdsMixin):
                     future.add_done_callback(lambda p: progress.update())
                     futures.append(future)
 
-                results = []
                 for future in futures:
                     result = future.result()
-                    results.append(result)
-        return results
+                    for entry in result:
+                        yield entry
+
+    async def data(self) -> List[FPDS_ENTRY]:
+        """Collects all FPDS records into a list.
+
+        Returns
+        -------
+        records: `List[FPDS_ENTRY]`
+            FPDS records as a list of dictionaries with de-nested XML attributes.
+        """
+        records = []
+        async for entry in self.iter_data():
+            records.append(entry)
+        return records

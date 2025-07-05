@@ -68,9 +68,7 @@ def parse(params, output) -> None:  # type: ignore
     request = fpdsRequest(**params_kwargs, cli_run=True)
     click.echo("Retrieving FPDS records from ATOM feed...")
 
-    data = asyncio.run(request.data())
-    records = list(chain.from_iterable(data))
-
+    records = asyncio.run(request.data())
     DATA_DIR = OUTPUT_PATH if output else FPDS_DATA_DATE_DIR
     DATA_FILE = DATA_DIR / f"{uuid4()}.json"
     with open(DATA_FILE, "w") as outfile:
