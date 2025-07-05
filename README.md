@@ -93,7 +93,10 @@ $ make clean
 $ make local-test
 ```
 
-#### Timing Benchmarks (in seconds):
+# Highlights
+
+Between v1.2.1 and v1.3.0, significant improvements were made with `asyncio`.Here are some rough benchmarks in estimated data extraction + post-processing
+times:
 
 | v1.2.1 | v.1.3.0 |
 -------- | --------
@@ -105,7 +108,3 @@ Using `v.1.2.1`, the average completion time is 188.68 seconds (~3min).
 Using `v.1.3.0`, the average completion time is 28.40 seconds.
 
 This equates to a <u>**84.89%**</u> decrease in completion time!
-
-
-As of `v1.3.0`, `fpds` now supports the use of over 100 keyword tags when searching
-for contracts using the `v1.5.3` ATOM feed.
