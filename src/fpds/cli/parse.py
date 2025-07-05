@@ -23,7 +23,7 @@ from fpds.utilities import validate_kwarg
 @click.command()
 @click.option("-o", "--output", required=False, help="Output directory")
 @click.argument("params", nargs=-1)
-def parse(params, output: str) -> None:
+def parse(params, output) -> None:  # type: ignore
     """
     Parsing command for the FPDS Atom feed
 

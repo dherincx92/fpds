@@ -5,7 +5,7 @@ author: derek663@gmail.com
 last_updated: 2024-06-05
 """
 
-from typing import Iterator, List, Tuple, Type
+from typing import List, Tuple, Type
 from xml.etree.ElementTree import Element, ElementTree
 
 

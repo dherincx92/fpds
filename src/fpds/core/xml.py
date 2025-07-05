@@ -6,7 +6,7 @@ last_updated: 2025-07-04
 """
 
 import re
-from typing import Dict, Iterator, List, Optional, Union, Unpack
+from typing import Dict, Iterator, List, Optional, TypedDict, Union, Unpack
 from xml.etree.ElementTree import Element, ElementTree, fromstring
 
 from fpds.core import FPDS_ENTRY
@@ -16,6 +16,10 @@ NAMESPACE_REGEX = r"\{(.*)\}"
 LAST_PAGE_REGEX = r"start=(.*?)$"
 
 CONTENT_TYPES = Union[ElementTree, Element, bytes]
+
+class fpdsElementAttributes(TypedDict):
+    element: Element
+    namespace_dict: Dict[str, str]
 
 
 class fpdsElement:
@@ -33,13 +37,13 @@ class fpdsElement:
         self.element = element
         self.namespace_dict = namespace_dict
 
-    def __iter__(self):
+    def __iter__(self) -> Iterator[Element]:
         return iter(self.element)
 
-    def __len__(self):
+    def __len__(self) -> int:
         return len(self.element)
 
-    def __getitem__(self, index):
+    def __getitem__(self, index: int) -> Element:
         return self.element[index]
 
     def __str__(self) -> str:  # pragma: no cover
@@ -195,7 +199,7 @@ class _ElementAttributes:
     ----------
     element: `xml.etree.ElementTree.Element`
         An XML element.
-    namespace_dict: `Dict[str, str]`
+    namespaces: `Dict[str, str]`
         A namespace dictionary that allows module to parse FPDS elements.
     prefix: `str`
         Prefix to append to attribute dictionary. This will ensure that
@@ -207,7 +211,7 @@ class _ElementAttributes:
         self.element = element
 
     def __str__(self) -> str:  # pragma: no cover
-        return f"<_ElementAttributes {self.tag}>"
+        return f"<_ElementAttributes {self.element.tag}>"
 
     def _generate_nested_attribute_dict(self) -> Dict[str, str]:
         """Returns all attributes of an Element.
@@ -229,7 +233,7 @@ class _ElementAttributes:
                 "{prefix}__contractActionType__part8OrPart13": "PART8"
             }
         """
-        # assert isinstance(self.element, Element)
+
         attributes = self.element.attrib
         _attributes_copy = attributes.copy()
 
@@ -268,9 +272,8 @@ class Entry(fpdsElement):
                         <ns1:agencyID name="PUBLIC BUILDINGS SERVICE">4740</ns1:agencyID>
     </entry>
     """
-
-    def __init__(self, *args, **kwargs) -> None:
-        super().__init__(*args, **kwargs)
+    def __init__(self,  **kwargs: Unpack[fpdsElementAttributes]) -> None:
+        super().__init__(**kwargs)
 
     def __str__(self) -> str:  # pragma: no cover
         return f"<Entry {self.clean_tag}>"
@@ -309,8 +312,8 @@ class Entry(fpdsElement):
         self,
         element: Optional[Element] = None,
         parent: Optional[str] = None,
-        hierarchy: Optional[Dict[str, str]] = None,
-    ) -> Dict[str, str]:
+        hierarchy: Optional[Dict[str, Element]] = None,
+    ) -> Dict[str, Element]:
         """Added on v1.2.0
 
         For each FPDS request made, the `entry` tag represents an individual
@@ -379,32 +382,25 @@ class Entry(fpdsElement):
                 )
         return hierarchy
 
-    # TODO: fix inheritance
-    def jsonify(self) -> List[FPDS_ENTRY]:
-        """Returns all paginated entries from an FPDS request."""
-        entries = self.get_atom_feed_entries()
-        json_data = [
-            Entry(content=entry, namespace_dict=self.namespace_dict)()
-            for entry in entries
-        ]
-        return json_data
-
 
 class Parent(fpdsElement):
     """Identifies an xml tag as a parent. In this package, a parent tag
     is considered to have children elements.
     """
 
-    def __init__(self, parent_name: str = None, *args, **kwargs):
-        super().__init__(*args, **kwargs)
+    def __init__(
+        self,
+        parent_name: Optional[str] = None,
+        **kwargs: Unpack[fpdsElementAttributes]
+    ) -> None:
+        super().__init__(**kwargs)
         self.parent_name = parent_name
 
-    def children(self):
+    def children(self) -> List[Element]:
         """Returns children if they exist."""
-        if list(self.element):
-            return list(self.element)
+        return list(self.element)
 
-    def parent_child_hierarchy_name(self, delim="__"):
+    def parent_child_hierarchy_name(self, delim: str = "__") -> str:
         if self.parent_name:
             name = self.parent_name + delim + self.clean_tag
         else:

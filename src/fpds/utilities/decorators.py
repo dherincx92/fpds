@@ -8,8 +8,9 @@ last_updated: 2024/07/03
 import time
 
 
-def timeit(func):
-    def wrapper(*args, **kwargs):
+
+def timeit(func):   # type: ignore
+    def wrapper(*args, **kwargs):   # type: ignore
         start_time = time.time()
         print("Transforming XML into JSON...")
         result = func(*args, **kwargs)

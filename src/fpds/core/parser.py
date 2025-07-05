@@ -10,7 +10,7 @@ import multiprocessing
 import warnings
 from asyncio import Semaphore
 from concurrent.futures import ProcessPoolExecutor
-from typing import Iterator, List, Optional, Union
+from typing import Dict, List, Optional, Union
 from urllib import parse
 from urllib.request import urlopen
 from xml.etree.ElementTree import ElementTree, fromstring
@@ -20,7 +20,7 @@ from tqdm import tqdm
 
 from fpds.core import FPDS_ENTRY
 from fpds.core.mixins import fpdsMixin
-from fpds.core.xml import fpdsElement, fpdsSubTree, fpdsTree
+from fpds.core.xml import fpdsSubTree, fpdsTree
 from fpds.errors import fpdsMaxPageLengthExceededError, fpdsMissingKeywordParameterError
 from fpds.utilities import validate_kwarg
 
@@ -30,7 +30,7 @@ class fpdsRequest(fpdsMixin):
     arguments. All query parameters should be submitted as strings. If new
     arguments are added to the feed, add the argument to the
     `fpds/core/constants.json` file. During class instantiation, this class
-    will validate argument names and values and raise a `ValueError` if any
+    will validate argument names/values and raise a `ValueError` if any
     error exists.
 
     If you encounter new keyword parameters and/or an altered regex pattern,
@@ -40,7 +40,7 @@ class fpdsRequest(fpdsMixin):
     Example:
         request = fpdsRequest(
             LAST_MOD_DATE="[2022/01/01, 2022/05/01]",
-            AGENCY_CODE="7504"
+            AGENCY_CODE="7504",
         )
 
     Attributes
@@ -84,8 +84,8 @@ class fpdsRequest(fpdsMixin):
         skip_regex_validation: bool = False,
         thread_count: int = 10,
         page: Optional[int] = None,
-        **kwargs,
-    ):
+        **kwargs: str,
+    ) -> None:
         self.cli_run = cli_run
         self.skip_regex_validation = skip_regex_validation
         self.thread_count = thread_count
@@ -176,11 +176,11 @@ class fpdsRequest(fpdsMixin):
         return idx
 
     @staticmethod
-    def _jsonify(entry) -> List[FPDS_ENTRY]:
+    def _jsonify(entry: fpdsSubTree) -> List[FPDS_ENTRY]:
         """Wrapper around `jsonify` method for avoiding pickle issue."""
         return entry.jsonify()
 
-    async def data(self) -> Iterator:
+    async def data(self) -> List[List[FPDS_ENTRY]]:
         """Returns FPDS data."""
         num_processes = multiprocessing.cpu_count()
         data = await self.fetch()
