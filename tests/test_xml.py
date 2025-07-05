@@ -1,8 +1,6 @@
 from unittest import TestCase
 from xml.etree.ElementTree import ElementTree
 
-import pytest
-
 from fpds.core.xml import fpdsElement, fpdsTree
 from tests import FULL_RESPONSE_DATA_BYTES, TRUNCATED_RESPONSE_DATA_BYTES
 
