@@ -28,7 +28,7 @@ class fpdsElement:
     ----------
     element: `Element`
         An instance of `Element` from the native xml lib.
-    namespaces: `Dict[str, str]`
+    namespace_dict: `Dict[str, str]`
         XML namespaces.
     """
 
