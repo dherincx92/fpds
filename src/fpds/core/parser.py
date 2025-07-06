@@ -148,7 +148,7 @@ class fpdsRequest(fpdsMixin):
         return content_tree
 
     async def convert(self, session: ClientSession, link: str) -> fpdsSubTree:
-        """Retrieves content from FPDS ATOM feed."""
+        """Retrieves content from FPDS ATOM feed as a SubTree instance."""
         async with session.get(link) as response:
             content = await response.read()
             subtree = fpdsSubTree(content=content)
