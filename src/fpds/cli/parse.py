@@ -23,6 +23,7 @@ from fpds.utilities import validate_kwarg
 @click.option(
     "-k",
     "--skip-regex-validation",
+    metavar="<bool>",
     required=False,
     default=False,
     type=bool,
@@ -32,6 +33,7 @@ from fpds.utilities import validate_kwarg
     "-o",
     "--output-dir",
     required=False,
+    metavar="<string>",
     type=click.Path(exists=False, path_type=Path),
     help="Output directory",
 )
