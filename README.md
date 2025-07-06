@@ -1,10 +1,10 @@
 # fpds
-A no-frills parser for the Federal Procurement Data System (FPDS) ATOM Feed.
+A light-weight, pythonic parser for the Federal Procurement Data System (FPDS) ATOM Feed.
 Reference [here](https://www.fpds.gov/fpdsng_cms/index.php/en/).
 
 
 ## Motivation
-The FPDS ATOM feed limits each request to 10 records, which forces users to deal with pagination. Additonally, data is exported as XML, which proves annoying for most developers. `fpds` will handle all pagination and data
+The FPDS ATOM feed limits each request to 10 records, which forces users to deal with pagination. Additonally, data is exported as XML, which proves annoying. `fpds` will handle all pagination and data
 transformation to provide users with a nice JSON representation of the
 equivalent XML data and attributes.
 
@@ -22,8 +22,7 @@ You can follow any of the methods found [here](https://docs.astral.sh/uv/getting
 $ brew install uv
 ```
 
-Once `uv` is installed, you can use the project Makefile to ensure your local environment is synced with the latest library installation. Start by running `make install` -- this will
-check the status of the `uv.lock` file, and install all project dependencies + extras.
+Once `uv` is installed, you can use the project Makefile to ensure your local environment is synced with the latest library installation. Start by running `make install` — this will check the status of the `uv.lock` file, and install all project dependencies + extras
 
 
 ## Usage
@@ -46,9 +45,12 @@ $  fpds parse "LAST_MOD_DATE=[2022/01/01, 2022/05/01]" "AGENCY_CODE=7504"
 
 By default, data will be dumped into an `.fpds` folder at the user's
 `$HOME` directory. If you wish to override this behavior, provide the `-o`
-option. The directory will be created if it doesn't exist. By default, regex
-validation is enabled; if you wish to disable it simply set the `-k` flag as
-`False`.
+option. The directory will be created if it doesn't exist.
+
+As of v1.5.0, you can opt out of regex validation by setting the `-k` flag
+to `False` — this is helpful in scenarios when either the regex pattern has
+been altered by the ATOM feed or a new parameter name is supported, but not
+yet added to the configuration in this library.
 
 ```
 $  fpds parse "LAST_MOD_DATE=[2022/01/01, 2022/05/01]" "AGENCY_CODE=7504" -o ~/.my-preferred-dir
@@ -57,7 +59,6 @@ $  fpds parse "LAST_MOD_DATE=[2022/01/01, 2022/05/01]" "AGENCY_CODE=7504" -o ~/.
 Same request via python interpreter:
 ```
 import asyncio
-from itertools import chain
 from fpds import fpdsRequest
 
 request = fpdsRequest(
