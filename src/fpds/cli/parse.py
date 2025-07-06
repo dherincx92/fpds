@@ -3,12 +3,11 @@ Parsing command for retrieving FPDS federal
 contracts
 
 author: derek663@gmail.com
-last_updated: 12/30/2022
+last_updated: 2025-07-05
 """
 
 import asyncio
 import json
-from itertools import chain
 from pathlib import Path
 from uuid import uuid4
 
@@ -21,9 +20,23 @@ from fpds.utilities import validate_kwarg
 
 
 @click.command()
-@click.option("-o", "--output", required=False, help="Output directory")
+@click.option(
+    "-k",
+    "--skip-regex-validation",
+    required=False,
+    default=False,
+    type=bool,
+    help="If True, skips param regex validation",
+)
+@click.option(
+    "-o",
+    "--output-dir",
+    required=False,
+    type=click.Path(exists=False, path_type=Path),
+    help="Output directory",
+)
 @click.argument("params", nargs=-1)
-def parse(params, output) -> None:  # type: ignore
+def parse(params, output_dir, skip_regex_validation) -> None:  # type: ignore
     """
     Parsing command for the FPDS Atom feed
 
@@ -44,14 +57,13 @@ def parse(params, output) -> None:  # type: ignore
         A full CLI command could look like this:
 
         \b
-            fpds parse "LAST_MOD_DATE=[2022/01/01, 2022/05/01]" "AGENCY_CODE=7504"
+          fpds parse "LAST_MOD_DATE=[2022/01/01, 2022/05/01]" "AGENCY_CODE=7504"
     """
 
-    if output:
-        OUTPUT_PATH = Path(output)
-        if not OUTPUT_PATH.exists():
-            click.echo(f"Creating output directory {str(OUTPUT_PATH.resolve())}")
-            OUTPUT_PATH.mkdir(parents=True, exist_ok=True)
+    if output_dir:
+        if not output_dir.exists():
+            click.echo(f"Creating output directory {str(output_dir.resolve())}")
+            output_dir.mkdir(parents=True, exist_ok=True)
 
     params = [param.split("=") for param in params]
 
@@ -65,11 +77,11 @@ def parse(params, output) -> None:  # type: ignore
     params_kwargs = dict(params)
     click.echo(f"Params to be used for FPDS search: {params_kwargs}")
 
-    request = fpdsRequest(**params_kwargs, cli_run=True)
+    request = fpdsRequest(**params_kwargs, cli_run=True, skip_regex_validation=skip_regex_validation)
     click.echo("Retrieving FPDS records from ATOM feed...")
 
     records = asyncio.run(request.data())
-    DATA_DIR = OUTPUT_PATH if output else FPDS_DATA_DATE_DIR
+    DATA_DIR = output_dir if output_dir else FPDS_DATA_DATE_DIR
     DATA_FILE = DATA_DIR / f"{uuid4()}.json"
     with open(DATA_FILE, "w") as outfile:
         json.dump(records, outfile)
