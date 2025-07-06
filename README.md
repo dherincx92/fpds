@@ -1,6 +1,6 @@
 # fpds
-A no-frills parser for the Federal Procurement Data System (FPDS) found
-[here](https://www.fpds.gov/fpdsng_cms/index.php/en/).
+A no-frills parser for the Federal Procurement Data System (FPDS) ATOM Feed.
+Reference [here](https://www.fpds.gov/fpdsng_cms/index.php/en/).
 
 
 ## Motivation
@@ -13,10 +13,10 @@ equivalent XML data and attributes.
 As of version 1.5.0, this library manages dependencies using `uv`. It is
 _highly_ recommended since this library is tested with it.
 
+
 ### Installing `uv`
 
-You can follow any of the methods found [here](https://docs.astral.sh/uv/getting-started/installation/). If on Linux or MacOS,
-we recommend using Homebrew:
+You can follow any of the methods found [here](https://docs.astral.sh/uv/getting-started/installation/). If on Linux or MacOS, we recommend using Homebrew:
 
 ```
 $ brew install uv
@@ -46,14 +46,16 @@ $  fpds parse "LAST_MOD_DATE=[2022/01/01, 2022/05/01]" "AGENCY_CODE=7504"
 
 By default, data will be dumped into an `.fpds` folder at the user's
 `$HOME` directory. If you wish to override this behavior, provide the `-o`
-option. The directory will be created if it doesn't exist:
+option. The directory will be created if it doesn't exist. By default, regex
+validation is enabled; if you wish to disable it simply set the `-k` flag as
+`False`.
 
 ```
-$  fpds parse "LAST_MOD_DATE=[2022/01/01, 2022/05/01]" "AGENCY_CODE=7504" -o my-preferred-directory
+$  fpds parse "LAST_MOD_DATE=[2022/01/01, 2022/05/01]" "AGENCY_CODE=7504" -o ~/.my-preferred-dir
 ```
 
 Same request via python interpreter:
-```{python}
+```
 import asyncio
 from itertools import chain
 from fpds import fpdsRequest
