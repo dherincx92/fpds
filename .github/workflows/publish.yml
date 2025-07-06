@@ -61,4 +61,4 @@ jobs:
         run: make test
 
       - name: Publish Package
-        run: make publish
+        run: make publish TOKEN=${{ secrets.PYPI_API_TOKEN }}

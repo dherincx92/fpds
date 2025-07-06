@@ -39,4 +39,4 @@ package:	# builds project + artifacts in dist/ directory
 	uv build
 
 publish: package	# publishes package to pypi
-	uv publish --token ${{ secrets.PYPI_API_TOKEN }}
+	uv publish --token $(TOKEN)
