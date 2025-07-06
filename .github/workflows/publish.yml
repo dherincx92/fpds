@@ -21,9 +21,9 @@ jobs:
         id: cut-version
         with:
           with-v: true
-          major-string-token: ^major:
-          minor-string-token: ^minor:
-          patch-string-token: ^patch:
+          major-string-token: "^major:"
+          minor-string-token: "^minor:"
+          patch-string-token: "^patch:"
           default-bump: patch
           default-branch: master
           branch-history: compare
