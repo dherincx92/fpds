@@ -61,4 +61,6 @@ jobs:
         run: make test
 
       - name: Publish Package
-        run: make publish TOKEN=${{ secrets.PYPI_API_TOKEN }}
+        env:
+          UV_PUBLISH_TOKEN: ${{ secrets.PYPI_API_TOKEN }}
+        run: make publish
