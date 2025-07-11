@@ -35,8 +35,8 @@ test: venv install ## Run unit tests with coverage
 local-test:  ## Runs unit tests
 	uv run -m pytest --cov=src/ --cov-report term-missing tests/
 
-package:	# builds project + artifacts in dist/ directory
+package: ## builds project + artifacts in dist/ directory
 	uv build
 
-publish: package	# publishes package to pypi
-	uv publish --token $(TOKEN)
+publish: package ## publishes package to pypi
+	uv publish
