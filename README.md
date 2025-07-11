@@ -24,6 +24,25 @@ $ brew install uv
 
 Once `uv` is installed, you can use the project Makefile to ensure your local environment is synced with the latest library installation. Start by running `make install` — this will check the status of the `uv.lock` file, and install all project dependencies + extras
 
+### Local Development
+
+For linting and formatting, we use `ruff`. See `pyproject.toml`
+for specific configuration.
+
+```
+$ make formatters
+```
+
+You can clean the clutter and unwanted noise from tools using:
+
+```
+$ make clean
+```
+
+### Testing
+```
+$ make local-test
+```
 
 ## Usage
 For a list of valid search criteria parameters, consult FPDS documentation
@@ -78,23 +97,6 @@ async for entry in gen:
 records = asyncio.run(request.data())
 ```
 
-For linting and formatting, we use `ruff`. See `pyproject.toml`
-for specific configuration.
-
-```
-$ make formatters
-```
-
-Lastly, you can clean the clutter and unwanted noise.
-
-```
-$ make clean
-```
-
-### Testing
-```
-$ make local-test
-```
 
 # Highlights
 

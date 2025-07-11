@@ -1,4 +1,4 @@
-name: Publish fpds python library to PyPI
+name: Publish fpds python library to pypi
 
 on:
   push:
