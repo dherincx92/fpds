@@ -40,7 +40,7 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
           GH_REPO: ${{ github.repository }}
-        run: gh release edit "${{ steps.cut-version.outputs.new_tag }}" --draft=false
+        run: gh release create "${{ steps.cut-version.outputs.new_tag }}" --generate-notes --latest=true
 
   build-and-test:
     needs: [cut-release]
