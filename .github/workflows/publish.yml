@@ -32,7 +32,6 @@ jobs:
           DEFAULT_BUMP: patch
           DEFAULT_BRANCH: master
           BRANCH_HISTORY: compare
-          MATCH_PATH: .
 
   build-and-test:
     runs-on: ubuntu-latest
