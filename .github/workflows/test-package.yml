@@ -31,9 +31,10 @@ jobs:
           DEFAULT_BUMP: patch
           DEFAULT_BRANCH: master
           BRANCH_HISTORY: compare
+          DRY_RUN: false
 
       - name: Print Semantic Version
-        run: echo Package Version to Publish -- "${{ steps.cut-version.outputs.new_tag }}"
+        run: echo Package Version to Publish - "${{ steps.cut-version.outputs.new_tag }}"
 
       - name: Install uv
         uses: astral-sh/setup-uv@v5
