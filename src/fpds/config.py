@@ -1,8 +1,8 @@
 """
-Configurations and constants
+Configurations and constants.
 
 author: derek663@gmail.com
-last_updated: 12/27/2022
+last_updated: 2022-12-17
 """
 
 import json

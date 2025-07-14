@@ -1,0 +1,20 @@
+docs:
+  - changed-files:
+      any-glob-to-any-file:
+        - "README.md"
+
+source:
+  - changed-files:
+      any-glob-to-any-file:
+        - "src/**/*"
+
+github-actions:
+  - changed-files:
+      any-glob-to-any-file:
+        - ".github/**/*"
+
+upstream-dependencies:
+  - changed-files:
+      any-glob-to-any-file:
+        - "pyproject.toml"
+        - "uv.lock"

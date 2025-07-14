@@ -1,13 +1,13 @@
-import pytest
 import unittest
-import xml
-from unittest import TestCase, mock
+from unittest import TestCase
 from xml.etree.ElementTree import ElementTree, fromstring
+
+import pytest
 
 from fpds import fpdsRequest
 from fpds.errors import (
-    fpdsMismatchedParameterRegexError,
     fpdsInvalidParameter,
+    fpdsMismatchedParameterRegexError,
     fpdsMissingKeywordParameterError,
 )
 from tests import FULL_RESPONSE_DATA_BYTES
@@ -19,7 +19,7 @@ FPDS_REQUEST_PARAMS_DICT = {
 }
 
 FPDS_SEARCH_PARAMS_PROPERTY = (
-    "LAST_MOD_DATE:[2022/01/01, 2022/05/01] " 'AGENCY_CODE:"7504"'
+    'LAST_MOD_DATE:[2022/01/01, 2022/05/01] AGENCY_CODE:"7504"'
 )
 # an invalid param combined with a valid param
 FPDS_REQUEST_INVALID_PARAM_DICT = {
@@ -70,20 +70,12 @@ class TestFpdsRequest(TestCase):
 
     def test_str_magic_method(self):
         object_as_string = (
-            "<fpdsRequest LAST_MOD_DATE=[2022/01/01, 2022/05/01] " 'AGENCY_CODE="7504">'
+            '<fpdsRequest LAST_MOD_DATE=[2022/01/01, 2022/05/01] AGENCY_CODE="7504">'
         )
         self.assertEqual(self._class.__str__(), object_as_string)
 
     def test_search_params_property(self):
         self.assertEqual(FPDS_SEARCH_PARAMS_PROPERTY, self._class.search_params)
-
-    @mock.patch.object(xml.etree.ElementTree, "fromstring")
-    def test_convert_to_lxml_tree(self, mock_from_string):
-        mock_from_string.return_value = ElementTree(
-            fromstring(FULL_RESPONSE_DATA_BYTES)
-        )
-        tree = self._class.convert_to_lxml_tree(content=FULL_RESPONSE_DATA_BYTES)
-        self.assertIsInstance(tree, ElementTree)
 
 
 if __name__ == "__main__":

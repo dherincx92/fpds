@@ -1,67 +1,42 @@
-.PHONY: black clean help install isort lint mypy formatters test local-test venv build-flow register-flow
+.PHONY: help venv install clean formatters mypy test local-test package publish
 .DEFAULT_GOAL := help
 
 help:
 	@python -c "$$PRINT_HELP_PYSCRIPT" < $(MAKEFILE_LIST)
 
-install: ## Install the package dev to the active Python's site-packages
-	if [ -z ${VIRTUAL_ENV} ]; then \
-	  echo "\nattempting to activate venv\n" \
-	  && . ./venv/bin/activate \
-	  && pip3 install --upgrade pip \
-	  && pip3 install -r requirements.txt --no-cache-dir \
-	  && pip3 install -e '.[dev, tests]'; \
-	else  \
-	  echo "\nvirtual environment detected\n" \
-	  && pip3 install --upgrade pip \
-	  && pip3 install -r requirements.txt --no-cache-dir \
-	  && pip3 install -e '.[dev, tests]';\
+venv: ## defaults to creating virtual environment in current directory under .venv
+	@if [ -d .venv ]; then \
+		echo ".venv already exists. Skipping creation."; \
+	else \
+		uv venv; \
 	fi
+
+install: venv ## checks if uv.lock is up-to-date and manually syncs all deps + extras
+	uv lock --check
+	uv sync --extra all
 
 clean: ## Remove test and coverage artifacts
 	rm -f .coverage
 	rm -fr htmlcov/
+	rm -fr .ruff_cache
 	rm -fr .pytest_cache
 	rm -fr .mypy_cache
 
-black: ## Format with black
-	black src tests
-
-isort: ## Format and sort imports
-	isort src
-
-lint: ## Check style with flake8
-	flake8 src
+formatters: venv ## https://docs.astral.sh/ruff/formatter/#line-breaks
+	uv tool run ruff check --select I --fix
+	uv tool run ruff format
 
 mypy: ## Typechecking with mypy
-	mypy src
-
-formatters: black isort lint mypy
+	uv tool run mypy src/
 
 test: venv install ## Run unit tests with coverage
-	if [ -z ${VIRTUAL_ENV} ]; then \
-	  echo "\nattempting to activate virtual environment\n" \
-	  && . ./venv/bin/activate \
-	  && pytest --cov=src/ --cov-report term-missing tests/ \
-	  && coverage report --fail-under=70 \
-	  && rm -rf .coverage; \
-	else \
-	  echo "\nvirtual environment detected\n" \
-	  && pytest --cov=src/ --cov-report term-missing tests/ \
-	  && coverage report --fail-under=70 \
-	  && rm -rf .coverage; \
-	fi
+	uv run -m pytest
 
 local-test:  ## Runs unit tests
-	pytest --cov=src/ --cov-report term-missing tests/
+	uv run -m pytest --cov=src/ --cov-report term-missing tests/
 
-venv: ## Check if operating in a virtual environment, create if not detected.
-	if [ ! -z ${VIRTUAL_ENV} ]; then echo "\nvirtual environment detected\n"; else python3.8 -m venv venv && . ./venv/bin/activate; fi
+package: ## builds project + artifacts in dist/ directory
+	uv build
 
-package:
-	@ pip install -U pip
-	@ pip install .[packaging]
-	@ python -m build --sdist --wheel --outdir dist/ .
-
-publish: venv login
-	twine upload --verbose dist/*
+publish: package ## publishes package to pypi
+	uv publish

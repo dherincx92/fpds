@@ -1,25 +1,47 @@
 # fpds
-A no-frills parser for the Federal Procurement Data System (FPDS) found
-[here](https://www.fpds.gov/fpdsng_cms/index.php/en/).
+A light-weight, pythonic parser for the Federal Procurement Data System (FPDS) ATOM Feed.
+Reference [here](https://www.fpds.gov/fpdsng_cms/index.php/en/).
 
 
 ## Motivation
-The only programmatic access to this data via an ATOM feed limits each
-request to 10 records, which forces users to deal with pagination.
-Additonally, data is exported as XML, which proves annoying for most
-developers. `fpds` will handle all pagination and data
+The FPDS ATOM feed limits each request to 10 records, which forces users to deal with pagination. Additonally, data is exported as XML, which proves annoying. `fpds` will handle all pagination and data
 transformation to provide users with a nice JSON representation of the
-equivalent XML data.
+equivalent XML data and attributes.
 
 
 ## Setup
-To install this package for development, create a virtual environment
-and install dependencies.
+As of version 1.5.0, this library manages dependencies using `uv`. It is
+_highly_ recommended since this library is tested with it.
+
+
+### Installing `uv`
+
+You can follow any of the methods found [here](https://docs.astral.sh/uv/getting-started/installation/). If on Linux or MacOS, we recommend using Homebrew:
 
 ```
-$ python3.10 -m venv venv
-$ source venv/bin/activate
-$ pip install -e .
+$ brew install uv
+```
+
+Once `uv` is installed, you can use the project Makefile to ensure your local environment is synced with the latest library installation. Start by running `make install` — this will check the status of the `uv.lock` file, and install all project dependencies + extras
+
+### Local Development
+
+For linting and formatting, we use `ruff`. See `pyproject.toml`
+for specific configuration.
+
+```
+$ make formatters
+```
+
+You can clean the clutter and unwanted noise from tools using:
+
+```
+$ make clean
+```
+
+### Testing
+```
+$ make local-test
 ```
 
 ## Usage
@@ -42,16 +64,20 @@ $  fpds parse "LAST_MOD_DATE=[2022/01/01, 2022/05/01]" "AGENCY_CODE=7504"
 
 By default, data will be dumped into an `.fpds` folder at the user's
 `$HOME` directory. If you wish to override this behavior, provide the `-o`
-option. The directory will be created if it doesn't exist:
+option. The directory will be created if it doesn't exist.
+
+As of v1.5.0, you can opt out of regex validation by setting the `-k` flag
+to `False` — this is helpful in scenarios when either the regex pattern has
+been altered by the ATOM feed or a new parameter name is supported, but not
+yet added to the configuration in this library.
 
 ```
-$  fpds parse "LAST_MOD_DATE=[2022/01/01, 2022/05/01]" "AGENCY_CODE=7504" -o my-preferred-directory
+$  fpds parse "LAST_MOD_DATE=[2022/01/01, 2022/05/01]" "AGENCY_CODE=7504" -o ~/.my-preferred-dir
 ```
 
 Same request via python interpreter:
 ```
 import asyncio
-from itertools import chain
 from fpds import fpdsRequest
 
 request = fpdsRequest(
@@ -59,43 +85,23 @@ request = fpdsRequest(
     AGENCY_CODE="7504"
 )
 
-# results are nested lists so de-nest
-data = asyncio.run(request.data())
-records = list(chain.from_iterable(data))
+# returns records as an async generator
+gen = request.iter_data()
+
+# evaluating generator entries
+records = []
+async for entry in gen:
+    records.append(entry)
+
+# or letting `data` method evaluate generator for you
+records = asyncio.run(request.data())
 ```
 
-For linting and formatting, we use `flake8` and `black`.
 
-```
-$ make lint
-$ make formatters
-```
+# Highlights
 
-Lastly, you can clean the clutter and unwanted noise.
-
-```
-$ make clean
-```
-
-### Testing
-```
-$ make local-test
-```
-
-## What's New
-As of 08/21/2024, `v1.4.1` data is returned as a generator, providing more flexibility
-for memory constrained devices. Users also have the ability to select specific
-pages of results with the `page` parameter.
-
-Parameters in `fields.json` have been updated to support unbounded values. Previously, range-based parameters had to define an upper & lower bound (i.e. `[4250, 7500]`). In the most current version of this library, you can now specify the following patterns for all range parameters: `[4250,)` or `(, 7500]`. This even works for dates: `[2022/08/22,)` or `(, 2022/08/01]`!
-
-`fpds` now supports asynchronous requests! As of `v1.3.0`, users can instantiate
-the class as usual, but will now need to call the `process_records` method
-to get records as JSON. Note: due to some recursive function calls in the XML
-parsing, users might experience some high completion times for this function
-call. Recommendation is to limit the number of results.
-
-#### Timing Benchmarks (in seconds):
+Between v1.2.1 and v1.3.0, significant improvements were made with `asyncio`. Here are some rough benchmarks in estimated data extraction + post-processing
+times:
 
 | v1.2.1 | v.1.3.0 |
 -------- | --------
@@ -108,6 +114,6 @@ Using `v.1.3.0`, the average completion time is 28.40 seconds.
 
 This equates to a <u>**84.89%**</u> decrease in completion time!
 
+# Notes
 
-As of `v1.3.0`, `fpds` now supports the use of over 100 keyword tags when searching
-for contracts using the `v1.5.3` ATOM feed.
+Please be aware that this project is an after-hours passion of mine. I do my best to accomodate requests the best I can, but I receive no $$$ for any of the work I do here.

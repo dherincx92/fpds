@@ -2,70 +2,93 @@
 XML classes for parsing FPDS content.
 
 author: derek663@gmail.com
-last_updated: 07/13/2024
+last_updated: 2025-07-25
 """
 
 import re
-from typing import Dict, Iterator, List, Optional, Union
+from typing import Dict, Iterator, List, Optional, TypedDict, Unpack
 from xml.etree.ElementTree import Element, ElementTree, fromstring
 
 from fpds.core import FPDS_ENTRY
-from fpds.core.mixins import fpdsMixin, fpdsXMLMixin
+from fpds.core.mixins import fpdsMixin
 
 NAMESPACE_REGEX = r"\{(.*)\}"
 LAST_PAGE_REGEX = r"start=(.*?)$"
 
 
-class fpdsXML(fpdsXMLMixin, fpdsMixin):
-    """Parses FPDS request content received as `bytes` or `ElementTree`.
-    This class represents an entire XML document.
+class fpdsElementAttributes(TypedDict):
+    element: Element
+    namespace_dict: Dict[str, str]
+
+
+class fpdsElement:
+    """Representation of a single XML element.
 
     Attributes
     ----------
-    content: `Union[bytes, ElementTree]`
-        `bytes` content or an `ElementTree` type that can be parsed into
-        valid XML.
-
-    Raises
-    ------
-    TypeError:
-        If `content` is not of type `bytes` or an instance of `ElementTree`.
+    element: `Element`
+        An instance of `Element` from the native xml lib.
+    namespace_dict: `Dict[str, str]`
+        XML namespaces.
     """
 
-    def __init__(self, content: Union[bytes, ElementTree]) -> None:
-        if isinstance(content, bytes):
-            self.content = content
-            self.tree = self.convert_to_lxml_tree()
-        if isinstance(content, self.xml_child_classes):
-            self.tree = content
-        if not isinstance(content, self.xml_child_classes + (bytes,)):
-            module_names = ",".join(
-                [f"`{mod}`" for mod in self.xml_child_classes_with_modules]
-            )
-            raise TypeError(
-                f"You must provide bytes content or an instance of the "
-                f"following: {module_names}."
-            )
+    def __init__(self, element: Element, namespace_dict: Dict[str, str]) -> None:
+        self.element = element
+        self.namespace_dict = namespace_dict
+
+    def __iter__(self) -> Iterator[Element]:
+        return iter(self.element)
+
+    def __len__(self) -> int:
+        return len(self.element)
+
+    def __getitem__(self, index: int) -> Element:
+        return self.element[index]
 
     def __str__(self) -> str:  # pragma: no cover
-        """The root represents the top of the XML tree from an instance of type
-        `ElementTree`. Since `fpdsElement` inherits from this class, we overwrite
-        this method in child classes since `getroot()` is not available for
-        tags of type `Element`.
-        """
-        if isinstance(self.tree, ElementTree):
-            root = self.tree.getroot()
-            query = root.find(".//ns0:title", self.namespace_dict)
-            assert isinstance(query, Element)
-
-            page = root.find(".ns0:link[@rel='alternate']", self.namespace_dict)
-            assert isinstance(page, Element)
-
-            return f"<fpdsXML query=`{query.text}` page=`{page.attrib['href']}`>"
+        return f"<fpdsElement {self.tag}>"
 
     def parse_items(self) -> Iterator[Element]:
         """Returns iteration of `Element` as a generator."""
-        yield from self.tree.iter()
+        yield from self.element.iter()
+
+    @property
+    def NAMESPACE_REGEX_PATTERN(self) -> str:
+        """Regex pattern identifying a namespace within a tag element."""
+        namespaces = "|".join(self.namespace_dict.values())
+        # yeah, f-strings don't do well with backslashes
+        PATTERN = r"\{(" + namespaces + r")\}"  # noqa
+        return PATTERN
+
+    @property
+    def tag(self) -> str:
+        """Raw tag from `xml` library."""
+        return self.element.tag
+
+    @property
+    def clean_tag(self) -> str:
+        """Tag name without the namespace.
+
+        A tag like the following: `ns1:productOrServiceInformation`
+        would simply return `productOrServiceInformation`.
+        """
+        clean_tag = re.sub(self.NAMESPACE_REGEX_PATTERN, "", self.tag)
+        return clean_tag
+
+
+class fpdsTree(fpdsMixin):
+    """Representation of initial FPDS response as an ElementTree.
+
+    Attributes
+    ----------
+    content: `bytes`
+        XML bytes content.
+    """
+
+    def __init__(self, content: bytes) -> None:
+        if isinstance(content, bytes):
+            self.content = content
+            self.tree = self.convert_to_lxml_tree()
 
     def convert_to_lxml_tree(self) -> ElementTree:
         """Returns an `ElementTree` object from a `bytes` response."""
@@ -124,9 +147,7 @@ class fpdsXML(fpdsXMLMixin, fpdsMixin):
         return record_count
 
     def pagination_links(self, params: str) -> List[str]:
-        """Builds pagination links for a single API response based on the
-        total record count value.
-        """
+        """Builds pagination links from initial request."""
         resp_size = self.response_size
         offset = 0 if self.lower_limit < 10 else resp_size
         page_range = list(range(0, self.lower_limit + offset, resp_size))
@@ -138,61 +159,33 @@ class fpdsXML(fpdsXMLMixin, fpdsMixin):
 
     def get_atom_feed_entries(self) -> List[Element]:
         """Returns tree entries that contain FPDS record data."""
-        data_entries = self.tree.findall(".//ns0:entry", self.namespace_dict)
-        return data_entries
+        entries = [
+            element
+            for element in self.tree.findall(".//ns0:entry", self.namespace_dict)
+        ]
+        return entries
+
+    def parse_items(self) -> Iterator[Element]:
+        """Returns iteration of `Element` as a generator."""
+        yield from self.tree.iter()
 
     def jsonify(self) -> List[FPDS_ENTRY]:
         """Returns all paginated entries from an FPDS request."""
         entries = self.get_atom_feed_entries()
-        json_data = [Entry(content=entry)() for entry in entries]
+        json_data = [
+            Entry(element=element, namespace_dict=self.namespace_dict)()
+            for element in entries
+        ]
         return json_data
 
 
-class fpdsElement(fpdsXML):
-    """Representation of a single FPDS XML element. This utility class helps us
-    retrieve the name of XML tags without the namespace.
-    """
+class fpdsSubTree(fpdsTree):
+    """A class denoting XML trees built off of the pagination links from :class:`fpdsTree`."""
 
-    def __init__(self, *args, **kwargs) -> None:
-        super().__init__(*args, **kwargs)
-        # per the `xml` API, an `ElementTree` and `Element` are different
-        # we ensure we follow that convention here by removing the `tree` attrib
-        self.element = self.tree
-        delattr(self, "tree")
-
-    def __str__(self) -> str:  # pragma: no cover
-        return f"<fpdsElement {self.tag}>"
-
-    def parse_items(self) -> Iterator[Element]:
-        """Returns iteration of `Element` as a generator."""
-        yield from self.element.iter()
-
-    @property
-    def NAMESPACE_REGEX_PATTERN(self) -> str:
-        """A single regex pattern string that allows us to remove all
-        namespaces from tags, irrespective of namespace value.
-        """
-        namespaces = "|".join(self.namespace_dict.values())
-        # yeah, f-strings don't do well with backslashes
-        PATTERN = r"\{(" + namespaces + r")\}"  # noqa
-        return PATTERN
-
-    @property
-    def tag(self):
-        """Raw tag from `xml` library."""
-        return self.element.tag
-
-    @property
-    def clean_tag(self) -> str:
-        """Tag name without the namespace. A tag like the following:
-        `ns1:productOrServiceInformation` would simply return
-        `productOrServiceInformation`.
-        """
-        clean_tag = re.sub(self.NAMESPACE_REGEX_PATTERN, "", self.tag)
-        return clean_tag
+    pass
 
 
-class _ElementAttributes(fpdsElement, fpdsXMLMixin):
+class _ElementAttributes:
     """
     Utility class that helps parse out extra features of XML tags generated
     by `xml.etree.ElementTree.Element`. This class should ideally not be
@@ -200,21 +193,19 @@ class _ElementAttributes(fpdsElement, fpdsXMLMixin):
 
     Attributes
     ----------
-    element: `xml.etree.ElementTree.Element`
-        An XML element.
-    namespace_dict: `Dict[str, str]`
-        A namespace dictionary that allows module to parse FPDS elements.
     prefix: `str`
         Prefix to append to attribute dictionary. This will ensure that
         duplicate tags like `PIID` are distinguished in the data.
+    element: `xml.etree.ElementTree.Element`
+        An lxml Element type.
     """
 
-    def __init__(self, prefix: str, *args, **kwargs) -> None:
+    def __init__(self, prefix: str, element: Element) -> None:
         self.prefix = prefix
-        super().__init__(*args, **kwargs)
+        self.element = element
 
     def __str__(self) -> str:  # pragma: no cover
-        return f"<_ElementAttributes {self.tag}>"
+        return f"<_ElementAttributes {self.element.tag}>"
 
     def _generate_nested_attribute_dict(self) -> Dict[str, str]:
         """Returns all attributes of an Element.
@@ -236,7 +227,6 @@ class _ElementAttributes(fpdsElement, fpdsXMLMixin):
                 "{prefix}__contractActionType__part8OrPart13": "PART8"
             }
         """
-        assert isinstance(self.element, Element)
 
         attributes = self.element.attrib
         _attributes_copy = attributes.copy()
@@ -252,13 +242,12 @@ class _ElementAttributes(fpdsElement, fpdsXMLMixin):
 
 
 class Entry(fpdsElement):
-    """New as of v1.2.0
+    """An ATOM feed data entry.
 
-    Representation of a single FPDS award item. In terms of XML, it is the
-    outermost container for award data. Each entry contains four children tags --
-    `title`, `link`, `modified`, and `content`. The `content` tag will contain
-    the bulk of data to be extracted, but tags like `title` and `modified`
-    also contain useful info.
+     In terms of XML, it is the outermost container for award data.
+     Each entry contains four children tags -- `title`, `link`, `modified`,
+     and `content`. The `content` tag will contain the bulk of data to be
+     extracted, but tags like `title` and `modified` also contain useful info.
 
     Example:
     --------
@@ -274,11 +263,15 @@ class Entry(fpdsElement):
                 <ns1:awardID>
                     <ns1:awardContractID>
                         <ns1:agencyID name="PUBLIC BUILDINGS SERVICE">4740</ns1:agencyID>
+                    </ns1:awardContractID>
+                </ns1:awardID>
+            </ns1:award
+        </content>
     </entry>
     """
 
-    def __init__(self, *args, **kwargs) -> None:
-        super().__init__(*args, **kwargs)
+    def __init__(self, **kwargs: Unpack[fpdsElementAttributes]) -> None:
+        super().__init__(**kwargs)
 
     def __str__(self) -> str:  # pragma: no cover
         return f"<Entry {self.clean_tag}>"
@@ -293,6 +286,7 @@ class Entry(fpdsElement):
         """Identifies the contract type for an individual award entry. Possible
         options include: `AWARD` or `IDV`.
         """
+        assert self.element is not None
         content = self.element.find(".//ns0:content", self.namespace_dict)
         if content:
             award = list(content)[0]
@@ -305,7 +299,7 @@ class Entry(fpdsElement):
         hierarchy = self.content_tag_hierarchy()
 
         for prefix, tag in hierarchy.items():
-            attributes = _ElementAttributes(content=tag, prefix=prefix)
+            attributes = _ElementAttributes(element=tag, prefix=prefix)
             entry_tags.update(attributes._generate_nested_attribute_dict())
             # the dumbest part of this data is it not natively having a column
             # for the contract type
@@ -316,9 +310,9 @@ class Entry(fpdsElement):
         self,
         element: Optional[Element] = None,
         parent: Optional[str] = None,
-        hierarchy: Optional[Dict[str, str]] = None,
-    ) -> Dict[str, str]:
-        """Added on v1.2.0
+        hierarchy: Optional[Dict[str, Element]] = None,
+    ) -> Dict[str, Element]:
+        """Generates hierarchy within the content tag.
 
         For each FPDS request made, the `entry` tag represents an individual
         award -- `AWARD` or `IDV`. The `content` tag contains a nested structure
@@ -364,14 +358,18 @@ class Entry(fpdsElement):
             hierarchy = {}
 
         if element is None:
-            element = self.element  # type: ignore
+            element = self.element
 
-        _parent = Parent(content=element)
+        _parent = Parent(element=element, namespace_dict=self.namespace_dict)
         # continue parsing XML hierarchy because children exist and we want
         # to get every possible bit of data
         if _parent.children():
             for child in _parent.children():
-                _child = Parent(content=child, parent_name=parent)
+                _child = Parent(
+                    element=child,
+                    parent_name=parent,
+                    namespace_dict=self.namespace_dict,
+                )
                 parent_tag_name = _child.parent_child_hierarchy_name()
                 hierarchy[parent_tag_name] = child
 
@@ -384,20 +382,22 @@ class Entry(fpdsElement):
 
 
 class Parent(fpdsElement):
-    """Identifies an xml tag as a parent. In this package, a parent tag
-    is considered to have children elements.
-    """
+    """Representation of any XML tag containing children tags."""
 
-    def __init__(self, parent_name=None, *args, **kwargs):
-        super().__init__(*args, **kwargs)
+    def __init__(
+        self,
+        parent_name: Optional[str] = None,
+        **kwargs: Unpack[fpdsElementAttributes],
+    ) -> None:
+        super().__init__(**kwargs)
         self.parent_name = parent_name
 
-    def children(self):
+    def children(self) -> List[Element]:
         """Returns children if they exist."""
-        if list(self.element):
-            return list(self.element)
+        return list(self.element)
 
-    def parent_child_hierarchy_name(self, delim="__"):
+    def parent_child_hierarchy_name(self, delim: str = "__") -> str:
+        """Concatenates tags representing parent/child relationships."""
         if self.parent_name:
             name = self.parent_name + delim + self.clean_tag
         else:
