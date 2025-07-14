@@ -1,4 +1,4 @@
-"""CLI namespace"""
+"""CLI namespace."""
 
 import click
 

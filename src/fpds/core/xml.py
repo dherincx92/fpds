@@ -2,7 +2,7 @@
 XML classes for parsing FPDS content.
 
 author: derek663@gmail.com
-last_updated: 2025-07-05
+last_updated: 2025-07-25
 """
 
 import re
@@ -385,7 +385,9 @@ class Parent(fpdsElement):
     """Representation of any XML tag containing children tags."""
 
     def __init__(
-        self, parent_name: Optional[str] = None, **kwargs: Unpack[fpdsElementAttributes]
+        self,
+        parent_name: Optional[str] = None,
+        **kwargs: Unpack[fpdsElementAttributes],
     ) -> None:
         super().__init__(**kwargs)
         self.parent_name = parent_name
@@ -395,6 +397,7 @@ class Parent(fpdsElement):
         return list(self.element)
 
     def parent_child_hierarchy_name(self, delim: str = "__") -> str:
+        """Concatenates tags representing parent/child relationships."""
         if self.parent_name:
             name = self.parent_name + delim + self.clean_tag
         else:

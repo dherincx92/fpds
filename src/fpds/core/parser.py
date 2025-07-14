@@ -3,7 +3,7 @@ Core class for converting FPDS XML
 tree into JSON.
 
 author: derek663@gmail.com
-last_updated: 2025-07-11
+last_updated: 2025-07-14
 """
 
 import asyncio
@@ -30,7 +30,7 @@ class fpdsRequest(fpdsMixin):
 
     Takes an unlimited number of arguments. All query parameters should be
     submitted as strings. During class instantiation, this class
-    will validate argument names/values and raise a `ValueError` if any
+    will validate argument names/values and raise an Exception if any
     error exists.
 
     If you encounter new keyword parameters and/or an altered regex pattern,
@@ -38,10 +38,11 @@ class fpdsRequest(fpdsMixin):
     to submit an issue or open up a PR with new fields.
 
     Example:
-        request = fpdsRequest(
-            LAST_MOD_DATE="[2022/01/01, 2022/05/01]",
-            AGENCY_CODE="7504",
-        )
+    -------
+    >>> request = fpdsRequest(
+    >>>     LAST_MOD_DATE="[2022/01/01, 2022/05/01]",
+    >>>     AGENCY_CODE="7504",
+    >>> )
 
     Attributes
     ----------
@@ -56,7 +57,7 @@ class fpdsRequest(fpdsMixin):
         The number of threads to send per search.
     page: `Optional[int]`
         Defaults to `None`.
-        The results page to retrieve.
+        The page of results to retrieve.
     **kwargs: `str`
         Any valid FPDS keyword search parameter.
 
@@ -124,11 +125,6 @@ class fpdsRequest(fpdsMixin):
     def __url__(self) -> str:  # pragma: no cover
         """Custom magic method for request URL."""
         return f"{self.url_base}&q={self.search_params}"
-
-    @property
-    def url_base(self) -> str:
-        """Base URL for all ATOM feed requests"""
-        return "https://www.fpds.gov/ezsearch/FEEDS/ATOM?FEEDNAME=PUBLIC"
 
     @property
     def search_params(self) -> str:

@@ -1,9 +1,9 @@
 """
 Parsing command for retrieving FPDS federal
-contracts
+contracts.
 
 author: derek663@gmail.com
-last_updated: 2025-07-05
+last_updated: 2025-07-14
 """
 
 import asyncio
@@ -88,4 +88,4 @@ def parse(params, output_dir, skip_regex_validation) -> None:  # type: ignore
     with open(DATA_FILE, "w") as outfile:
         json.dump(records, outfile)
 
-    click.echo(f"{len(records)} records have been saved as JSON at: {DATA_FILE}")
+    click.echo(f"{len(records)} record(s) have been saved as JSON at: {DATA_FILE}")
