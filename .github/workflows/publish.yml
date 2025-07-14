@@ -24,6 +24,7 @@ jobs:
         uses: anothrNick/github-tag-action@v1
         id: cut-version
         env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           WITH_V: true
           MAJOR_STRING_TOKEN: "^major:"
           MINOR_STRING_TOKEN: "^minor:"
