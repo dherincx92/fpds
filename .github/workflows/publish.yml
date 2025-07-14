@@ -8,6 +8,7 @@ on:
       - src/**
       - pyproject.toml
       - uv.lock
+  workflow_dispatch:
 
 permissions:
   contents: write
