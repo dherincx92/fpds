@@ -33,8 +33,14 @@ jobs:
           DEFAULT_BUMP: patch
           DEFAULT_BRANCH: master
           BRANCH_HISTORY: compare
+      - name: Publish Release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+        run: gh release edit "${{ steps.cut-version.outputs.new_tag }}" --draft=false
 
   build-and-test:
+    needs: [cut-release]
     runs-on: ubuntu-latest
     strategy:
       matrix:
