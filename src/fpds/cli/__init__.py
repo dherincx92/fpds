@@ -3,7 +3,7 @@
 import click
 
 from .parse import parse as _parse
-from .params import params as _params
+from .fields import fields as _fields
 
 
 @click.group(invoke_without_command=True)
@@ -27,4 +27,4 @@ def cli(ctx):
 
 
 cli.add_command(_parse)
-cli.add_command(_params)
+cli.add_command(_fields)

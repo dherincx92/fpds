@@ -14,13 +14,13 @@ from tabulate import tabulate
     help="If True, exports full list of field metadata",
 )
 @click.command()
-def params(export):
+def fields(export):
     """
     Command for displaying available filtering fields for parsing command.
 
     \b
     Usage:
-        $ fpds params [OPTIONS]
+        $ fpds fields [OPTIONS]
 
     \b
     Options:
