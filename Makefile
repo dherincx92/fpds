@@ -11,8 +11,8 @@ venv: ## defaults to creating virtual environment in current directory under .ve
 		uv venv; \
 	fi
 
-install: venv ## checks if uv.lock is up-to-date and manually syncs all deps + extras
-	uv lock --check
+install: venv ## updates uv.lock if needed and manually syncs all deps + extras
+	uv lock
 	uv sync --extra all
 
 clean: ## Remove test and coverage artifacts
