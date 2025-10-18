@@ -1,3 +1,10 @@
+"""
+Command for displaying FPDS filtering fields.
+
+author: derek663@gmail.com
+last_updated: 2025-10-18
+"""
+
 import click
 import json
 import textwrap
@@ -16,7 +23,7 @@ from tabulate import tabulate
 @click.command()
 def fields(export):
     """
-    Command for displaying available filtering fields for parsing command.
+    Command for displaying available filtering fields for the parsing command.
 
     \b
     Usage:
@@ -43,13 +50,6 @@ def fields(export):
         "Consult the README.md for examples."
     )
     click.echo(click.style("\n".join(textwrap.wrap(message, width=87)), fg="green"))
-    parameters = FPDS_FIELDS_CONFIG
-    data = [
-        [r['name'], r['description']] for r  in parameters
-    ]
-
-    # Define headers
+    data = [[field['name'], field['description']] for field in FPDS_FIELDS_CONFIG]
     headers = ["Name", "Description"]
-
-    # Print table with fancy_grid
-    print(tabulate(data, headers=headers, tablefmt="fancy_grid"))
+    click.echo(tabulate(data, headers=headers, tablefmt="fancy_grid"))
