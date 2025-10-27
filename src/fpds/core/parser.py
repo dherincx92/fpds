@@ -53,7 +53,7 @@ class fpdsRequest(fpdsMixin):
         Defaults to `False`.
         If `True`, opts out of regex validation.
     thread_count: `int`
-        Defaults to 10.
+        Defaults to 4, please be considerate and avoid overwhelming the server (especially in peak early night hours in the US).
         The number of threads to send per search.
     page: `Optional[int]`
         Defaults to `None`.
@@ -83,7 +83,7 @@ class fpdsRequest(fpdsMixin):
         self,
         cli_run: bool = False,
         skip_regex_validation: bool = False,
-        thread_count: int = 10,
+        thread_count: int = 4,
         page: Optional[int] = None,
         **kwargs: str,
     ) -> None:
