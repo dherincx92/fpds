@@ -27,7 +27,7 @@ formatters: venv ## https://docs.astral.sh/ruff/formatter/#line-breaks
 	uv tool run ruff format
 
 mypy: ## Typechecking with mypy
-	uv tool run mypy src/
+	uv run mypy src/
 
 test: venv install ## Run unit tests with coverage
 	uv run -m pytest
