@@ -392,7 +392,8 @@
     {
         "description": "PSC Type",
         "name": "PRODUCT_OR_SERVICE_TYPE",
-        "quotes": true
+        "quotes": true,
+        "regex": ".*"
     },
     {
         "description": "Reason for Modification",
