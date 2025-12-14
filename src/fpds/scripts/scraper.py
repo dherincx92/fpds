@@ -35,11 +35,19 @@ def update_fields_json(dropdown_fields):
     config.extend(new_options)
     sorted_config = sorted(config, key=lambda field: field["name"])
 
-    with Path(FPDS_FIELDS_FILE_PATH).open(mode="w", encoding="utf-8") as file:
-        json.dump(sorted_config, file, indent=4)
+    print(new_options)
+    # with Path(FPDS_FIELDS_FILE_PATH).open(mode="w", encoding="utf-8") as file:
+    #     json.dump(sorted_config, file, indent=4)
 
 def scrape_ezsearch():
-    driver = webdriver.Chrome()
+    """Scrapes FPDS ezSearch field for Advanced Search Criteria dropdown values.
+
+    These values represent valid parameter values for an instance of
+    `:class:`fpdsRequest.
+    """
+    options = Options()
+    options.add_argument("--headless")
+    driver = webdriver.Chrome(options=options)
     driver.get(FPDS_EZSEARCH_URL)
 
     search_criteria_button = driver.find_element(
