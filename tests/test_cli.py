@@ -33,7 +33,7 @@ class TestFpdsCLI(TestCase):
                     "AGENCY_CODE=7504",
                     "-o",
                     "./test",
-                ]
+                ],
             )
             self.assertEqual(result.exit_code, 0)
 

@@ -43,6 +43,7 @@ class MockHTTPResponse:
     def __exit__(self, exc_type, exc_value, traceback):
         pass
 
+
 class MockFpdsXML(object):
     def pagination_links(self, params="some-param1: param1-value"):
         return [
@@ -83,7 +84,6 @@ class TestFpdsRequest(TestCase):
                 **FPDS_REQUEST_PARAMS_DICT,
                 page=1_000_000,
             )
-
 
     @mock.patch("fpds.core.parser.urlopen")
     def test_skip_regex_validation_warning_raised(self, mock_urlopen):
