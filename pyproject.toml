@@ -51,6 +51,7 @@ packaging = [
 all = [
     "fpds[cli]",
     "fpds[dev]",
+    "fpds[scripts]",
     "fpds[tests]",
     "fpds[packaging]",
 ]
