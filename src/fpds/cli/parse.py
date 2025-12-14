@@ -1,3 +1,10 @@
+"""
+CLI command for retrieving FPDS federal contracts.
+
+author: derek663@gmail.com
+last_updated: 2025-12-14
+"""
+
 import asyncio
 from pathlib import Path
 from typing import Optional
