@@ -7,8 +7,6 @@ last_updated: 2025-07-14
 """
 
 import asyncio
-import gzip
-import json
 import multiprocessing
 from pathlib import Path
 import warnings
@@ -32,8 +30,12 @@ from rich.progress import (
 from fpds.core import FPDS_ENTRY
 from fpds.core.mixins import fpdsMixin
 from fpds.core.xml import fpdsSubTree, fpdsTree
-from fpds.errors import fpdsMaxPageLengthExceededError, fpdsMissingKeywordParameterError
+from fpds.errors import (
+    fpdsMaxPageLengthExceededError,
+    fpdsMissingKeywordParameterError,
+)
 from fpds.utilities import validate_kwarg
+from fpds.utilities.writer import fpdsChunkWriter
 
 from fpds.config import FPDS_DATA_DATE_DIR
 
@@ -155,6 +157,10 @@ class fpdsRequest(fpdsMixin):
         """Total number of FPDS pages contained in request."""
         return len(self.links)
 
+    @staticmethod
+    def mb_to_bytes(self) -> int:
+        return self.max_chunk_size_mb * 1_048_576
+
     def initial_request(self) -> bytes:
         """Returns the root XML tree from the initial request."""
         encoded_params = parse.urlencode({"q": self.search_params})
@@ -250,13 +256,10 @@ class fpdsRequest(fpdsMixin):
                 task_id = progress.add_task(
                     "Processing records...", total=len(data)
                 )
-
-                # Submit all tasks
                 future_to_record = {
                     pool.submit(self._jsonify, record): record for record in data
                 }
 
-                # Process results as they complete and yield immediately
                 for future in as_completed(future_to_record):
                     progress.update(task_id, advance=1)
                     result = future.result()
@@ -264,53 +267,23 @@ class fpdsRequest(fpdsMixin):
                         yield entry
 
 
-    async def data(
-        self,
-        output_dir: Path = FPDS_DATA_DATE_DIR,
-    ) -> None:
-        run_id = str(uuid4())
+    async def data(self, output_dir: Path = FPDS_DATA_DATE_DIR) -> None:
+        """Outputs FPDS data as partitioned-sized JSON gzip files.
 
-        # Memory-efficient chunking: write to gzip files
+        Parameters
+        ----------
+        output_dir: `Path`
+            The directory to output the FPDS data to.
+            Defaults to `~/.fpds/<CURRENT_DATE>`.
+        """
+        run_id = str(uuid4())
         output_path = (Path(output_dir) / run_id).expanduser()
         output_path.mkdir(parents=True, exist_ok=True)
 
-        max_bytes = self.max_chunk_size_mb * 1_048_576  # Convert MB to bytes
-        file_paths: List[str] = []
-        chunk_buffer: List[FPDS_ENTRY] = []
-        current_size = 0
-        chunk_index = 0
-
-        async for entry in self.iter_data():
-            # Convert entry to JSON string to measure size
-            entry_json = json.dumps(entry)
-            entry_size = len(entry_json.encode("utf-8"))
-
-            # Check if adding this entry would exceed the chunk size
-            if current_size + entry_size > max_bytes and chunk_buffer:
-                # Write current buffer to gzip file
-                file_path = output_path / f"{uuid4()}.json.gz"
-                file_paths.append(str(file_path))
-
-                with gzip.open(file_path, "wt", encoding="utf-8") as gz_file:
-                    json.dump(chunk_buffer, gz_file)
-
-                # Reset buffer for next chunk
-                chunk_buffer = [entry]
-                current_size = entry_size
-                chunk_index += 1
-            else:
-                # Add entry to current buffer
-                chunk_buffer.append(entry)
-                current_size += entry_size
-
-        # Write final chunk if there are remaining records
-
-        if chunk_buffer:
-            file_path = output_path / f"{uuid4()}.json.gz"
-            file_paths.append(str(file_path))
-
-            with gzip.open(file_path, "wt", encoding="utf-8") as gz_file:
-                json.dump(chunk_buffer, gz_file)
-
-
-        print(f"Wrote {len(file_paths)} chunks to {output_path}")
+        writer = fpdsChunkWriter(
+            output_dir=output_path,
+            max_chunk_size_mb=self.max_chunk_size_mb,
+        )
+        file_paths = await writer.chunkify(self.iter_data())
+        print(f"Wrote records to {output_path}")
+        return file_paths
