@@ -41,6 +41,7 @@ def parse(
     if output_dir:
         if not output_dir.exists():
             output_dir.mkdir(parents=True, exist_ok=True)
+            dir = Path(output_dir)
 
     split_params = [param.split("=") for param in params]
 
@@ -50,4 +51,4 @@ def parse(
 
     params_kwargs = dict(split_params)
     request = fpdsRequest(cli_run=True, **params_kwargs)    # type: ignore[arg-type]
-    asyncio.run(request.data(output_dir=output_dir))
+    asyncio.run(request.data(output_dir=dir))
