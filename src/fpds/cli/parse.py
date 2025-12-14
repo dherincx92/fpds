@@ -13,11 +13,11 @@ import typer
 from typing_extensions import Annotated
 
 from fpds import fpdsRequest
+from fpds.cli import app
 from fpds.cli.root import app
 from fpds.config import FPDS_DATA_DATE_DIR
 from fpds.utilities import validate_kwarg
 
-from fpds.cli import app
 
 @app.command()
 def parse(

@@ -8,25 +8,26 @@ last_updated: 2025-07-14
 
 import asyncio
 import multiprocessing
-from pathlib import Path
 import warnings
 from asyncio import Semaphore
 from concurrent.futures import ProcessPoolExecutor
+from pathlib import Path
 from typing import AsyncGenerator, List, Optional
 from urllib import parse
 from urllib.request import urlopen
 from uuid import uuid4
 
 from httpx import AsyncClient
-from rich.progress import TaskID
 from rich.progress import (
     BarColumn,
     Progress,
     SpinnerColumn,
+    TaskID,
     TextColumn,
     TimeRemainingColumn,
 )
 
+from fpds.config import FPDS_DATA_DATE_DIR
 from fpds.core import FPDS_ENTRY
 from fpds.core.mixins import fpdsMixin
 from fpds.core.xml import fpdsSubTree, fpdsTree
@@ -36,8 +37,6 @@ from fpds.errors import (
 )
 from fpds.utilities import validate_kwarg
 from fpds.utilities.writer import fpdsChunkWriter
-
-from fpds.config import FPDS_DATA_DATE_DIR
 
 
 class fpdsRequest(fpdsMixin):
@@ -253,9 +252,7 @@ class fpdsRequest(fpdsMixin):
 
         with ProcessPoolExecutor(max_workers=num_processes) as pool:
             with self._create_progress() as progress:
-                task_id = progress.add_task(
-                    "Processing records...", total=len(data)
-                )
+                task_id = progress.add_task("Processing records...", total=len(data))
                 future_to_record = {
                     pool.submit(self._jsonify, record): record for record in data
                 }
@@ -265,7 +262,6 @@ class fpdsRequest(fpdsMixin):
                     result = future.result()
                     for entry in result:
                         yield entry
-
 
     async def data(self, output_dir: Path = FPDS_DATA_DATE_DIR) -> None:
         """Outputs FPDS data as partitioned-sized JSON gzip files.

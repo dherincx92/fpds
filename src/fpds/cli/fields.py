@@ -11,8 +11,8 @@ import typer
 from tabulate import tabulate
 from typing_extensions import Annotated
 
-from fpds.config import FPDS_FIELDS_CONFIG
 from fpds.cli.root import app
+from fpds.config import FPDS_FIELDS_CONFIG
 
 TEXT_WRAP_WIDTH = 30
 

@@ -13,6 +13,7 @@ from uuid import uuid4
 
 from fpds.core import FPDS_ENTRY
 
+
 class fpdsChunkWriter:
     def __init__(
         self,
@@ -48,7 +49,6 @@ class fpdsChunkWriter:
             file_paths.append(self.flush(chunk))
 
         return file_paths
-
 
     def flush(self, chunk_buffer: list[FPDS_ENTRY]) -> Path:
         file_path = self.output_dir / f"{uuid4()}.json.gz"
