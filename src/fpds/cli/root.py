@@ -4,5 +4,5 @@ app = typer.Typer()
 
 
 @app.callback()
-def callback():
+def callback() -> None:
     """Welcome to the fpds CLI 🚀"""
