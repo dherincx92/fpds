@@ -166,7 +166,7 @@ class fpdsRequest(fpdsMixin):
         self,
         client: AsyncClient,
         link: str,
-        semaphore: asyncio.Semaphore,
+        semaphore: Semaphore,
     ) -> fpdsSubTree:
         """Retrieves content from FPDS ATOM feed as a SubTree instance."""
         async with semaphore:
@@ -232,6 +232,13 @@ class fpdsRequest(fpdsMixin):
         ------
         `FPDS_ENTRY`
             A single FPDS record as it becomes available.
+
+        Example
+        -------
+        >>> gen = request.iter_data()
+        >>> records = []
+        >>> async for entry in gen:
+        >>>     records.append(entry)
         """
         from concurrent.futures import as_completed
 
@@ -239,14 +246,7 @@ class fpdsRequest(fpdsMixin):
         data = await self.fetch()  # List[fpdsSubTree]
 
         with ProcessPoolExecutor(max_workers=num_processes) as pool:
-            with Progress(
-                SpinnerColumn(),
-                TextColumn("[progress.description]{task.description}"),
-                BarColumn(),
-                TextColumn("[progress.percentage]{task.percentage:>3.0f}%"),
-                TextColumn("({task.completed}/{task.total})"),
-                TimeRemainingColumn(elapsed_when_finished=True),
-            ) as progress:
+            with self._create_progress() as progress:
                 task_id = progress.add_task(
                     "Processing records...", total=len(data)
                 )
