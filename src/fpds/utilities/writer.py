@@ -8,13 +8,22 @@ last_updated: 12/14/2025
 import gzip
 import json
 from pathlib import Path
-from typing import List
+from typing import AsyncGenerator, List
 from uuid import uuid4
 
 from fpds.core import FPDS_ENTRY
 
 
 class fpdsChunkWriter:
+    """Chunks FPDS request data into JSON gzip files.
+
+    Attributes
+    ----------
+    output_dir: `Path`
+        Output directory.
+    max_chunk_size_mb: `int`
+        The maximum size of each outputted data file (uncompressed).
+    """
     def __init__(
         self,
         output_dir: Path,
@@ -26,11 +35,12 @@ class fpdsChunkWriter:
 
     @staticmethod
     def record_size(entry: FPDS_ENTRY) -> int:
+        """Calculates the size of an FPDS entry record."""
         entry_json = json.dumps(entry)
         return len(entry_json.encode("utf-8"))
 
-    async def chunkify(self, entries):
-        file_paths: list[Path] = []
+    async def chunkify(self, entries: AsyncGenerator[FPDS_ENTRY, None]) -> None:
+        """Chunkifies FPDS entries into JSON gzip files of :max_chunk_size_mb: size."""
         chunk: List[FPDS_ENTRY] = []
         current_size = 0
 
@@ -38,7 +48,7 @@ class fpdsChunkWriter:
             size = self.record_size(entry)
 
             if current_size + size > self.max_bytes and chunk:
-                file_paths.append(self.flush(chunk))
+                self.flush(chunk)
                 chunk = [entry]
                 current_size = size
             else:
@@ -46,11 +56,10 @@ class fpdsChunkWriter:
                 current_size += size
 
         if chunk:
-            file_paths.append(self.flush(chunk))
+            self.flush(chunk)
 
-        return file_paths
 
-    def flush(self, chunk_buffer: list[FPDS_ENTRY]) -> Path:
+    def flush(self, chunk_buffer: list[FPDS_ENTRY]) -> None:
         file_path = self.output_dir / f"{uuid4()}.json.gz"
         with gzip.open(file_path, "wt", encoding="utf-8") as gz_file:
             json.dump(chunk_buffer, gz_file)

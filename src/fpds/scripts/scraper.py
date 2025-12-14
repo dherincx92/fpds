@@ -6,6 +6,7 @@ last_updated: 2025-12-11
 
 import json
 from pathlib import Path
+from typing import List
 
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
@@ -16,8 +17,8 @@ from selenium.webdriver.support.ui import WebDriverWait
 from fpds.config import FPDS_EZSEARCH_URL, FPDS_FIELDS_FILE_PATH
 
 
-def update_fields_json(dropdown_fields):
-    with Path(FPDS_FIELDS_FILE_PATH).open(encoding="utf-8") as file:
+def update_fields_json(dropdown_fields: List[str]) -> None:
+    with Path(str(FPDS_FIELDS_FILE_PATH)).open(encoding="utf-8") as file:
         config = json.load(file)
 
     current_field_options = [field["name"] for field in config]
@@ -36,12 +37,11 @@ def update_fields_json(dropdown_fields):
     config.extend(new_options)
     sorted_config = sorted(config, key=lambda field: field["name"])
 
-    print(new_options)
     # with Path(FPDS_FIELDS_FILE_PATH).open(mode="w", encoding="utf-8") as file:
     #     json.dump(sorted_config, file, indent=4)
 
 
-def scrape_ezsearch():
+def scrape_ezsearch() -> List[str]:
     """Scrapes FPDS ezSearch field for Advanced Search Criteria dropdown values.
 
     These values represent valid parameter values for an instance of
@@ -73,9 +73,11 @@ def scrape_ezsearch():
 
     dropdown_fields = []
     for dropdown in dropdowns:
-        options = dropdown.find_elements(By.TAG_NAME, "option")
-        for opt in options:
-            dropdown_fields.append(opt.get_attribute("value"))
+        element = dropdown.find_elements(By.TAG_NAME, "option")
+        for opt in element:
+            value = opt.get_attribute("value")
+            if value:
+                dropdown_fields.append(value)
 
     return dropdown_fields
 

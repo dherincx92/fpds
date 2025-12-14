@@ -12,7 +12,7 @@ import warnings
 from asyncio import Semaphore
 from concurrent.futures import ProcessPoolExecutor
 from pathlib import Path
-from typing import AsyncGenerator, List, Optional
+from typing import AsyncGenerator, List, Optional, overload
 from urllib import parse
 from urllib.request import urlopen
 from uuid import uuid4
@@ -95,7 +95,6 @@ class fpdsRequest(fpdsMixin):
     fpdsMissingKeywordParameterError:
         Raised if no keyword argument(s) are provided.
     """
-
     def __init__(
         self,
         cli_run: bool = False,
@@ -156,7 +155,6 @@ class fpdsRequest(fpdsMixin):
         """Total number of FPDS pages contained in request."""
         return len(self.links)
 
-    @staticmethod
     def mb_to_bytes(self) -> int:
         return self.max_chunk_size_mb * 1_048_576
 
@@ -280,6 +278,5 @@ class fpdsRequest(fpdsMixin):
             output_dir=output_path,
             max_chunk_size_mb=self.max_chunk_size_mb,
         )
-        file_paths = await writer.chunkify(self.iter_data())
+        await writer.chunkify(self.iter_data())
         print(f"Wrote records to {output_path}")
-        return file_paths

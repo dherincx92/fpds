@@ -8,6 +8,7 @@ import re
 import textwrap
 
 import typer
+from typing import Optional
 from tabulate import tabulate
 from typing_extensions import Annotated
 
@@ -20,7 +21,7 @@ TEXT_WRAP_WIDTH = 30
 @app.command()
 def fields(
     pattern: Annotated[
-        str,
+        Optional[str],
         typer.Option(
             "--pattern",
             "-p",
@@ -33,7 +34,7 @@ def fields(
     width: Annotated[
         int, typer.Option("--width", "-w", help="Text wrap width for regex field.")
     ] = TEXT_WRAP_WIDTH,
-):
+) -> None:
     """Displays list of available FPDS fields and their descriptions.
 
     \b

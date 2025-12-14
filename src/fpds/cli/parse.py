@@ -35,10 +35,12 @@ def parse(
         ...,
         help="Positional parameters (variadic, like nargs=-1)",
     ),
-):
+) -> None:
     """Sends ATOM feed request to FPDS."""
-    if not output_dir.exists():
-        output_dir.mkdir(parents=True, exist_ok=True)
+
+    if output_dir:
+        if not output_dir.exists():
+            output_dir.mkdir(parents=True, exist_ok=True)
 
     split_params = [param.split("=") for param in params]
 
@@ -47,6 +49,5 @@ def parse(
         _param[1] = validate_kwarg(kwarg=name, string=value)
 
     params_kwargs = dict(split_params)
-
-    request = fpdsRequest(**params_kwargs, cli_run=True)
-    asyncio.run(request.data(output_dir=str(output_dir)))
+    request = fpdsRequest(cli_run=True, **params_kwargs)    # type: ignore[arg-type]
+    asyncio.run(request.data(output_dir=output_dir))
