@@ -45,7 +45,7 @@ def parse(
 
     split_params = [param.split("=") for param in params]
 
-    for _param in split_params:  # _param is a tuple
+    for _param in split_params:
         name, value = _param
         _param[1] = validate_kwarg(kwarg=name, string=value)
 
