@@ -59,6 +59,25 @@ class TestFpdsTree(TestCase):
 
 class TestFpdsElement(TestCase):
     def setUp(self):
-        xml = fpdsTree(content=FULL_RESPONSE_DATA_BYTES)
-        element = xml.get_atom_feed_entries()[0]
-        self._class = fpdsElement(content=element)
+        self.xml = fpdsTree(content=FULL_RESPONSE_DATA_BYTES)
+        self.element = self.xml.get_atom_feed_entries()[0]
+        self.fpds_element = fpdsElement(
+            element=self.element,
+            namespace_dict=TEST_NAMESPACE_DICT
+        )
+
+    def test_iter(self):
+        iterator = iter(self.fpds_element)
+        self.assertTrue(hasattr(iterator, "__next__"))
+
+    def test_len(self):
+        self.assertEqual(len(self.element), len(self.fpds_element))
+
+    def test_getitem(self):
+        self.assertEqual(self.fpds_element[0], self.element[0])
+
+    def test_parse_items(self):
+        self.assertEqual(
+            list(self.fpds_element.parse_items()),
+            list(self.element.iter()),
+        )
