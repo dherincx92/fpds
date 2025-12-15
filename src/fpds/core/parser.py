@@ -3,7 +3,7 @@ Core class for converting FPDS XML
 tree into JSON.
 
 author: derek663@gmail.com
-last_updated: 2025-07-14
+last_updated: 2025-12-14
 """
 
 import asyncio
