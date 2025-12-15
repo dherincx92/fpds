@@ -1,4 +1,5 @@
-# fpds
+<div align="center">
+
 
                                   __________  ____  _____
                                  / ____/ __ \/ __ \/ ___/
@@ -9,19 +10,22 @@
                         Welcome to a more user-friendly FPDS 🚀
 A light-weight, pythonic parser for the Federal Procurement Data System (FPDS) ATOM Feed.
 Reference [here](https://www.fpds.gov/fpdsng_cms/index.php/en/).
+</div>
 
 
 ## Motivation
-The FPDS ATOM feed limits each request to 10 records, which forces users to deal
-with pagination. Additonally, data is exported as XML, which proves annoying.
-`fpds` will handle all pagination and data transformation to provide users with
-a nice JSON representation of the equivalent XML data and attributes.
+To make FPDS data more accesible to developers.
+
+This library helps users by doing the following:
+- Automatically handling pagination
+- Converting XML and all associated attributes into JSON format
 
 
 ## Setup
 As of version 1.5.0, this library manages dependencies using `uv`. It is
-_highly_ recommended since this library is tested with it.
-
+_highly_ recommended since this library is tested with it. Note that this
+README assumes you will install `uv` and therefore runs all commands within
+its context.
 
 ### Installing `uv`
 
@@ -52,6 +56,9 @@ $ make clean
 ```
 
 ### Testing
+
+Run unit tests on your local environment:
+
 ```
 $ make local-test
 ```
@@ -96,10 +103,11 @@ intentional.
 $  uv run fpds parse -k "A_NEW_PARAM=a-new-value"
 ```
 
-As of v1.6.0, the `fields` command provides a quick reference of available
-filtering fields. To print them out, run the following command. Use the `--export`
-flag to export the full metadata for fields (this is helpful if you wish to see
-quoting configuration and the regex validation pattern).
+Let's say you ran the above command, but were unsure about the quoting strategy
+and you wanted to run this using the CLI. As of v1.6.0, the `fields` command
+provides a quick reference of available filtering fields. To print them out, run
+the following command. Use the `--export` flag to export the full metadata for
+fields (this is helpful if you wish to see quoting configuration and the regex validation pattern).
 
 ```
 $ uv run fpds fields --export true
@@ -149,4 +157,4 @@ This equates to a <u>**84.89%**</u> decrease in completion time!
 # Notes
 
 Please be aware that this project is an after-hours passion of mine. I do my best
-to accomodate requests the best I can, but I receive no $$$ for any of the work I do here.
+to accomodate requests, but I receive no $$$ for any of the work I do here.
