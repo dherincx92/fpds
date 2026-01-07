@@ -74,7 +74,7 @@ def scrape_ezsearch() -> List[str]:
     dropdown_fields = []
     for dropdown in dropdowns:
         element = dropdown.find_elements(By.TAG_NAME, "option")
-        for opt in element:
+        for opt in element[1:]:  # skip the first element since its the dropdown label
             value = opt.get_attribute("value")
             if value:
                 dropdown_fields.append(value)

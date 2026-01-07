@@ -9,9 +9,8 @@ venv: ## defaults to creating virtual environment in current directory under .ve
 	fi
 
 install: venv ## updates uv.lock if needed and manually syncs all deps + extras
-	source .venv/bin/activate \
-	uv lock \
-	uv sync --extra all;
+	uv lock
+	uv sync --extra all
 
 clean: ## Remove test and coverage artifacts
 	rm -f .coverage
