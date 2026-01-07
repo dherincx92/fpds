@@ -38,10 +38,8 @@ def parse(
 ) -> None:
     """Sends ATOM feed request to FPDS."""
 
-    if output_dir:
-        if not output_dir.exists():
-            output_dir.mkdir(parents=True, exist_ok=True)
-            dir = Path(output_dir)
+    output_dir_path: Path = Path(output_dir)
+    output_dir_path.mkdir(parents=True, exist_ok=True)
 
     split_params = [param.split("=") for param in params]  # List[Tuple[str, str]]
 
@@ -51,4 +49,4 @@ def parse(
 
     params_kwargs = dict(split_params)
     request = FPDSRequest(cli_run=True, **params_kwargs)  # type: ignore[arg-type]
-    asyncio.run(request.data(output_dir=dir))
+    asyncio.run(request.data(output_dir=output_dir_path))
