@@ -26,10 +26,10 @@ def update_fields_json(dropdown_fields: List[str]) -> None:
     # as of right now, we have no way to validate the pattern unless we go to the data dict
     new_options = [
         {
-            "description": "",
+            "description": "<TODO: Add description>",
             "name": field,
             "quotes": False,
-            "regex": "",
+            "regex": "<TODO: Add regex pattern>",
         }
         for field in dropdown_fields
         if field not in current_field_options
@@ -39,6 +39,7 @@ def update_fields_json(dropdown_fields: List[str]) -> None:
 
     with Path(str(FPDS_FIELDS_FILE_PATH)).open(mode="w", encoding="utf-8") as file:
         json.dump(sorted_config, file, indent=4)
+        file.write("\n")
 
 
 def scrape_ezsearch() -> List[str]:
