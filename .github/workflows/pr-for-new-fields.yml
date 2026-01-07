@@ -1,12 +1,22 @@
 name: New fpds search fields PR
 
 on:
-  workflow_dispatch:       # Manual trigger
+  workflow_dispatch:
   schedule:
-    - cron: "0 12 * * *"   # Daily at 12:00 UTC
+    - cron: "0 12 * * *"
 
 jobs:
+  scrape:
     runs-on: ubuntu-latest
     steps:
-        - name: Checkout repository
-          uses: actions/checkout@v3
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Installed package list
+        run: apt list --installed
+      - name: Remove Chrome
+        run: sudo apt purge google-chrome-stable
+      - name: Remove default Chromium
+        run: sudo apt purge chromium-browser
+      - name: Install a new Chromium
+        run: sudo apt install -y chromium-browser
