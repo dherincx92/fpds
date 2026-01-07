@@ -28,7 +28,6 @@ Issues = "https://github.com/dherincx92/fpds/issues"
 [project.optional-dependencies]
 scripts = [
     "selenium>=4.0.0,<5.0.0",
-    "webdriver-manager>=4.0.0,<5.0.0",
 ]
 dev = [
     "ipdb==0.13.9",
