@@ -1,7 +1,9 @@
 name: New fpds search fields PR
 
 on:
-  pull_request:
+  schedule:
+     - cron: "0 0 * * *"
+  # pull_request: # TODO: fully remove once done testing
   workflow_dispatch:
 
 jobs:
@@ -31,7 +33,7 @@ jobs:
         uses: peter-evans/create-pull-request@v6
         with:
           commit-message: "minor: updating fields.json with newly identified ezSearch fields"
-          title: "minor: 🤖 [AUTOMATED] new ezSearch fields identified"
+          title: "minor: 🤖 [AUTOMATED] new ezSearch fields"
           body: |
             Automated updates from FPDS ezSearch scraper.
 
@@ -39,7 +41,7 @@ jobs:
             for field descriptions and regex patterns. This is a bit of a pain since
             it is a manual process.
 
-            *Checklist*
+            **Checklist**
             - [ ] Updated field description
             - [ ] Updated field regex
 
