@@ -42,6 +42,8 @@ jobs:
           commit_message: "patch: [skip ci] Run formatters"
           file_pattern: "*.py"
           disable_globbing: true
+          add: true
+          push: true
 
       - name: Run Tests
         run: just test
