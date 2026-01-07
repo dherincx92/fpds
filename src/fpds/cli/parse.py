@@ -2,7 +2,7 @@
 CLI command for retrieving FPDS federal contracts.
 
 author: derek663@gmail.com
-last_updated: 2025-12-14
+last_updated: 2026-01-06
 """
 
 import asyncio
@@ -43,12 +43,12 @@ def parse(
             output_dir.mkdir(parents=True, exist_ok=True)
             dir = Path(output_dir)
 
-    split_params = [param.split("=") for param in params]
+    split_params = [param.split("=") for param in params]  # List[Tuple[str, str]]
 
     for _param in split_params:
         name, value = _param
         _param[1] = validate_kwarg(kwarg=name, string=value)
 
     params_kwargs = dict(split_params)
-    request = fpdsRequest(cli_run=True, **params_kwargs)    # type: ignore[arg-type]
+    request = fpdsRequest(cli_run=True, **params_kwargs)  # type: ignore[arg-type]
     asyncio.run(request.data(output_dir=dir))

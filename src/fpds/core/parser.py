@@ -95,6 +95,7 @@ class fpdsRequest(fpdsMixin):
     fpdsMissingKeywordParameterError:
         Raised if no keyword argument(s) are provided.
     """
+
     def __init__(
         self,
         cli_run: bool = False,

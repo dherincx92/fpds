@@ -24,6 +24,7 @@ class fpdsChunkWriter:
     max_chunk_size_mb: `int`
         The maximum size of each outputted data file (uncompressed).
     """
+
     def __init__(
         self,
         output_dir: Path,
@@ -57,7 +58,6 @@ class fpdsChunkWriter:
 
         if chunk:
             self.flush(chunk)
-
 
     def flush(self, chunk_buffer: list[FPDS_ENTRY]) -> None:
         file_path = self.output_dir / f"{uuid4()}.json.gz"

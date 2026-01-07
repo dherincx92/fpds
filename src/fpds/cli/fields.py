@@ -8,7 +8,6 @@ import re
 import textwrap
 
 import typer
-from typing import Optional
 from tabulate import tabulate
 from typing_extensions import Annotated
 
