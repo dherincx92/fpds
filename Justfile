@@ -37,3 +37,6 @@ package: ## builds project + artifacts in dist/ directory
 
 publish: package ## publishes package to pypi
 	uv publish
+
+scrape: venv install
+	uv run python src/fpds/scripts/scraper.py
