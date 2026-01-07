@@ -1,8 +1,5 @@
-.PHONY: help venv install clean formatters mypy test local-test package publish
-.DEFAULT_GOAL := help
-
-help:
-	@python -c "$$PRINT_HELP_PYSCRIPT" < $(MAKEFILE_LIST)
+default:
+  just --list
 
 venv: ## defaults to creating virtual environment in current directory under .venv
 	@if [ -d .venv ]; then \

@@ -1,15 +1,18 @@
+import asyncio
 import unittest
 from unittest import TestCase, mock
 from xml.etree.ElementTree import ElementTree, fromstring
 
 from fpds import fpdsRequest
 from fpds.errors import (
+    fpdsDuplicateParameterConfiguration,
     fpdsInvalidParameter,
     fpdsMaxPageLengthExceededError,
     fpdsMismatchedParameterRegexError,
     fpdsMissingKeywordParameterError,
 )
-from tests import FULL_RESPONSE_DATA_BYTES
+from fpds.core.xml import fpdsSubTree
+from tests import FULL_RESPONSE_DATA_BYTES, NO_LINK_RESPONSE_DATA_BYTES
 
 # valid params and values
 FPDS_REQUEST_PARAMS_DICT = {
@@ -34,8 +37,11 @@ CONTENT_TREE = ElementTree(fromstring(FULL_RESPONSE_DATA_BYTES))
 
 
 class MockHTTPResponse:
+    def __init__(self, content: bytes = FULL_RESPONSE_DATA_BYTES):
+        self.content = content
+
     def read(self):
-        return FULL_RESPONSE_DATA_BYTES
+        return self.content
 
     def __enter__(self):
         return self
@@ -44,19 +50,45 @@ class MockHTTPResponse:
         pass
 
 
-class MockFpdsXML(object):
-    def pagination_links(self, params="some-param1: param1-value"):
-        return [
-            "{some-fpds-link}&start=0",
-            "{some-fpds-link}&start=10",
-            "{some-fpds-link}&start=20",
-        ]
-
-
 class TestFpdsRequest(TestCase):
-    def test_params_exist(self):
+    def test_parameter_error_raised_with_no_kwargs(self):
         with self.assertRaises(fpdsMissingKeywordParameterError):
             fpdsRequest({})
+
+    @mock.patch("fpds.core.parser.urlopen")
+    def test_mb_to_bytes(self, mock_urlopen):
+        """Test that mb_to_bytes correctly converts megabytes to bytes."""
+        mock_urlopen.return_value = MockHTTPResponse()
+        req = fpdsRequest(**FPDS_REQUEST_PARAMS_DICT, max_chunk_size_mb=50)
+        self.assertEqual(req.mb_to_bytes(), 50 * 1_048_576)
+
+    @mock.patch("fpds.core.parser.urlopen")
+    def test_no_pagination_links(self, mock_urlopen):
+        """Test that initial_request correctly returns the root XML tree from the initial request."""
+        mock_urlopen.return_value = MockHTTPResponse(content=NO_LINK_RESPONSE_DATA_BYTES)
+        req = fpdsRequest(**FPDS_REQUEST_PARAMS_DICT)
+        self.assertEqual(asyncio.run(req.fetch()), [])
+
+    # @mock.patch("fpds.core.parser.urlopen")
+    # def test_convert(self, mock_urlopen):
+    #     """Test that initial_request correctly returns the root XML tree from the initial request."""
+    #     mock_urlopen.return_value = MockHTTPResponse()
+    #     req = fpdsRequest(**FPDS_REQUEST_PARAMS_DICT)
+    #     mock_client = mock.AsyncMock()
+    #     mock_client.get.return_value = MockHTTPResponse(content=FULL_RESPONSE_DATA_BYTES)
+
+    #     from asyncio import Semaphore
+    #     semaphore = Semaphore(10)
+    #     result = asyncio.run(
+    #         req.convert(
+    #             client=mock_client,
+    #             link="https://example.com/fpds",
+    #             semaphore=semaphore,
+    #         )
+    #     )
+
+    #     # Assertions
+    #     self.assertIsInstance(result, fpdsSubTree)
 
     @mock.patch("fpds.core.parser.urlopen")
     def test_request_link_count(self, mock_urlopen):

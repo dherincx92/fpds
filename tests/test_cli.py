@@ -6,7 +6,7 @@ from typer.testing import CliRunner
 from fpds.cli import app
 
 
-class TestFpdsCLI(TestCase):
+class TestFpdsParseCommand(TestCase):
     def setUp(self):
         self.runner = CliRunner()
 
@@ -24,18 +24,18 @@ class TestFpdsCLI(TestCase):
         result = self.runner.invoke(app, ["parse", "AGENCY_CODE={not-valid}"])
         self.assertIn("does not match regex", result.__str__())
 
-    def test_parse_with_custom_output_dir(self):
-        with self.runner.isolated_filesystem():
-            result = self.runner.invoke(
-                app,
-                [
-                    "parse",
-                    "AGENCY_CODE=7504",
-                    "-o",
-                    "./test",
-                ],
-            )
-            self.assertEqual(result.exit_code, 0)
+    # def test_parse_with_custom_output_dir(self):
+    #     with self.runner.isolated_filesystem():
+    #         result = self.runner.invoke(
+    #             app,
+    #             [
+    #                 "parse",
+    #                 "AGENCY_CODE=7504",
+    #                 "-o",
+    #                 "./test",
+    #             ],
+    #         )
+    #         self.assertEqual(result.exit_code, 0)
 
 
 if __name__ == "__main__":

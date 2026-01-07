@@ -1,0 +1,12 @@
+name: New fpds search fields PR
+
+on:
+  workflow_dispatch:       # Manual trigger
+  schedule:
+    - cron: "0 12 * * *"   # Daily at 12:00 UTC
+
+jobs:
+    runs-on: ubuntu-latest
+    steps:
+        - name: Checkout repository
+          uses: actions/checkout@v3
