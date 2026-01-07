@@ -1,6 +1,9 @@
 name: New fpds search fields PR
 
 on:
+  push:
+    branches:
+      - master
   workflow_dispatch:
   schedule:
     - cron: "0 12 * * *"
