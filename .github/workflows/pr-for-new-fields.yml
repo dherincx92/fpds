@@ -11,11 +11,23 @@ jobs:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
-      - name: Installed package list
-        run: apt list --installed
-      - name: Remove Chrome
-        run: sudo apt purge google-chrome-stable
-      - name: Remove default Chromium
-        run: sudo apt purge chromium-browser
-      - name: Install a new Chromium
-        run: sudo apt install -y chromium-browser
+      - uses: nanasess/setup-chromedriver@v2
+      - uses: extractions/setup-just@v3
+        with:
+          just-version: 1.46.0
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: 3.13
+
+      - name: Scrape FPDS Site
+        run: just scrape
+      # - name: Installed package list
+      #   run: apt list --installed
+      # - name: Remove Chrome
+      #   run: sudo apt purge google-chrome-stable
+      # - name: Remove default Chromium
+      #   run: sudo apt purge chromium-browser
+      # - name: Install a new Chromium
+      #   run: sudo apt install -y chromium-browser
