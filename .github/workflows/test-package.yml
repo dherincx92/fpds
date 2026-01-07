@@ -34,12 +34,17 @@ jobs:
       - name: Install Project
         run: just install
 
+      - name: Run linters
+        run: just formatters
+
+      - uses: stefanzweifel/git-auto-commit-action@v5
+        with:
+          commit_message: "patch: [skip ci] Run formatters"
+          file_pattern: "*.py"
+          disable_globbing: true
+
       - name: Run Tests
         run: just test
-
-      - uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
 
   test-package-version:
     runs-on: ubuntu-latest
