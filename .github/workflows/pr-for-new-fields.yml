@@ -27,18 +27,22 @@ jobs:
       - name: Scrape FPDS Site
         run: just scrape
 
-      - name: Set Date
-        run: |
-          echo "DATE=$(date +'%Y-%m-%d')" >> $GITHUB_ENV
-
       - name: Create Pull Request
         uses: peter-evans/create-pull-request@v6
         with:
           commit-message: "minor: updating fields.json with newly identified ezSearch fields"
-          title: 'minor: 🤖 [AUTOMATED] new ezSearch fields identified on {{ env.DATE }}'
+          title: 'minor: 🤖 [AUTOMATED] new ezSearch fields identified"
           body: |
             Automated updates from FPDS ezSearch scraper.
-            This PR is kept up to date automatically.
+
+            Reference the following [data dictionary](https://www.fpds.gov/downloads/Version_1.5_specs/FPDS_DataDictionary_V1.5.pdf)
+            for field descriptions and regex patterns. This is a bit of a pain since
+            it is a manual process.
+
+            *Checklist*
+            - [ ] Updated field description
+            - [ ] Updated field regex
+
           branch: minor/new-ezsearch-fields
           base: master
           labels: automated, feature
