@@ -1,7 +1,7 @@
 """Scrapes fields from FPDS ezSearch page.
 
 author: derek663@gmail.com
-last_updated: 2025-12-11
+last_updated: 2026-01-06
 """
 
 import json
@@ -37,10 +37,8 @@ def update_fields_json(dropdown_fields: List[str]) -> None:
     config.extend(new_options)
     sorted_config = sorted(config, key=lambda field: field["name"])
 
-    from pprint import pprint
-    pprint(new_options)
-    # with Path(FPDS_FIELDS_FILE_PATH).open(mode="w", encoding="utf-8") as file:
-    #     json.dump(sorted_config, file, indent=4)
+    with Path(FPDS_FIELDS_FILE_PATH).open(mode="w", encoding="utf-8") as file:
+        json.dump(sorted_config, file, indent=4)
 
 
 def scrape_ezsearch() -> List[str]:
