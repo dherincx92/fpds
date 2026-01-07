@@ -4,6 +4,7 @@ from unittest import TestCase, mock
 from xml.etree.ElementTree import ElementTree, fromstring
 
 from fpds import fpdsRequest
+from fpds.core.xml import fpdsSubTree
 from fpds.errors import (
     fpdsDuplicateParameterConfiguration,
     fpdsInvalidParameter,
@@ -11,7 +12,6 @@ from fpds.errors import (
     fpdsMismatchedParameterRegexError,
     fpdsMissingKeywordParameterError,
 )
-from fpds.core.xml import fpdsSubTree
 from tests import FULL_RESPONSE_DATA_BYTES, NO_LINK_RESPONSE_DATA_BYTES
 
 # valid params and values
@@ -65,7 +65,9 @@ class TestFpdsRequest(TestCase):
     @mock.patch("fpds.core.parser.urlopen")
     def test_no_pagination_links(self, mock_urlopen):
         """Test that initial_request correctly returns the root XML tree from the initial request."""
-        mock_urlopen.return_value = MockHTTPResponse(content=NO_LINK_RESPONSE_DATA_BYTES)
+        mock_urlopen.return_value = MockHTTPResponse(
+            content=NO_LINK_RESPONSE_DATA_BYTES
+        )
         req = fpdsRequest(**FPDS_REQUEST_PARAMS_DICT)
         self.assertEqual(asyncio.run(req.fetch()), [])
 

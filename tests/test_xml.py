@@ -63,7 +63,7 @@ class TestFpdsElement(TestCase):
         self.element = self.xml.get_atom_feed_entries()[0]
         self.fpds_element = fpdsElement(
             element=self.element,
-            namespace_dict=TEST_NAMESPACE_DICT
+            namespace_dict=TEST_NAMESPACE_DICT,
         )
 
     def test_iter(self):
