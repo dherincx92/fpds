@@ -26,11 +26,20 @@ jobs:
 
       - name: Scrape FPDS Site
         run: just scrape
-      # - name: Installed package list
-      #   run: apt list --installed
-      # - name: Remove Chrome
-      #   run: sudo apt purge google-chrome-stable
-      # - name: Remove default Chromium
-      #   run: sudo apt purge chromium-browser
-      # - name: Install a new Chromium
-      #   run: sudo apt install -y chromium-browser
+
+      - name: Set Date
+        run: |
+          echo "DATE=$(date +'%Y-%m-%d')" >> $GITHUB_ENV
+
+      - name: Create Pull Request
+        uses: peter-evans/create-pull-request@v6
+        with:
+          commit-message: "minor: updating fields.json with newly identified ezSearch fields"
+          title: 'minor: 🤖 [AUTOMATED] new ezSearch fields identified on {{ env.DATE }}'
+          body: |
+            Automated updates from FPDS ezSearch scraper.
+            This PR is kept up to date automatically.
+          branch: minor/new-ezsearch-fields
+          base: master
+          labels: automated, feature
+          draft: false
