@@ -12,6 +12,9 @@ jobs:
         with:
           fetch-depth: 0
       - uses: nanasess/setup-chromedriver@v2
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
       - uses: extractions/setup-just@v3
         with:
           just-version: 1.46.0
