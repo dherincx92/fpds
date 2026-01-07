@@ -72,7 +72,7 @@ class fpdsRequest(fpdsMixin):
     max_chunk_size_mb: `int`
         Defaults to 100.
         The maximum size of each outputted data file (uncompressed).
-    page: `Optional[int]`
+    page: `int | None`
         Defaults to `None`.
         The page of results to retrieve.
     **kwargs: `str`
@@ -101,7 +101,7 @@ class fpdsRequest(fpdsMixin):
         skip_regex_validation: bool = False,
         thread_count: int = 10,
         max_chunk_size_mb: int = 100,
-        page: Optional[int] = None,
+        page: int | None = None,
         **kwargs: str,
     ) -> None:
         self.cli_run = cli_run
@@ -204,7 +204,7 @@ class fpdsRequest(fpdsMixin):
                 results = await asyncio.gather(*tasks)
                 return results
 
-    def page_index(self) -> Optional[int]:
+    def page_index(self) -> int | None:
         """Converts `page` to index integer."""
         idx = None
         if self.page:

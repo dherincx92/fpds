@@ -21,7 +21,7 @@ TEXT_WRAP_WIDTH = 30
 @app.command()
 def fields(
     pattern: Annotated[
-        Optional[str],
+        str | None,
         typer.Option(
             "--pattern",
             "-p",

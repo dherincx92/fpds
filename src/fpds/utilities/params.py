@@ -41,7 +41,7 @@ def get_search_param_from_config(
 def match_regex_with_literal_string_pattern(
     pattern: str,
     string: str,
-) -> Optional[re.Match[str]]:
+) -> re.Match[str] | None:
     """Converts a regex pattern into a raw literal string to be used by
     Python's regex module.
 

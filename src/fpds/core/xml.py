@@ -308,9 +308,9 @@ class Entry(fpdsElement):
 
     def content_tag_hierarchy(
         self,
-        element: Optional[Element] = None,
-        parent: Optional[str] = None,
-        hierarchy: Optional[Dict[str, Element]] = None,
+        element: Element | None = None,
+        parent: str | None = None,
+        hierarchy: Dict[str, Element] | None = None,
     ) -> Dict[str, Element]:
         """Generates hierarchy within the content tag.
 
@@ -386,7 +386,7 @@ class Parent(fpdsElement):
 
     def __init__(
         self,
-        parent_name: Optional[str] = None,
+        parent_name: str | None = None,
         **kwargs: Unpack[fpdsElementAttributes],
     ) -> None:
         super().__init__(**kwargs)

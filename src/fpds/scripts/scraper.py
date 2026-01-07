@@ -37,7 +37,7 @@ def update_fields_json(dropdown_fields: List[str]) -> None:
     config.extend(new_options)
     sorted_config = sorted(config, key=lambda field: field["name"])
 
-    with Path(FPDS_FIELDS_FILE_PATH).open(mode="w", encoding="utf-8") as file:
+    with Path(str(FPDS_FIELDS_FILE_PATH)).open(mode="w", encoding="utf-8") as file:
         json.dump(sorted_config, file, indent=4)
 
 
