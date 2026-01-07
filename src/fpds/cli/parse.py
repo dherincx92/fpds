@@ -12,7 +12,7 @@ from typing import Optional
 import typer
 from typing_extensions import Annotated
 
-from fpds import fpdsRequest
+from fpds import FPDSRequest
 from fpds.cli.root import app
 from fpds.config import FPDS_DATA_DATE_DIR
 from fpds.utilities import validate_kwarg
@@ -50,5 +50,5 @@ def parse(
         _param[1] = validate_kwarg(kwarg=name, string=value)
 
     params_kwargs = dict(split_params)
-    request = fpdsRequest(cli_run=True, **params_kwargs)  # type: ignore[arg-type]
+    request = FPDSRequest(cli_run=True, **params_kwargs)  # type: ignore[arg-type]
     asyncio.run(request.data(output_dir=dir))

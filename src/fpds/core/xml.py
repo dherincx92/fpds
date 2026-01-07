@@ -10,7 +10,7 @@ from typing import Dict, Iterator, List, TypedDict, Unpack
 from xml.etree.ElementTree import Element, ElementTree, fromstring
 
 from fpds.core import FPDS_ENTRY
-from fpds.core.mixins import fpdsMixin
+from fpds.core.mixins import FPDSMixin
 
 NAMESPACE_REGEX = r"\{(.*)\}"
 LAST_PAGE_REGEX = r"start=(.*?)$"
@@ -46,7 +46,7 @@ class FPDSElement:
         return self.element[index]
 
     def __str__(self) -> str:  # pragma: no cover
-        return f"<fpdsElement {self.tag}>"
+        return f"<FPDSElement {self.tag}>"
 
     def parse_items(self) -> Iterator[Element]:
         """Returns iteration of `Element` as a generator."""
@@ -76,7 +76,7 @@ class FPDSElement:
         return clean_tag
 
 
-class FPDSTree(fpdsMixin):
+class FPDSTree(FPDSMixin):
     """Representation of initial FPDS response as an ElementTree.
 
     Attributes
@@ -241,7 +241,7 @@ class _ElementAttributes:
         return _attributes_copy
 
 
-class Entry(fpdsElement):
+class Entry(FPDSElement):
     """An ATOM feed data entry.
 
      In terms of XML, it is the outermost container for award data.
@@ -270,7 +270,7 @@ class Entry(fpdsElement):
     </entry>
     """
 
-    def __init__(self, **kwargs: Unpack[fpdsElementAttributes]) -> None:
+    def __init__(self, **kwargs: Unpack[FPDSElementAttributes]) -> None:
         super().__init__(**kwargs)
 
     def __str__(self) -> str:  # pragma: no cover

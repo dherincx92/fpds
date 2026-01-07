@@ -1,5 +1,5 @@
-from .core.parser import fpdsRequest
+from .core.parser import FPDSRequest
 
 __all__ = [
-    "fpdsRequest",
+    "FPDSRequest",
 ]

@@ -29,17 +29,17 @@ from rich.progress import (
 
 from fpds.config import FPDS_DATA_DATE_DIR
 from fpds.core import FPDS_ENTRY
-from fpds.core.mixins import fpdsMixin
-from fpds.core.xml import fpdsSubTree, fpdsTree
+from fpds.core.mixins import FPDSMixin
+from fpds.core.xml import FPDSSubTree, FPDSTree
 from fpds.errors import (
-    fpdsMaxPageLengthExceededError,
-    fpdsMissingKeywordParameterError,
+    FPDSMaxPageLengthExceededError,
+    FPDSMissingKeywordParameterError,
 )
 from fpds.utilities import validate_kwarg
 from fpds.utilities.writer import FPDSChunkWriter
 
 
-class FPDSRequest(fpdsMixin):
+class FPDSRequest(FPDSMixin):
     """Makes a GET request to the FPDS ATOM feed.
 
     Takes an unlimited number of arguments. All query parameters should be
@@ -86,13 +86,13 @@ class FPDSRequest(fpdsMixin):
     fpdsInvalidParameter:
         Raised if an invalid parameter is provided.
 
-    fpdsMaxPageLengthExceededError:
+    FPDSMaxPageLengthExceededError:
         Raised if user requests a page of results that doesn't exist.
 
     fpdsMismatchedParameterRegexError:
         Raised if parameter value does not match expected regex pattern.
 
-    fpdsMissingKeywordParameterError:
+    FPDSMissingKeywordParameterError:
         Raised if no keyword argument(s) are provided.
     """
 
@@ -115,9 +115,9 @@ class FPDSRequest(fpdsMixin):
         if kwargs:
             self.kwargs = kwargs
         else:
-            raise fpdsMissingKeywordParameterError
+            raise FPDSMissingKeywordParameterError
 
-        tree = fpdsTree(content=self.initial_request())
+        tree = FPDSTree(content=self.initial_request())
         links = tree.pagination_links(params=self.search_params)
         self.links = links
 
@@ -125,7 +125,7 @@ class FPDSRequest(fpdsMixin):
             idx = self.page_index()
             if idx is not None and self.links:
                 if self.page > self.page_count:
-                    raise fpdsMaxPageLengthExceededError(page_count=self.page_count)
+                    raise FPDSMaxPageLengthExceededError(page_count=self.page_count)
                 self.links = [links[idx]]
 
         # do not run class validations since CLI command has its own
@@ -171,14 +171,14 @@ class FPDSRequest(fpdsMixin):
         client: AsyncClient,
         link: str,
         semaphore: Semaphore,
-    ) -> fpdsSubTree:
+    ) -> FPDSSubTree:
         """Retrieves content from FPDS ATOM feed as a SubTree instance."""
         async with semaphore:
             response = await client.get(link)
-            subtree = fpdsSubTree(content=response.content)
+            subtree = FPDSSubTree(content=response.content)
             return subtree
 
-    async def fetch(self) -> List[fpdsSubTree]:
+    async def fetch(self) -> List[FPDSSubTree]:
         """Asynchronously parses all ATOM feed pages for current request."""
         if not self.links:
             return []
@@ -190,7 +190,7 @@ class FPDSRequest(fpdsMixin):
             semaphore: asyncio.Semaphore,
             progress: Progress,
             task_id: TaskID,
-        ) -> fpdsSubTree:
+        ) -> FPDSSubTree:
             result = await self.convert(client=client, link=link, semaphore=semaphore)
             progress.update(task_id=task_id, advance=1)
             return result
@@ -225,7 +225,7 @@ class FPDSRequest(fpdsMixin):
         )
 
     @staticmethod
-    def _jsonify(entry: fpdsSubTree) -> List[FPDS_ENTRY]:
+    def _jsonify(entry: FPDSSubTree) -> List[FPDS_ENTRY]:
         """Wrapper around `jsonify` method for avoiding pickle issue."""
         return entry.jsonify()
 
@@ -247,7 +247,7 @@ class FPDSRequest(fpdsMixin):
         from concurrent.futures import as_completed
 
         num_processes = multiprocessing.cpu_count()
-        data = await self.fetch()  # List[fpdsSubTree]
+        data = await self.fetch()  # List[FPDSSubTree]
 
         with ProcessPoolExecutor(max_workers=num_processes) as pool:
             with self._create_progress() as progress:
