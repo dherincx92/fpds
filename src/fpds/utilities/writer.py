@@ -14,7 +14,7 @@ from uuid import uuid4
 from fpds.core import FPDS_ENTRY
 
 
-class fpdsChunkWriter:
+class FPDSChunkWriter:
     """Chunks FPDS request data into JSON gzip files.
 
     Attributes

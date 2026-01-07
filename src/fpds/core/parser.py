@@ -12,7 +12,7 @@ import warnings
 from asyncio import Semaphore
 from concurrent.futures import ProcessPoolExecutor
 from pathlib import Path
-from typing import AsyncGenerator, List, Optional, overload
+from typing import AsyncGenerator, List
 from urllib import parse
 from urllib.request import urlopen
 from uuid import uuid4
@@ -36,10 +36,10 @@ from fpds.errors import (
     fpdsMissingKeywordParameterError,
 )
 from fpds.utilities import validate_kwarg
-from fpds.utilities.writer import fpdsChunkWriter
+from fpds.utilities.writer import FPDSChunkWriter
 
 
-class fpdsRequest(fpdsMixin):
+class FPDSRequest(fpdsMixin):
     """Makes a GET request to the FPDS ATOM feed.
 
     Takes an unlimited number of arguments. All query parameters should be
@@ -275,7 +275,7 @@ class fpdsRequest(fpdsMixin):
         output_path = (Path(output_dir) / run_id).expanduser()
         output_path.mkdir(parents=True, exist_ok=True)
 
-        writer = fpdsChunkWriter(
+        writer = FPDSChunkWriter(
             output_dir=output_path,
             max_chunk_size_mb=self.max_chunk_size_mb,
         )

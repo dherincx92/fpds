@@ -6,7 +6,7 @@ last_updated: 2025-07-25
 """
 
 import re
-from typing import Dict, Iterator, List, Optional, TypedDict, Unpack
+from typing import Dict, Iterator, List, TypedDict, Unpack
 from xml.etree.ElementTree import Element, ElementTree, fromstring
 
 from fpds.core import FPDS_ENTRY
@@ -16,12 +16,12 @@ NAMESPACE_REGEX = r"\{(.*)\}"
 LAST_PAGE_REGEX = r"start=(.*?)$"
 
 
-class fpdsElementAttributes(TypedDict):
+class FPDSElementAttributes(TypedDict):
     element: Element
     namespace_dict: Dict[str, str]
 
 
-class fpdsElement:
+class FPDSElement:
     """Representation of a single XML element.
 
     Attributes
@@ -76,7 +76,7 @@ class fpdsElement:
         return clean_tag
 
 
-class fpdsTree(fpdsMixin):
+class FPDSTree(fpdsMixin):
     """Representation of initial FPDS response as an ElementTree.
 
     Attributes
@@ -179,7 +179,7 @@ class fpdsTree(fpdsMixin):
         return json_data
 
 
-class fpdsSubTree(fpdsTree):
+class FPDSSubTree(FPDSTree):
     """A class denoting XML trees built off of the pagination links from :class:`fpdsTree`."""
 
     pass
@@ -381,13 +381,13 @@ class Entry(fpdsElement):
         return hierarchy
 
 
-class Parent(fpdsElement):
+class Parent(FPDSElement):
     """Representation of any XML tag containing children tags."""
 
     def __init__(
         self,
         parent_name: str | None = None,
-        **kwargs: Unpack[fpdsElementAttributes],
+        **kwargs: Unpack[FPDSElementAttributes],
     ) -> None:
         super().__init__(**kwargs)
         self.parent_name = parent_name
