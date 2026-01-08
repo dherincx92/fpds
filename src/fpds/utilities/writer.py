@@ -42,7 +42,7 @@ class FPDSChunkWriter:
 
     async def chunkify(self, entries: AsyncGenerator[FPDS_ENTRY, None]) -> None:
         """Chunkifies FPDS entries into JSON gzip files of :max_chunk_size_mb: size."""
-        chunk: List[FPDS_ENTRY] = []
+        chunk: list[FPDS_ENTRY] = []
         current_size = 0
 
         async for entry in entries:
