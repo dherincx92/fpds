@@ -8,7 +8,7 @@ last_updated: 12/14/2025
 import gzip
 import json
 from pathlib import Path
-from typing import AsyncGenerator, List
+from typing import AsyncGenerator
 from uuid import uuid4
 
 from fpds.core import FPDS_ENTRY
