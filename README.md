@@ -60,7 +60,7 @@ $ make clean
 Run unit tests on your local environment:
 
 ```
-$ make local-test
+$ just test
 ```
 
 ## Usage
