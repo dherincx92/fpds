@@ -25,8 +25,7 @@ def update_fields_json(dropdown_fields: List[str]) -> None:
 
     # as of right now, we have no way to validate the pattern unless we go to the data dict
     new_options = [
-        field for field in dropdown_fields
-        if field["name"] not in current_field_options
+        field for field in dropdown_fields if field["name"] not in current_field_options
     ]
     config.extend(new_options)
     sorted_config = sorted(config, key=lambda field: field["name"])
@@ -76,7 +75,9 @@ def scrape_ezsearch() -> List[str]:
     dropdown_fields = []
     for dropdown in dropdowns:
         elements = dropdown.find_elements(By.TAG_NAME, "option")
-        for element in elements[1:]:    # skip the first element since its the dropdown label
+        for element in elements[
+            1:
+        ]:  # skip the first element since its the dropdown label
             try:
                 element.click()
                 div = WebDriverWait(driver, 10).until(_get_visible_div)
@@ -88,7 +89,6 @@ def scrape_ezsearch() -> List[str]:
                         "description": element.text,
                         "quotes": False if len(inputs) == 2 else True,
                         "regex": "<TODO: Add regex pattern>",
-
                     }
                 )
 
