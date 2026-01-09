@@ -16,7 +16,10 @@ To make FPDS data more accesible to developers.
 
 This library helps users by doing the following:
 - Automatically handling pagination
-- Converting XML and all associated attributes into JSON format
+- Converting XML into a flat JSON structure
+
+This library is based on the FPDS ezSearch interface that can be found
+[here](https://www.fpds.gov/ezsearch/search.do?indexName=awardfull&templateName=1.5.3&s=FPDS.GOV&q=).
 
 
 ## Prerequisites
