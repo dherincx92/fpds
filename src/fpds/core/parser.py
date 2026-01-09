@@ -70,8 +70,8 @@ class FPDSRequest(FPDSMixin):
         Defaults to 10.
         The number of threads to send per search.
     max_chunk_size_mb: `int`
-        Defaults to 100.
-        The maximum size of each outputted data file (uncompressed).
+        Defaults to 10.
+        The maximum size of each outputted data file (uncompressed), in MB.
     page: `int | None`
         Defaults to `None`.
         The page of results to retrieve.
@@ -101,7 +101,7 @@ class FPDSRequest(FPDSMixin):
         cli_run: bool = False,
         skip_regex_validation: bool = False,
         thread_count: int = 10,
-        max_chunk_size_mb: int = 100,
+        max_chunk_size_mb: int = 10,
         page: int | None = None,
         **kwargs: str,
     ) -> None:
