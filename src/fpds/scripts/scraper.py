@@ -25,14 +25,8 @@ def update_fields_json(dropdown_fields: List[str]) -> None:
 
     # as of right now, we have no way to validate the pattern unless we go to the data dict
     new_options = [
-        {
-            "description": "<TODO: Add description>",
-            "name": field,
-            "quotes": False,
-            "regex": "<TODO: Add regex pattern>",
-        }
-        for field in dropdown_fields
-        if field not in current_field_options
+        field for field in dropdown_fields
+        if field["name"] not in current_field_options
     ]
     config.extend(new_options)
     sorted_config = sorted(config, key=lambda field: field["name"])
@@ -66,6 +60,13 @@ def scrape_ezsearch() -> List[str]:
     add_button = advanced_search_div.find_element(By.CSS_SELECTOR, "input[title='Add']")
     add_button.click()
 
+    def _get_visible_div(driver):
+        divs = driver.find_elements(By.XPATH, "//div[starts-with(@id,'my0DivBox')]")
+        for div in divs:
+            if div.is_displayed():
+                return div
+        return False
+
     dropdowns = WebDriverWait(driver, 10).until(
         EC.presence_of_all_elements_located(
             (By.CSS_SELECTOR, "#advancedSearchdiv select")
@@ -74,11 +75,26 @@ def scrape_ezsearch() -> List[str]:
 
     dropdown_fields = []
     for dropdown in dropdowns:
-        element = dropdown.find_elements(By.TAG_NAME, "option")
-        for opt in element[1:]:  # skip the first element since its the dropdown label
-            value = opt.get_attribute("value")
-            if value:
-                dropdown_fields.append(value)
+        elements = dropdown.find_elements(By.TAG_NAME, "option")
+        for element in elements[1:]:    # skip the first element since its the dropdown label
+            try:
+                element.click()
+                div = WebDriverWait(driver, 10).until(_get_visible_div)
+                inputs = div.find_elements(By.XPATH, ".//input")
+
+                dropdown_fields.append(
+                    {
+                        "name": element.get_attribute("value"),
+                        "description": element.text,
+                        "quotes": False if len(inputs) == 2 else True,
+                        "regex": "<TODO: Add regex pattern>",
+
+                    }
+                )
+
+            except:
+                print(f"Failed on element {element.text}")
+                continue
 
     return dropdown_fields
 
