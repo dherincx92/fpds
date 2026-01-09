@@ -1,16 +1,16 @@
 <div align="center">
 
 
-                                  __________  ____  _____
-                                 / ____/ __ \/ __ \/ ___/
-                                / /_  / /_/ / / / /\__ \
-                               / __/ / ____/ /_/ /___/ /
-                              /_/   /_/   /_____//____/
+                     __________  ____  _____
+                    / ____/ __ \/ __ \/ ___/
+                   / /_  / /_/ / / / /\__ \
+                  / __/ / ____/ /_/ /___/ /
+                 /_/   /_/   /_____//____/
 
-                        Welcome to a more user-friendly FPDS 🚀
+            Welcome to a more user-friendly FPDS 🚀
+</div>
 A light-weight, pythonic parser for the Federal Procurement Data System (FPDS) ATOM Feed.
 Reference [here](https://www.fpds.gov/fpdsng_cms/index.php/en/).
-</div>
 
 
 ## Motivation
@@ -21,24 +21,117 @@ This library helps users by doing the following:
 - Converting XML and all associated attributes into JSON format
 
 
-## Setup
+## Prerequisites
 As of version 1.5.0, this library manages dependencies using `uv`. It is
 _highly_ recommended since this library is tested with it. Note that this
 README assumes you will install `uv` and therefore runs all commands within
 its context.
 
-### Installing `uv`
-
+### `uv`
 You can follow any of the methods found [here](https://docs.astral.sh/uv/getting-started/installation/).
-If on Linux or MacOS, we recommend using Homebrew:
-
+If on MacOS, we recommend using Homebrew:
 ```
 $ brew install uv
 ```
 
+### `just`
+A command runner inspired by `Makefile`, written in Rust.
+```
+$ brew install just
+```
+
 Once `uv` is installed, you can use the project Makefile to ensure your local environment
-is synced with the latest library installation. Start by running `make install` — this
-will check the status of the `uv.lock` file, and install all project dependencies + extras.
+is synced with the latest library installation. Start by running `just install` — this
+will check the status of the `uv.lock` file, and install all project dependencies +
+package extras.
+
+## Usage
+For a list of valid search criteria parameters, consult FPDS documentation
+found [here](https://www.fpds.gov/wiki/index.php/Atom_Feed_Usage).
+
+### CLI
+### `fields`
+Returns fields available for API requests.
+
+To display all available fields:
+
+```
+$ uv run fpds fields
+```
+
+If successful, you should see a nice, tabulated table in your terminal
+
+![fields-cli-output](img/fpds-fields-cli-output.png)
+<div align="center"><b>Figure 1 - Tabulated fields CLI output</b></div>
+<br />
+
+
+If you wanted to perform a more targeted search, add `-p`. For example, to
+get all fields containing the text "vendor" anywhere in the name, you could
+run the following:
+```
+$ uv run fpds fields -p vendor
+```
+
+![fields-cli-vendor](img/fpds-fields-vendor.png)
+<div align="center"><b>Figure 2 - Matching "vendor" fields</b></div>
+<br />
+
+### `parse`
+Sends and parses records from an FPDS ATOM feed request
+
+Lets say you wanted records from the OFFICE OF THE INSPECTOR GENERAL.
+Through your research, you identified that agency's code as 7504. For your
+particular project, you are only interested in awards modified within the first
+quarter of 2025. Using the `parse` command, you can easily retrieve records with
+the following command:
+
+```
+$  uv run fpds parse "LAST_MOD_DATE=[2022/01/01, 2022/03/31]" "AGENCY_CODE=7504"
+```
+
+With this command, you can specify as many filters as you want. Unfortunately due
+to rate limitations with the ATOM feed, you _must_ have at least 1 filter.
+
+By default, this command will output records to a directory named `.fpds` in
+your home directory. If you wish to output to a different location, specify your
+location with `-o`:
+
+```
+$ uv run fpds parse "LAST_MOD_DATE=[2022/01/01, 2022/03/31]" "AGENCY_CODE=7504" -o /Users/Desktop/data
+```
+
+## Python
+Core parsing and transformation classes are exposed as first-class citizens.
+
+```{python}
+
+import asyncio
+from fpds import FPDSRequest
+
+request = FPDSRequest(
+    LAST_MOD_DATE="[2022/01/01, 2022/03/31]",
+    AGENCY_CODE="7504"
+)
+
+# will return the initial HTTP request a user would make if using Postman
+request_url = request.__url__()
+
+# total number of pages in request
+page_count = request.page_count
+
+
+# returns records as an async generator
+gen = request.iter_data()
+
+# evaluating generator entries
+records = []
+async for entry in gen:
+    records.append(entry)
+
+# or letting `data` method evaluate generator for you
+records = asyncio.run(request.data())
+```
 
 ### Local Development
 

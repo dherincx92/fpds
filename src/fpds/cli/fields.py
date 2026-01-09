@@ -59,7 +59,7 @@ def fields(
         data.append(
             [
                 field["name"],
-                text_wrap(field["description"], width=20),
+                text_wrap(field["description"], width=width),
                 text_wrap(field["regex"], width=width),
             ]
         )
