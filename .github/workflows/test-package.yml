@@ -6,39 +6,7 @@ on:
       - master
 
 jobs:
-  run-formatters:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-
-      - name: Install uv
-        uses: astral-sh/setup-uv@v5
-
-      - uses: extractions/setup-just@v3
-        with:
-          just-version: 1.46.0
-
-      - name: Setup Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: 3.13
-
-      - name: Install Project
-        run: just install
-
-      - name: Run linters
-        run: just formatters
-
-      - name: Commit changes
-        uses: stefanzweifel/git-auto-commit-action@v5
-        with:
-          commit_message: "patch: [skip ci] Run formatters"
-          file_pattern: "*.py"
-          disable_globbing: true
-
-  test-python-versions:
+  build-and-test:
     runs-on: ubuntu-latest
     strategy:
       matrix:
@@ -68,6 +36,13 @@ jobs:
 
       - name: Run linters
         run: just formatters
+
+      - uses: stefanzweifel/git-auto-commit-action@v5
+        if: ${{ matrix.python-version == '3.13' }}
+        with:
+          commit_message: "patch: [skip ci] Run formatters"
+          file_pattern: "*.py"
+          disable_globbing: true
 
       - name: Run Tests
         run: just test
