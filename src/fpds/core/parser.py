@@ -12,7 +12,7 @@ import warnings
 from asyncio import Semaphore
 from concurrent.futures import ProcessPoolExecutor
 from pathlib import Path
-from typing import AsyncGenerator, List
+from typing import AsyncGenerator
 from urllib import parse
 from urllib.request import urlopen
 from uuid import uuid4
@@ -110,7 +110,7 @@ class FPDSRequest(FPDSMixin):
         self.thread_count = thread_count
         self.max_chunk_size_mb = max_chunk_size_mb
         self.page = page
-        self.links: List[str] = []
+        self.links: list[str] = []
 
         if kwargs:
             self.kwargs = kwargs
@@ -178,7 +178,7 @@ class FPDSRequest(FPDSMixin):
             subtree = FPDSSubTree(content=response.content)
             return subtree
 
-    async def fetch(self) -> List[FPDSSubTree]:
+    async def fetch(self) -> list[FPDSSubTree]:
         """Asynchronously parses all ATOM feed pages for current request."""
         if not self.links:
             return []
@@ -225,7 +225,7 @@ class FPDSRequest(FPDSMixin):
         )
 
     @staticmethod
-    def _jsonify(entry: FPDSSubTree) -> List[FPDS_ENTRY]:
+    def _jsonify(entry: FPDSSubTree) -> list[FPDS_ENTRY]:
         """Wrapper around `jsonify` method for avoiding pickle issue."""
         return entry.jsonify()
 
@@ -247,7 +247,7 @@ class FPDSRequest(FPDSMixin):
         from concurrent.futures import as_completed
 
         num_processes = multiprocessing.cpu_count()
-        data = await self.fetch()  # List[FPDSSubTree]
+        data = await self.fetch()  # list[FPDSSubTree]
 
         with ProcessPoolExecutor(max_workers=num_processes) as pool:
             with self._create_progress() as progress:
