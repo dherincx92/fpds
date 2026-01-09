@@ -38,7 +38,7 @@ A command runner inspired by `Makefile`, written in Rust.
 $ brew install just
 ```
 
-Once `uv` is installed, you can use the project Makefile to ensure your local environment
+Once `uv` is installed, you can use the project Justfile to ensure your local environment
 is synced with the latest library installation. Start by running `just install` — this
 will check the status of the `uv.lock` file, and install all project dependencies +
 package extras.
