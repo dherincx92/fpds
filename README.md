@@ -5,12 +5,10 @@
   / /_  / /_/ / / / /\__ \
  / __/ / ____/ /_/ /___/ /
 /_/   /_/   /_____//____/
-
 Welcome to a more user-friendly FPDS 🚀
 </pre>
 </div>
 A light-weight, pythonic parser for the Federal Procurement Data System (FPDS) ATOM Feed.
-Reference [here](https://www.fpds.gov/fpdsng_cms/index.php/en/).
 
 
 ## Motivation
