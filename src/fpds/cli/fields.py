@@ -1,7 +1,7 @@
 """CLI command for listing available fitering fields.
 
 author: derek663@gmail.com
-last_updated: 2025-12-14
+last_updated: 2026-01-10
 """
 
 import re
@@ -24,14 +24,12 @@ def fields(
         typer.Option(
             "--pattern",
             "-p",
-            help=(
-                "String pattern to scan field name with. Will scan string and "
-                "attempt to find a match at the first location. Case-insensitive."
-            ),
+            help="Case-insesitive string pattern to search field name on."
         ),
     ] = None,
     width: Annotated[
-        int, typer.Option("--width", "-w", help="Text wrap width for regex field.")
+        int,
+        typer.Option("--width", "-w", help="Text wrap width for regex field."),
     ] = TEXT_WRAP_WIDTH,
 ) -> None:
     """Displays list of available FPDS fields and their descriptions.
@@ -47,7 +45,7 @@ def fields(
     """
 
     data = []
-    prog = re.compile(pattern, flags=re.I) if pattern else None
+    prog = re.compile(pattern, flags=re.IGNORECASE) if pattern else None
 
     def text_wrap(text: str, width: int = width) -> str:
         return textwrap.fill(text=text, width=width)
@@ -59,7 +57,7 @@ def fields(
         data.append(
             [
                 field["name"],
-                text_wrap(field["description"], width=width),
+                text_wrap(field["description"], width=20),
                 text_wrap(field["regex"], width=width),
             ]
         )
