@@ -5,6 +5,7 @@ last_updated: 2026-01-09
 """
 
 import json
+import os
 import re
 from pathlib import Path
 
@@ -73,12 +74,12 @@ def scrape_latest_data_dictionary() -> str:
     )
     data_dict_url = tag.get_attribute("href")
 
-    import os
 
     github_output = os.environ.get("GITHUB_OUTPUT")
     if github_output:
         with open(github_output, "a") as f:
             f.write(f"data_dict_url={data_dict_url}\n")
+            f.write(f"feed_version={highest}")
     return data_dict_url
 
 

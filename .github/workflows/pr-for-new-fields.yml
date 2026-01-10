@@ -38,13 +38,11 @@ jobs:
           body: |
             Automated updates from FPDS ezSearch scraper.
 
-            Reference the following [data dictionary](${{ steps.scrape.outputs.data_dict_url }})
-            for field descriptions and regex patterns. This is a bit of a pain since
-            it is a manual process.
+            ✅  ATOM Feed Version: ${{ steps.scrape.outputs.feed_version }}
+            📃  Data Dictionary [here](${{ steps.scrape.outputs.data_dict_url }})
 
-            **Checklist**
-            - [ ] Updated field description
-            - [ ] Updated field regex
+            Before merging, please review the data dictionary file above and
+            generate the appropriate regex pattern for all new fields.
 
           branch: minor/new-ezsearch-fields
           base: master

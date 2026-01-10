@@ -10,7 +10,7 @@ import asyncio
 import multiprocessing
 import warnings
 from asyncio import Semaphore
-from concurrent.futures import ProcessPoolExecutor
+from concurrent.futures import ProcessPoolExecutor, as_completed
 from pathlib import Path
 from typing import AsyncGenerator
 from urllib import parse
@@ -80,17 +80,8 @@ class FPDSRequest(FPDSMixin):
 
     Raises
     ------
-    fpdsDuplicateParameterConfiguration:
-        Raised if duplicate configurations for a single parameter exist.
-
-    fpdsInvalidParameter:
-        Raised if an invalid parameter is provided.
-
     FPDSMaxPageLengthExceededError:
         Raised if user requests a page of results that doesn't exist.
-
-    fpdsMismatchedParameterRegexError:
-        Raised if parameter value does not match expected regex pattern.
 
     FPDSMissingKeywordParameterError:
         Raised if no keyword argument(s) are provided.
@@ -244,8 +235,6 @@ class FPDSRequest(FPDSMixin):
         >>> async for entry in gen:
         >>>     records.append(entry)
         """
-        from concurrent.futures import as_completed
-
         num_processes = multiprocessing.cpu_count()
         data = await self.fetch()  # list[FPDSSubTree]
 
