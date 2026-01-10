@@ -465,7 +465,7 @@
         "description": "Initiative",
         "name": "SPENDING_CATEGORY",
         "quotes": true,
-        "regex": "American Recovery and Reinvestment Act"
+        "regex": "American Recovery and Reinvestment Act|Radical Transparency About Wasteful Spending"
     },
     {
         "description": "Treasury Account Symbol Sub Account Code",
