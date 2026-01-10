@@ -1,7 +1,7 @@
 """Scrapes fields from FPDS ezSearch page.
 
 author: derek663@gmail.com
-last_updated: 2026-01-09
+last_updated: 2026-01-10
 """
 
 import json
@@ -18,6 +18,7 @@ from tabulate import tabulate
 
 from fpds.config import (
     FPDS_EZSEARCH_URL,
+    FPDS_FIELDS_CONFIG,
     FPDS_FIELDS_FILE_PATH,
     FPDS_WORKSITE_URL,
 )
@@ -35,9 +36,8 @@ def configure_driver(url: str) -> webdriver.Chrome:
 
 
 def update_fields_json(dropdown_fields: list[str]) -> None:
-    with Path(str(FPDS_FIELDS_FILE_PATH)).open(encoding="utf-8") as file:
-        config = json.load(file)
 
+    config = FPDS_FIELDS_CONFIG
     current_field_options = [field["name"] for field in config]
     new_options = [
         field for field in dropdown_fields if field["name"] not in current_field_options
@@ -134,9 +134,15 @@ def scrape_ezsearch() -> list[str]:
 
             except:
                 print(f"Failed on element {element.text}")
-                failures.append([element.get_attribute("value"), element.text])
+                match = next((f for f in FPDS_FIELDS_CONFIG if f["name"] == element.text), None)
+                status = "✅" if match else "❌"
+                failures.append([element.get_attribute("value"), element.text, status])
 
-    grid = tabulate(failures, headers=["Name", "Description"], tablefmt="github")
+    grid = tabulate(
+        tabular_data=failures,
+        headers=["Name", "Description", "Exists"],
+        tablefmt="github"
+    )
     set_github_output(grid=grid)
 
     return dropdown_fields
