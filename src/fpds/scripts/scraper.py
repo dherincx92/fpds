@@ -118,6 +118,8 @@ def scrape_ezsearch() -> list[str]:
     for dropdown in dropdowns:
         elements = dropdown.find_elements(By.TAG_NAME, "option")
         for element in elements[1:]:  # first element is a label
+            name = element.get_attribute("value")
+            description = element.text
             try:
                 element.click()
                 div = WebDriverWait(driver, 10).until(_get_visible_div)
@@ -125,18 +127,17 @@ def scrape_ezsearch() -> list[str]:
 
                 dropdown_fields.append(
                     {
-                        "name": element.get_attribute("value"),
-                        "description": element.text,
+                        "name": name,
+                        "description": description,
                         "quotes": False if len(inputs) == 2 else True,
                         "regex": "<TODO: Add regex pattern>",
                     }
                 )
 
             except:
-                print(f"Failed on element {element.text}")
-                match = next((f for f in FPDS_FIELDS_CONFIG if f["name"] == element.text), None)
+                match = next((f for f in FPDS_FIELDS_CONFIG if f["name"] == name), None)
                 status = "✅" if match else "❌"
-                failures.append([element.get_attribute("value"), element.text, status])
+                failures.append([name, description, status])
 
     grid = tabulate(
         tabular_data=failures,
