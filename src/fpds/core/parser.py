@@ -3,7 +3,7 @@ Core class for converting FPDS XML
 tree into JSON.
 
 author: derek663@gmail.com
-last_updated: 2025-12-14
+last_updated: 2026-01-10
 """
 
 import asyncio
@@ -47,13 +47,15 @@ class FPDSRequest(FPDSMixin):
     will validate argument names/values and raise an Exception if any
     error exists.
 
-    If you encounter new keyword parameters and/or an altered regex pattern,
-    use :param:`skip_regex_validation` to skip regex validation. Feel free
-    to submit an issue or open up a PR with new fields.
+    If you wish to opt-out of all regex validations, set `skip_regex_validation`
+    to `False`. Be aware that the provided regex validations are manually
+    created by parsing the FPDS Data Dictionary -- it is possible for these
+    patterns to have evolved over time. If you encounter any hiccups, please
+    submit an issue.
 
     Example:
     -------
-    >>> request = fpdsRequest(
+    >>> request = FPDSRequest(
     >>>     LAST_MOD_DATE="[2022/01/01, 2022/05/01]",
     >>>     AGENCY_CODE="7504",
     >>> )
@@ -114,7 +116,7 @@ class FPDSRequest(FPDSMixin):
 
         if self.page:
             idx = self.page_index()
-            if idx is not None and self.links:
+            if idx and self.links:
                 if self.page > self.page_count:
                     raise FPDSMaxPageLengthExceededError(page_count=self.page_count)
                 self.links = [links[idx]]
@@ -128,9 +130,9 @@ class FPDSRequest(FPDSMixin):
                 warnings.warn("Opting out of regex validation!")
 
     def __str__(self) -> str:  # pragma: no cover
-        """String representation of `fpdsRequest`."""
+        """String representation of `FPDSRequest`."""
         kwargs_str = " ".join([f"{key}={value}" for key, value in self.kwargs.items()])
-        return f"<fpdsRequest {kwargs_str}>"
+        return f"<FPDSRequest {kwargs_str}>"
 
     def __url__(self) -> str:  # pragma: no cover
         """Custom magic method for request URL."""
@@ -190,7 +192,13 @@ class FPDSRequest(FPDSMixin):
             task_id = progress.add_task("Fetching data...", total=len(self.links))
             async with AsyncClient(timeout=None) as client:
                 tasks = [
-                    convert_with_progress(client, link, semaphore, progress, task_id)
+                    convert_with_progress(
+                        client=client,
+                        link=link,
+                        semaphore=semaphore,
+                        progress=progress,
+                        task_id=task_id,
+                    )
                     for link in self.links
                 ]
                 results = await asyncio.gather(*tasks)
