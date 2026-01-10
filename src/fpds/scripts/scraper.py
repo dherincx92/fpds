@@ -7,8 +7,8 @@ last_updated: 2026-01-09
 import json
 import re
 from pathlib import Path
-
 from packaging.version import Version
+
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.common.by import By
@@ -21,7 +21,7 @@ from fpds.config import (
     FPDS_FIELDS_FILE_PATH,
     FPDS_WORKSITE_URL,
 )
-from fpds.utilities.github import set_github_output
+from fpds.utilities import set_github_output
 
 SPEC_PATTERN = "V(.*?) Specifications"
 
@@ -134,9 +134,9 @@ def scrape_ezsearch() -> list[str]:
 
             except:
                 print(f"Failed on element {element.text}")
-                failures.append([element.text])
+                failures.append([element.text, element.get_attribute("value")])
 
-    grid = tabulate(failures, headers=["Name"], tablefmt="github")
+    grid = tabulate(failures, headers=["Name", "Description"], tablefmt="github")
     set_github_output(grid=grid)
 
     return dropdown_fields

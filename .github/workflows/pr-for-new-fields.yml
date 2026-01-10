@@ -41,13 +41,13 @@ jobs:
             ✅  ATOM Feed Version: ${{ steps.scrape.outputs.feed_version }}
             📃  Data Dictionary [here](${{ steps.scrape.outputs.data_dict_url }})
 
-            Before merging, please review the data dictionary file above and
-            generate the appropriate regex pattern for all new fields.
+            Before merging, please review the data dictionary file above and generate the appropriate
+            regex pattern for all new fields.
 
-            **Failures**
-            The following fields were found in the ezSearch page, but their format
-            could not be determined. Manually inspect to determine its format.
-            If it already exists in `fields.json`, you can ignore this warning.
+            🔴 **Failures** 🔴
+            -----------------
+            The following fields were found in the ezSearch page, but their format could not be determined. Manually
+            inspect to determine its format. If it already exists in `fields.json`, you can ignore this warning.
 
             ${{ steps.scrape.outputs.grid }}
 
