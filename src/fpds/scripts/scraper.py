@@ -6,9 +6,9 @@ last_updated: 2026-01-09
 
 import json
 import re
-from packaging.version import Version
 from pathlib import Path
 
+from packaging.version import Version
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.common.by import By
@@ -22,6 +22,7 @@ from fpds.config import (
 )
 
 SPEC_PATTERN = "V(.*?) Specifications"
+
 
 def configure_driver(url: str) -> webdriver.Chrome:
     options = Options()
@@ -46,12 +47,12 @@ def update_fields_json(dropdown_fields: list[str]) -> None:
         json.dump(sorted_config, file, indent=4)
         file.write("\n")
 
+
 def scrape_latest_data_dictionary() -> str:
     """Scrapes FPDS Worksite page for the latest data dictionary document."""
     driver = configure_driver(url=FPDS_WORKSITE_URL)
     div = driver.find_elements(
-        By.XPATH,
-        "//div[h3[contains(normalize-space(.), 'Specifications')]]"
+        By.XPATH, "//div[h3[contains(normalize-space(.), 'Specifications')]]"
     )
 
     h3_tags = []
@@ -60,9 +61,7 @@ def scrape_latest_data_dictionary() -> str:
         h3_tags.append(h3.text)
 
     prog = re.compile(SPEC_PATTERN)
-    versions = [
-        prog.search(tag).group(1) for tag in h3_tags if prog.search(tag)
-    ]
+    versions = [prog.search(tag).group(1) for tag in h3_tags if prog.search(tag)]
     highest = max(versions, key=lambda v: Version(v.strip()))
     idx = h3_tags.index(f"V{highest} Specifications")
 
@@ -70,17 +69,17 @@ def scrape_latest_data_dictionary() -> str:
         By.XPATH,
         ".//a[contains(translate(normalize-space(.),"
         "'ABCDEFGHIJKLMNOPQRSTUVWXYZ','abcdefghijklmnopqrstuvwxyz'),"
-        "'data dictionary')]"
+        "'data dictionary')]",
     )
     data_dict_url = tag.get_attribute("href")
 
     import os
+
     github_output = os.environ.get("GITHUB_OUTPUT")
     if github_output:
         with open(github_output, "a") as f:
             f.write(f"data_dict_url={data_dict_url}\n")
     return data_dict_url
-
 
 
 def scrape_ezsearch() -> list[str]:
