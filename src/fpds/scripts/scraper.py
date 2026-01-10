@@ -7,8 +7,8 @@ last_updated: 2026-01-09
 import json
 import re
 from pathlib import Path
-from packaging.version import Version
 
+from packaging.version import Version
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.common.by import By
