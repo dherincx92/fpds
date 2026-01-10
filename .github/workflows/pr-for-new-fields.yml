@@ -27,6 +27,7 @@ jobs:
           python-version: 3.13
 
       - name: Scrape FPDS Site
+        id: scrape
         run: just scrape
 
       - name: Create Pull Request
@@ -37,7 +38,7 @@ jobs:
           body: |
             Automated updates from FPDS ezSearch scraper.
 
-            Reference the following [data dictionary](https://www.fpds.gov/downloads/Version_1.5_specs/FPDS_DataDictionary_V1.5.pdf)
+            Reference the following [data dictionary](${{ steps.scrape.outputs.data_dict_url }})
             for field descriptions and regex patterns. This is a bit of a pain since
             it is a manual process.
 

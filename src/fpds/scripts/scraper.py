@@ -1,12 +1,13 @@
 """Scrapes fields from FPDS ezSearch page.
 
 author: derek663@gmail.com
-last_updated: 2026-01-06
+last_updated: 2026-01-09
 """
 
 import json
+import re
+from packaging.version import Version
 from pathlib import Path
-from typing import List
 
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
@@ -14,16 +15,27 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.ui import WebDriverWait
 
-from fpds.config import FPDS_EZSEARCH_URL, FPDS_FIELDS_FILE_PATH
+from fpds.config import (
+    FPDS_EZSEARCH_URL,
+    FPDS_FIELDS_FILE_PATH,
+    FPDS_WORKSITE_URL,
+)
+
+SPEC_PATTERN = "V(.*?) Specifications"
+
+def configure_driver(url: str) -> webdriver.Chrome:
+    options = Options()
+    options.add_argument("--headless")
+    driver = webdriver.Chrome(options=options)
+    driver.get(url=url)
+    return driver
 
 
-def update_fields_json(dropdown_fields: List[str]) -> None:
+def update_fields_json(dropdown_fields: list[str]) -> None:
     with Path(str(FPDS_FIELDS_FILE_PATH)).open(encoding="utf-8") as file:
         config = json.load(file)
 
     current_field_options = [field["name"] for field in config]
-
-    # as of right now, we have no way to validate the pattern unless we go to the data dict
     new_options = [
         field for field in dropdown_fields if field["name"] not in current_field_options
     ]
@@ -34,17 +46,50 @@ def update_fields_json(dropdown_fields: List[str]) -> None:
         json.dump(sorted_config, file, indent=4)
         file.write("\n")
 
+def scrape_latest_data_dictionary() -> str:
+    """Scrapes FPDS Worksite page for the latest data dictionary document."""
+    driver = configure_driver(url=FPDS_WORKSITE_URL)
+    div = driver.find_elements(
+        By.XPATH,
+        "//div[h3[contains(normalize-space(.), 'Specifications')]]"
+    )
 
-def scrape_ezsearch() -> List[str]:
+    h3_tags = []
+    for child in div:
+        h3 = child.find_element(By.TAG_NAME, "h3")
+        h3_tags.append(h3.text)
+
+    prog = re.compile(SPEC_PATTERN)
+    versions = [
+        prog.search(tag).group(1) for tag in h3_tags if prog.search(tag)
+    ]
+    highest = max(versions, key=lambda v: Version(v.strip()))
+    idx = h3_tags.index(f"V{highest} Specifications")
+
+    tag = div[idx].find_element(
+        By.XPATH,
+        ".//a[contains(translate(normalize-space(.),"
+        "'ABCDEFGHIJKLMNOPQRSTUVWXYZ','abcdefghijklmnopqrstuvwxyz'),"
+        "'data dictionary')]"
+    )
+    data_dict_url = tag.get_attribute("href")
+
+    import os
+    github_output = os.environ.get("GITHUB_OUTPUT")
+    if github_output:
+        with open(github_output, "a") as f:
+            f.write(f"data_dict_url={data_dict_url}\n")
+    return data_dict_url
+
+
+
+def scrape_ezsearch() -> list[str]:
     """Scrapes FPDS ezSearch field for Advanced Search Criteria dropdown values.
 
     These values represent valid parameter values for an instance of
     `:class:`fpdsRequest.
     """
-    options = Options()
-    options.add_argument("--headless")
-    driver = webdriver.Chrome(options=options)
-    driver.get(FPDS_EZSEARCH_URL)
+    driver = configure_driver(url=FPDS_EZSEARCH_URL)
 
     search_criteria_button = driver.find_element(
         By.CSS_SELECTOR,
@@ -75,9 +120,7 @@ def scrape_ezsearch() -> List[str]:
     dropdown_fields = []
     for dropdown in dropdowns:
         elements = dropdown.find_elements(By.TAG_NAME, "option")
-        for element in elements[
-            1:
-        ]:  # skip the first element since its the dropdown label
+        for element in elements[1:]:  # first element is a label
             try:
                 element.click()
                 div = WebDriverWait(driver, 10).until(_get_visible_div)
@@ -100,5 +143,6 @@ def scrape_ezsearch() -> List[str]:
 
 
 if __name__ == "__main__":
-    dropdown_fields = scrape_ezsearch()
-    update_fields_json(dropdown_fields=dropdown_fields)
+    scrape_latest_data_dictionary()
+    # dropdown_fields = scrape_ezsearch()
+    # update_fields_json(dropdown_fields=dropdown_fields)
