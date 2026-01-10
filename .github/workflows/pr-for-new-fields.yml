@@ -49,7 +49,7 @@ jobs:
             could not be determined. Manually inspect to determine its format.
             If it already exists in `fields.json`, you can ignore this warning.
 
-            {{ steps.scrape.outputs.grid }}
+            ${{ steps.scrape.outputs.grid }}
 
           branch: minor/new-ezsearch-fields
           base: master
