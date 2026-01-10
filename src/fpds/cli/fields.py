@@ -24,7 +24,7 @@ def fields(
         typer.Option(
             "--pattern",
             "-p",
-            help="Case-insesitive string pattern to search field name on."
+            help="Case-insesitive string pattern to search field name on.",
         ),
     ] = None,
     width: Annotated[
