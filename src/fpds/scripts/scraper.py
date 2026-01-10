@@ -134,7 +134,7 @@ def scrape_ezsearch() -> list[str]:
 
             except:
                 print(f"Failed on element {element.text}")
-                failures.append([element.text, element.get_attribute("value")])
+                failures.append([element.get_attribute("value"), element.text])
 
     grid = tabulate(failures, headers=["Name", "Description"], tablefmt="github")
     set_github_output(grid=grid)

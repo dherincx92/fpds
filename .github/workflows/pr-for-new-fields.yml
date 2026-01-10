@@ -41,8 +41,8 @@ jobs:
             ✅  ATOM Feed Version: ${{ steps.scrape.outputs.feed_version }}
             📃  Data Dictionary [here](${{ steps.scrape.outputs.data_dict_url }})
 
-            Before merging, please review the data dictionary file above and generate the appropriate
-            regex pattern for all new fields.
+            Before merging, please review the data dictionary file above and generate the appropriate regex pattern
+            for all new fields.
 
             🔴 **Failures** 🔴
             -----------------
