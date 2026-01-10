@@ -134,29 +134,6 @@ async for entry in gen:
 records = asyncio.run(request.data())
 ```
 
-### Local Development
-
-For linting and formatting, we use `ruff`. See `pyproject.toml`
-for specific configuration.
-
-```
-$ make formatters
-```
-
-You can clean the clutter and unwanted noise from tools using:
-
-```
-$ make clean
-```
-
-### Testing
-
-Run unit tests on your local environment:
-
-```
-$ just test
-```
-
 # Highlights
 
 Between v1.2.1 and v1.3.0, significant improvements were made with `asyncio`. Here are
