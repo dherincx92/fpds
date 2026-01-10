@@ -8,19 +8,21 @@ import json
 import os
 import re
 from pathlib import Path
-
 from packaging.version import Version
+
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.ui import WebDriverWait
+from tabulate import tabulate
 
 from fpds.config import (
     FPDS_EZSEARCH_URL,
     FPDS_FIELDS_FILE_PATH,
     FPDS_WORKSITE_URL,
 )
+from fpds.utilities.github import set_github_output
 
 SPEC_PATTERN = "V(.*?) Specifications"
 
@@ -117,6 +119,7 @@ def scrape_ezsearch() -> list[str]:
     )
 
     dropdown_fields = []
+    failures = []
     for dropdown in dropdowns:
         elements = dropdown.find_elements(By.TAG_NAME, "option")
         for element in elements[1:]:  # first element is a label
@@ -136,7 +139,10 @@ def scrape_ezsearch() -> list[str]:
 
             except:
                 print(f"Failed on element {element.text}")
-                continue
+                failures.append([element.text])
+
+    grid = tabulate(failures, headers=["Name"], tablefmt="github")
+    set_github_output(grid=grid)
 
     return dropdown_fields
 
