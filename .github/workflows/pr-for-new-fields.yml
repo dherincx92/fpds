@@ -46,8 +46,9 @@ jobs:
 
             🔴 **Failures** 🔴
             -----------------
-            The following fields were found in the ezSearch page, but their format could not be determined. Manually
-            inspect to determine its format. If it already exists in `fields.json`, you can ignore this warning.
+            The following fields were found in the ezSearch page, but their format could not be determined. If the
+            field is marked as ❌, you will need to find relevant metadata in the data dictionary file linked above.
+            If the field is marked as ✅, you can ignore this warning.
 
             ${{ steps.scrape.outputs.grid }}
 
