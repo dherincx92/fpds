@@ -22,20 +22,30 @@ jobs:
       - name: Install uv
         uses: astral-sh/setup-uv@v5
 
+      - uses: extractions/setup-just@v3
+        with:
+          just-version: 1.46.0
+
       - name: Setup Python
         uses: actions/setup-python@v5
         with:
           python-version: ${{ matrix.python-version }}
 
       - name: Install Project
-        run: make install
+        run: just install
+
+      - name: Run linters
+        run: just formatters
+
+      - uses: stefanzweifel/git-auto-commit-action@v5
+        if: ${{ matrix.python-version == '3.13' }}
+        with:
+          commit_message: "patch: [skip ci] Run formatters"
+          file_pattern: "*.py"
+          disable_globbing: true
 
       - name: Run Tests
-        run: make test
-
-      - uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
+        run: just test
 
   test-package-version:
     runs-on: ubuntu-latest

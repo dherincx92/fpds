@@ -1,91 +1,61 @@
-"""
-Parsing command for retrieving FPDS federal
-contracts.
+"""CLI command for retrieving FPDS federal contracts.
 
 author: derek663@gmail.com
-last_updated: 2025-07-14
+last_updated: 2026-01-10
 """
 
 import asyncio
-import json
 from pathlib import Path
-from uuid import uuid4
+from typing import Optional
 
-import click
-from click import UsageError
+import typer
+from typing_extensions import Annotated
 
-from fpds import fpdsRequest
+from fpds import FPDSRequest
+from fpds.cli.root import app
 from fpds.config import FPDS_DATA_DATE_DIR
 from fpds.utilities import validate_kwarg
 
 
-@click.command()
-@click.option(
-    "-k",
-    "--skip-regex-validation",
-    metavar="<bool>",
-    required=False,
-    default=False,
-    type=bool,
-    help="If True, skips param regex validation",
-)
-@click.option(
-    "-o",
-    "--output-dir",
-    required=False,
-    metavar="<string>",
-    type=click.Path(exists=False, path_type=Path),
-    help="Output directory",
-)
-@click.argument("params", nargs=-1)
-def parse(params, output_dir, skip_regex_validation) -> None:  # type: ignore
-    """
-    Parsing command for the FPDS Atom feed
+@app.command()
+def parse(
+    output_dir: Annotated[
+        Optional[Path],
+        typer.Option(
+            "--output-dir",
+            "-o",
+            file_okay=False,
+            dir_okay=True,
+            writable=True,
+            help="Directory to output extracted FPDS data to.",
+        ),
+    ] = FPDS_DATA_DATE_DIR,
+    params: list[str] = typer.Argument(
+        ...,
+        help="Positional parameters (variadic, like nargs=-1 in click)",
+    ),
+) -> None:
+    """Sends ATOM feed request to FPDS.
 
     \b
     Usage:
-        $ fpds parse [PARAMS] [OPTIONS]
+        $ uv run fpds parse [PARAMS] [OPTIONS]
 
     \b
-    Positional Argument(s):
-        PARAMS  Search criteria parameters for filtering response
+    Example(s):
+        $ uv run fpds parse "LAST_MOD_DATE=[2022/01/01, 2022/03/31]"
 
-        \b
-        Reference the Atom Feed Usage documentation at
-        https://www.fpds.gov/wiki/index.php/Atom_Feed_Usage
-        to determine available parameters. As an example, if
-        a user wants to filter for AWARD contract types, the
-        parameter criteria should look like this: 'CONTRACT_TYPE=AWARD'.
-        A full CLI command could look like this:
-
-        \b
-          fpds parse "LAST_MOD_DATE=[2022/01/01, 2022/05/01]" "AGENCY_CODE=7504"
     """
 
-    if output_dir:
-        if not output_dir.exists():
-            click.echo(f"Creating output directory {str(output_dir.resolve())}")
-            output_dir.mkdir(parents=True, exist_ok=True)
+    output_dir_path: Path = Path(output_dir)
+    output_dir_path.mkdir(parents=True, exist_ok=True)
 
-    params = [param.split("=") for param in params]
+    split_params = [param.split("=") for param in params]  # list[Tuple[str, str]]
 
-    if not params:
-        raise UsageError("Please provide at least one parameter")
-
-    for _param in params:  # _param is a tuple
+    for _param in split_params:
         name, value = _param
         _param[1] = validate_kwarg(kwarg=name, string=value)
 
-    params_kwargs = dict(params)
-    click.echo(f"Params to be used for FPDS search: {params_kwargs}")
-
-    request = fpdsRequest(**params_kwargs, cli_run=True, skip_regex_validation=skip_regex_validation)
-    click.echo("Retrieving FPDS records from ATOM feed...")
-
-    records = asyncio.run(request.data())
-    DATA_DIR = output_dir if output_dir else FPDS_DATA_DATE_DIR
-    DATA_FILE = DATA_DIR / f"{uuid4()}.json"
-    with open(DATA_FILE, "w") as outfile:
-        json.dump(records, outfile)
-
-    click.echo(f"{len(records)} record(s) have been saved as JSON at: {DATA_FILE}")
+    params_kwargs = dict(split_params)
+    request = FPDSRequest(cli_run=True, **params_kwargs)  # type: ignore[arg-type]
+    asyncio.run(request.data(output_dir=output_dir_path))

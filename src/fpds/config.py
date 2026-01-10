@@ -12,6 +12,8 @@ from pathlib import Path
 
 HOME = Path.home()
 CURRENT_DATE = datetime.now().strftime("%Y-%m-%d")
+FPDS_EZSEARCH_URL = "https://www.fpds.gov/ezsearch/fpdsportal?s=FPDS.GOV&templateName=1.5.3&indexName=awardfull&q="
+FPDS_WORKSITE_URL = "https://www.fpds.gov/fpdsng_cms/index.php/en/worksite.html"
 
 # FPDS-specific configurations
 FPDS_DATA_DIR = HOME / ".fpds"

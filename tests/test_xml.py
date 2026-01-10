@@ -1,7 +1,7 @@
 from unittest import TestCase
 from xml.etree.ElementTree import ElementTree
 
-from fpds.core.xml import fpdsElement, fpdsTree
+from fpds.core.xml import FPDSElement, FPDSTree
 from tests import FULL_RESPONSE_DATA_BYTES, TRUNCATED_RESPONSE_DATA_BYTES
 
 FPDS_REQUEST_PARAMS_DICT = {
@@ -14,9 +14,9 @@ TEST_NAMESPACE_DICT = {
 }
 
 
-class TestFpdsTree(TestCase):
+class TestFPDSTree(TestCase):
     def setUp(self):
-        self._class = fpdsTree(FULL_RESPONSE_DATA_BYTES)
+        self._class = FPDSTree(FULL_RESPONSE_DATA_BYTES)
 
     def test_convert_to_lxml_tree(self):
         content = self._class.convert_to_lxml_tree()
@@ -38,7 +38,7 @@ class TestFpdsTree(TestCase):
         ensures that if the response size is less than 10 that the
         `lower_limit` property is still generated correctly.
         """
-        _class = fpdsTree(TRUNCATED_RESPONSE_DATA_BYTES)
+        _class = FPDSTree(TRUNCATED_RESPONSE_DATA_BYTES)
         total = _class.lower_limit
         self.assertEqual(total, 1)
 
@@ -57,8 +57,27 @@ class TestFpdsTree(TestCase):
         self.assertEqual(len(entries), 10)
 
 
-class TestFpdsElement(TestCase):
+class TestFPDSElement(TestCase):
     def setUp(self):
-        xml = fpdsTree(content=FULL_RESPONSE_DATA_BYTES)
-        element = xml.get_atom_feed_entries()[0]
-        self._class = fpdsElement(content=element)
+        self.xml = FPDSTree(content=FULL_RESPONSE_DATA_BYTES)
+        self.element = self.xml.get_atom_feed_entries()[0]
+        self.fpds_element = FPDSElement(
+            element=self.element,
+            namespace_dict=TEST_NAMESPACE_DICT,
+        )
+
+    def test_iter(self):
+        iterator = iter(self.fpds_element)
+        self.assertTrue(hasattr(iterator, "__next__"))
+
+    def test_len(self):
+        self.assertEqual(len(self.element), len(self.fpds_element))
+
+    def test_getitem(self):
+        self.assertEqual(self.fpds_element[0], self.element[0])
+
+    def test_parse_items(self):
+        self.assertEqual(
+            list(self.fpds_element.parse_items()),
+            list(self.element.iter()),
+        )

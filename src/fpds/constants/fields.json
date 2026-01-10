@@ -336,6 +336,18 @@
         "regex": ".*"
     },
     {
+        "name": "NGC_PARTICIPATION_DESC",
+        "description": "Nontraditional Government Contractor Participation",
+        "quotes": true,
+        "regex": "<TODO: Add regex pattern>"
+    },
+    {
+        "name": "NON_GOVERNMENT_VALUE",
+        "description": "Non-Government Dollars",
+        "quotes": false,
+        "regex": "<TODO: Add regex pattern>"
+    },
+    {
         "description": "Number of Offers Received",
         "name": "NUMBER_OF_OFFERS_RECEIVED",
         "quotes": false,
@@ -392,7 +404,8 @@
     {
         "description": "PSC Type",
         "name": "PRODUCT_OR_SERVICE_TYPE",
-        "quotes": true
+        "quotes": true,
+        "regex": ".*"
     },
     {
         "description": "Reason for Modification",
@@ -464,7 +477,7 @@
         "description": "Initiative",
         "name": "SPENDING_CATEGORY",
         "quotes": true,
-        "regex": "American Recovery and Reinvestment Act"
+        "regex": "American Recovery and Reinvestment Act|Radical Transparency About Wasteful Spending"
     },
     {
         "description": "Treasury Account Symbol Sub Account Code",
@@ -549,6 +562,12 @@
         "name": "VENDOR_ADDRESS_COUNTRY_CODE",
         "quotes": true,
         "regex": ".*"
+    },
+    {
+        "name": "VENDOR_ADDRESS_COUNTRY_NAME",
+        "description": "Entity Country Name",
+        "quotes": true,
+        "regex": "<TODO: Add regex pattern>"
     },
     {
         "description": "Entity Country Name",

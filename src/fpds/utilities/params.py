@@ -2,17 +2,17 @@
 Utility functions related to FPDS request parameters
 
 author: derek663@gmail.com
-last_updated: 01/20/2024
+last_updated: 12/14/2024
 """
 
 import re
-from typing import Any, Dict, List, Optional, TypedDict, Union, cast
+from typing import Any, Dict, List, TypedDict, cast
 
 from fpds.config import FPDS_FIELDS_CONFIG as FIELDS
 from fpds.errors import (
-    fpdsDuplicateParameterConfiguration,
-    fpdsInvalidParameter,
-    fpdsMismatchedParameterRegexError,
+    FPDSDuplicateParameterConfiguration,
+    FPDSInvalidParameter,
+    FPDSMismatchedParameterRegexError,
 )
 
 CONFIG_TYPE = List[Dict[str, Any]]
@@ -26,21 +26,22 @@ class ParameterConfig(TypedDict):
 
 
 def get_search_param_from_config(
-    name: str, config: CONFIG_TYPE = FIELDS
+    name: str,
+    config: CONFIG_TYPE = FIELDS,
 ) -> ParameterConfig:
     """Finds the name of a kwarg in `fields.json`."""
     field_config = [field for field in config if field.get("name") == name]
     if not field_config:
-        raise fpdsInvalidParameter(name=name)
+        raise FPDSInvalidParameter(name=name)
     elif len(field_config) > 1:
-        raise fpdsDuplicateParameterConfiguration(name=name)
+        raise FPDSDuplicateParameterConfiguration(name=name)
     return cast(ParameterConfig, field_config[0])
 
 
 def match_regex_with_literal_string_pattern(
     pattern: str,
     string: str,
-) -> Optional[re.Match[str]]:
+) -> re.Match[str] | None:
     """Converts a regex pattern into a raw literal string to be used by
     Python's regex module.
 
@@ -60,7 +61,7 @@ def validate_kwarg(kwarg: str, string: str) -> str:
     pattern = obj["regex"]
     match = match_regex_with_literal_string_pattern(pattern=pattern, string=string)
     if not match:
-        raise fpdsMismatchedParameterRegexError(string=string, pattern=pattern)
+        raise FPDSMismatchedParameterRegexError(string=string, pattern=pattern)
 
     if obj.get("quotes"):
         return f'"{string}"'

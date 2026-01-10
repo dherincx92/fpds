@@ -1,8 +1,5 @@
-.PHONY: help venv install clean formatters mypy test local-test package publish
-.DEFAULT_GOAL := help
-
-help:
-	@python -c "$$PRINT_HELP_PYSCRIPT" < $(MAKEFILE_LIST)
+default:
+  just --list
 
 venv: ## defaults to creating virtual environment in current directory under .venv
 	@if [ -d .venv ]; then \
@@ -11,8 +8,8 @@ venv: ## defaults to creating virtual environment in current directory under .ve
 		uv venv; \
 	fi
 
-install: venv ## checks if uv.lock is up-to-date and manually syncs all deps + extras
-	uv lock --check
+install: venv ## updates uv.lock if needed and manually syncs all deps + extras
+	uv lock
 	uv sync --extra all
 
 clean: ## Remove test and coverage artifacts
@@ -27,7 +24,7 @@ formatters: venv ## https://docs.astral.sh/ruff/formatter/#line-breaks
 	uv tool run ruff format
 
 mypy: ## Typechecking with mypy
-	uv tool run mypy src/
+	uv run mypy src/
 
 test: venv install ## Run unit tests with coverage
 	uv run -m pytest
@@ -40,3 +37,6 @@ package: ## builds project + artifacts in dist/ directory
 
 publish: package ## publishes package to pypi
 	uv publish
+
+scrape: venv install
+	uv run python src/fpds/scripts/scraper.py

@@ -1,0 +1,57 @@
+name: New fpds search fields PR
+
+on:
+  schedule:
+     - cron: "0 5 * * *"
+  workflow_dispatch:
+
+jobs:
+  scrape:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: nanasess/setup-chromedriver@v2
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
+      - uses: extractions/setup-just@v3
+        with:
+          just-version: 1.46.0
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: 3.13
+
+      - name: Scrape FPDS Site
+        id: scrape
+        run: just scrape
+
+      - name: Create Pull Request
+        uses: peter-evans/create-pull-request@v6
+        with:
+          commit-message: "minor: updating fields.json with newly identified ezSearch fields"
+          title: "minor: 🤖 [AUTOMATED] new ezSearch fields"
+          body: |
+            Automated updates from FPDS ezSearch scraper.
+
+            ✅  ATOM Feed Version: ${{ steps.scrape.outputs.feed_version }}
+            📃  Data Dictionary [here](${{ steps.scrape.outputs.data_dict_url }})
+
+            Before merging, please review the data dictionary file above and generate the appropriate regex pattern
+            for all new fields.
+
+            🔴 **Failures** 🔴
+            -----------------
+            The following fields were found in the ezSearch page, but their format could not be determined. If the
+            field is marked as ❌, you will need to find relevant metadata in the data dictionary file linked above.
+            If the field is marked as ✅, you can ignore this warning.
+
+            ${{ steps.scrape.outputs.grid }}
+
+          branch: minor/new-ezsearch-fields
+          base: master
+          labels: automated, feature
+          draft: false

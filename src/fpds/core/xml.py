@@ -2,26 +2,26 @@
 XML classes for parsing FPDS content.
 
 author: derek663@gmail.com
-last_updated: 2025-07-25
+last_updated: 2026-01-10
 """
 
 import re
-from typing import Dict, Iterator, List, Optional, TypedDict, Unpack
+from typing import Dict, Iterator, List, TypedDict, Unpack
 from xml.etree.ElementTree import Element, ElementTree, fromstring
 
 from fpds.core import FPDS_ENTRY
-from fpds.core.mixins import fpdsMixin
+from fpds.core.mixins import FPDSMixin
 
 NAMESPACE_REGEX = r"\{(.*)\}"
 LAST_PAGE_REGEX = r"start=(.*?)$"
 
 
-class fpdsElementAttributes(TypedDict):
+class FPDSElementAttributes(TypedDict):
     element: Element
     namespace_dict: Dict[str, str]
 
 
-class fpdsElement:
+class FPDSElement:
     """Representation of a single XML element.
 
     Attributes
@@ -46,7 +46,7 @@ class fpdsElement:
         return self.element[index]
 
     def __str__(self) -> str:  # pragma: no cover
-        return f"<fpdsElement {self.tag}>"
+        return f"<FPDSElement {self.tag}>"
 
     def parse_items(self) -> Iterator[Element]:
         """Returns iteration of `Element` as a generator."""
@@ -76,7 +76,7 @@ class fpdsElement:
         return clean_tag
 
 
-class fpdsTree(fpdsMixin):
+class FPDSTree(FPDSMixin):
     """Representation of initial FPDS response as an ElementTree.
 
     Attributes
@@ -179,7 +179,7 @@ class fpdsTree(fpdsMixin):
         return json_data
 
 
-class fpdsSubTree(fpdsTree):
+class FPDSSubTree(FPDSTree):
     """A class denoting XML trees built off of the pagination links from :class:`fpdsTree`."""
 
     pass
@@ -195,9 +195,9 @@ class _ElementAttributes:
     ----------
     prefix: `str`
         Prefix to append to attribute dictionary. This will ensure that
-        duplicate tags like `PIID` are distinguished in the data.
+        duplicate tags like `PIID` are distinguished in data.
     element: `xml.etree.ElementTree.Element`
-        An lxml Element type.
+        An `Element` type.
     """
 
     def __init__(self, prefix: str, element: Element) -> None:
@@ -241,7 +241,7 @@ class _ElementAttributes:
         return _attributes_copy
 
 
-class Entry(fpdsElement):
+class Entry(FPDSElement):
     """An ATOM feed data entry.
 
      In terms of XML, it is the outermost container for award data.
@@ -270,7 +270,7 @@ class Entry(fpdsElement):
     </entry>
     """
 
-    def __init__(self, **kwargs: Unpack[fpdsElementAttributes]) -> None:
+    def __init__(self, **kwargs: Unpack[FPDSElementAttributes]) -> None:
         super().__init__(**kwargs)
 
     def __str__(self) -> str:  # pragma: no cover
@@ -308,9 +308,9 @@ class Entry(fpdsElement):
 
     def content_tag_hierarchy(
         self,
-        element: Optional[Element] = None,
-        parent: Optional[str] = None,
-        hierarchy: Optional[Dict[str, Element]] = None,
+        element: Element | None = None,
+        parent: str | None = None,
+        hierarchy: Dict[str, Element] | None = None,
     ) -> Dict[str, Element]:
         """Generates hierarchy within the content tag.
 
@@ -381,13 +381,13 @@ class Entry(fpdsElement):
         return hierarchy
 
 
-class Parent(fpdsElement):
+class Parent(FPDSElement):
     """Representation of any XML tag containing children tags."""
 
     def __init__(
         self,
-        parent_name: Optional[str] = None,
-        **kwargs: Unpack[fpdsElementAttributes],
+        parent_name: str | None = None,
+        **kwargs: Unpack[FPDSElementAttributes],
     ) -> None:
         super().__init__(**kwargs)
         self.parent_name = parent_name

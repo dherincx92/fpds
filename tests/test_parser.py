@@ -1,16 +1,14 @@
+import asyncio
 import unittest
-from unittest import TestCase
+from unittest import TestCase, mock
 from xml.etree.ElementTree import ElementTree, fromstring
 
-import pytest
-
-from fpds import fpdsRequest
+from fpds import FPDSRequest
 from fpds.errors import (
-    fpdsInvalidParameter,
-    fpdsMismatchedParameterRegexError,
-    fpdsMissingKeywordParameterError,
+    FPDSMaxPageLengthExceededError,
+    FPDSMissingKeywordParameterError,
 )
-from tests import FULL_RESPONSE_DATA_BYTES
+from tests import FULL_RESPONSE_DATA_BYTES, NO_LINK_RESPONSE_DATA_BYTES
 
 # valid params and values
 FPDS_REQUEST_PARAMS_DICT = {
@@ -34,48 +32,76 @@ FPDS_REQUEST_INVALID_REGEX_DICT = {
 CONTENT_TREE = ElementTree(fromstring(FULL_RESPONSE_DATA_BYTES))
 
 
-class MockResponse(object):
-    def __init__(self, status_code):
-        self.status_code = status_code
+class MockHTTPResponse:
+    def __init__(self, content: bytes = FULL_RESPONSE_DATA_BYTES):
+        self.content = content
 
-    def raise_for_status(self):
-        if self.status_code != 200:
-            raise Exception
+    def read(self):
+        return self.content
 
+    def __enter__(self):
+        return self
 
-class MockFpdsXML(object):
-    def pagination_links(self, params="some-param1: param1-value"):
-        return [
-            "{some-fpds-link}&start=0",
-            "{some-fpds-link}&start=10",
-            "{some-fpds-link}&start=20",
-        ]
+    def __exit__(self, exc_type, exc_value, traceback):
+        pass
 
 
-class TestFpdsRequest(TestCase):
-    def setUp(self):
-        self._class = fpdsRequest(**FPDS_REQUEST_PARAMS_DICT)
+class TestFPDSRequest(TestCase):
+    def test_parameter_error_raised_with_no_kwargs(self):
+        with self.assertRaises(FPDSMissingKeywordParameterError):
+            FPDSRequest({})
 
-    def test_params_exist(self):
-        with pytest.raises(fpdsMissingKeywordParameterError):
-            fpdsRequest({})
+    @mock.patch("fpds.core.parser.urlopen")
+    def test_mb_to_bytes(self, mock_urlopen):
+        """Test that mb_to_bytes correctly converts megabytes to bytes."""
+        mock_urlopen.return_value = MockHTTPResponse()
+        req = FPDSRequest(**FPDS_REQUEST_PARAMS_DICT, max_chunk_size_mb=50)
+        self.assertEqual(req.mb_to_bytes(), 50 * 1_048_576)
 
-    def test_invalid_param(self):
-        with pytest.raises(fpdsInvalidParameter):
-            fpdsRequest(**FPDS_REQUEST_INVALID_PARAM_DICT)
-
-    def test_invalid_param_regex(self):
-        with pytest.raises(fpdsMismatchedParameterRegexError):
-            fpdsRequest(**FPDS_REQUEST_INVALID_REGEX_DICT)
-
-    def test_str_magic_method(self):
-        object_as_string = (
-            '<fpdsRequest LAST_MOD_DATE=[2022/01/01, 2022/05/01] AGENCY_CODE="7504">'
+    @mock.patch("fpds.core.parser.urlopen")
+    def test_no_pagination_links(self, mock_urlopen):
+        """Test that initial_request correctly returns the root XML tree from the initial request."""
+        mock_urlopen.return_value = MockHTTPResponse(
+            content=NO_LINK_RESPONSE_DATA_BYTES
         )
-        self.assertEqual(self._class.__str__(), object_as_string)
+        req = FPDSRequest(**FPDS_REQUEST_PARAMS_DICT)
+        self.assertEqual(asyncio.run(req.fetch()), [])
 
-    def test_search_params_property(self):
-        self.assertEqual(FPDS_SEARCH_PARAMS_PROPERTY, self._class.search_params)
+    @mock.patch("fpds.core.parser.urlopen")
+    def test_request_link_count(self, mock_urlopen):
+        """Test that generated number of links from initial request is correct."""
+        mock_urlopen.return_value = MockHTTPResponse()
+        req = FPDSRequest(**FPDS_REQUEST_PARAMS_DICT)
+        self.assertEqual(len(req.links), 3)
+
+    @mock.patch("fpds.core.parser.FPDSRequest.page_index")
+    @mock.patch("fpds.core.parser.urlopen")
+    def test_request_link_count(self, mock_urlopen, mock_page_index):
+        """Test that page_index is called once when page is provided."""
+        mock_urlopen.return_value = MockHTTPResponse()
+        FPDSRequest(
+            **FPDS_REQUEST_PARAMS_DICT,
+            page=1,
+        )
+        mock_page_index.assert_called_once()
+
+    @mock.patch("fpds.core.parser.urlopen")
+    def test_max_page_length_exceeded_error_raised(self, mock_urlopen):
+        mock_urlopen.return_value = MockHTTPResponse()
+        with self.assertRaises(FPDSMaxPageLengthExceededError):
+            FPDSRequest(
+                **FPDS_REQUEST_PARAMS_DICT,
+                page=1_000_000,
+            )
+
+    @mock.patch("fpds.core.parser.urlopen")
+    def test_skip_regex_validation_warning_raised(self, mock_urlopen):
+        mock_urlopen.return_value = MockHTTPResponse()
+        with self.assertWarns(UserWarning):
+            FPDSRequest(
+                **FPDS_REQUEST_PARAMS_DICT,
+                skip_regex_validation=True,
+            )
 
 
 if __name__ == "__main__":

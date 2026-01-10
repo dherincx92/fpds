@@ -1,89 +1,126 @@
-# fpds
+<div align="center">
+<pre>
+    __________  ____  _____
+   / ____/ __ \/ __ \/ ___/
+  / /_  / /_/ / / / /\__ \
+ / __/ / ____/ /_/ /___/ /
+/_/   /_/   /_____//____/
+Welcome to a more user-friendly FPDS 🚀
+</pre>
+</div>
 A light-weight, pythonic parser for the Federal Procurement Data System (FPDS) ATOM Feed.
-Reference [here](https://www.fpds.gov/fpdsng_cms/index.php/en/).
 
 
 ## Motivation
-The FPDS ATOM feed limits each request to 10 records, which forces users to deal with pagination. Additonally, data is exported as XML, which proves annoying. `fpds` will handle all pagination and data
-transformation to provide users with a nice JSON representation of the
-equivalent XML data and attributes.
+To make FPDS data more accesible to developers.
+
+This library helps users by doing the following:
+- Automatically handling pagination
+- Converting XML into a flat JSON structure
+
+This library is based on the FPDS ezSearch interface that can be found
+[here](https://www.fpds.gov/ezsearch/search.do?indexName=awardfull&templateName=1.5.3&s=FPDS.GOV&q=).
 
 
-## Setup
+## Prerequisites
 As of version 1.5.0, this library manages dependencies using `uv`. It is
-_highly_ recommended since this library is tested with it.
+_highly_ recommended since this library is tested with it. Note that this
+README assumes you will install `uv` and therefore runs all commands within
+its context.
 
-
-### Installing `uv`
-
-You can follow any of the methods found [here](https://docs.astral.sh/uv/getting-started/installation/). If on Linux or MacOS, we recommend using Homebrew:
-
+### `uv`
+You can follow any of the methods found [here](https://docs.astral.sh/uv/getting-started/installation/).
+If on MacOS, we recommend using Homebrew:
 ```
 $ brew install uv
 ```
 
-Once `uv` is installed, you can use the project Makefile to ensure your local environment is synced with the latest library installation. Start by running `make install` — this will check the status of the `uv.lock` file, and install all project dependencies + extras
-
-### Local Development
-
-For linting and formatting, we use `ruff`. See `pyproject.toml`
-for specific configuration.
-
+### `just`
+A command runner inspired by `Makefile`, written in Rust.
 ```
-$ make formatters
+$ brew install just
 ```
 
-You can clean the clutter and unwanted noise from tools using:
-
-```
-$ make clean
-```
-
-### Testing
-```
-$ make local-test
-```
+Once `uv` is installed, you can use the project Justfile to ensure your local environment
+is synced with the latest library installation. Start by running `just install` — this
+will check the status of the `uv.lock` file, and install all project dependencies +
+package extras.
 
 ## Usage
 For a list of valid search criteria parameters, consult FPDS documentation
-found [here](https://www.fpds.gov/wiki/index.php/Atom_Feed_Usage). Parameters
-will follow the `URL String` format shown in the link above, with the
-following exceptions:
+found [here](https://www.fpds.gov/wiki/index.php/Atom_Feed_Usage).
 
- + Colons (:) will be replaced by equal signs (=)
- + Certain parameters enclose their value in quotations. `fpds` will
-automatically determine if quotes are needed, so simply enclose your
-entire criteria string in quotes.
+### CLI
+### `fields`
+Returns fields available for API requests.
 
- For example, `AGENCY_CODE:"3600"` should be used as `"AGENCY_CODE=3600"`.
-
-Via CLI:
-```
-$  fpds parse "LAST_MOD_DATE=[2022/01/01, 2022/05/01]" "AGENCY_CODE=7504"
-```
-
-By default, data will be dumped into an `.fpds` folder at the user's
-`$HOME` directory. If you wish to override this behavior, provide the `-o`
-option. The directory will be created if it doesn't exist.
-
-As of v1.5.0, you can opt out of regex validation by setting the `-k` flag
-to `False` — this is helpful in scenarios when either the regex pattern has
-been altered by the ATOM feed or a new parameter name is supported, but not
-yet added to the configuration in this library.
+To display all available fields:
 
 ```
-$  fpds parse "LAST_MOD_DATE=[2022/01/01, 2022/05/01]" "AGENCY_CODE=7504" -o ~/.my-preferred-dir
+$ uv run fpds fields
 ```
 
-Same request via python interpreter:
+If successful, you should see a nice, tabulated table in your terminal
+
+![fields-cli-output](img/fpds-fields-cli-output.png)
+<div align="center"><b>Figure 1 - Tabulated fields CLI output</b></div>
+<br />
+
+
+If you wanted to perform a more targeted search, add `-p`. For example, to
+get all fields containing the text "vendor" anywhere in the name, you could
+run the following:
 ```
+$ uv run fpds fields -p vendor
+```
+
+![fields-cli-vendor](img/fpds-fields-vendor.png)
+<div align="center"><b>Figure 2 - Matching "vendor" fields</b></div>
+<br />
+
+### `parse`
+Sends and parses records from an FPDS ATOM feed request
+
+Lets say you wanted records from the OFFICE OF THE INSPECTOR GENERAL.
+Through your research, you identified that agency's code as 7504. For your
+particular project, you are only interested in awards modified within the first
+quarter of 2025. Using the `parse` command, you can easily retrieve records with
+the following command:
+
+```
+$  uv run fpds parse "LAST_MOD_DATE=[2022/01/01, 2022/03/31]" "AGENCY_CODE=7504"
+```
+
+With this command, you can specify as many filters as you want. Unfortunately due
+to rate limitations with the ATOM feed, you _must_ have at least 1 filter.
+
+By default, this command will output records to a directory named `.fpds` in
+your home directory. If you wish to output to a different location, specify your
+location with `-o`:
+
+```
+$ uv run fpds parse "LAST_MOD_DATE=[2022/01/01, 2022/03/31]" "AGENCY_CODE=7504" -o /Users/Desktop/data
+```
+
+## Python
+Core parsing and transformation classes are exposed as first-class citizens.
+
+```{python}
+
 import asyncio
-from fpds import fpdsRequest
+from fpds import FPDSRequest
 
-request = fpdsRequest(
-    LAST_MOD_DATE="[2022/01/01, 2022/05/01]",
+request = FPDSRequest(
+    LAST_MOD_DATE="[2022/01/01, 2022/03/31]",
     AGENCY_CODE="7504"
 )
+
+# will return the initial HTTP request a user would make if using Postman
+request_url = request.__url__()
+
+# total number of pages in request
+page_count = request.page_count
+
 
 # returns records as an async generator
 gen = request.iter_data()
@@ -97,11 +134,10 @@ async for entry in gen:
 records = asyncio.run(request.data())
 ```
 
-
 # Highlights
 
-Between v1.2.1 and v1.3.0, significant improvements were made with `asyncio`. Here are some rough benchmarks in estimated data extraction + post-processing
-times:
+Between v1.2.1 and v1.3.0, significant improvements were made with `asyncio`. Here are
+some rough benchmarks in estimated data extraction + post-processing times:
 
 | v1.2.1 | v.1.3.0 |
 -------- | --------
@@ -116,4 +152,5 @@ This equates to a <u>**84.89%**</u> decrease in completion time!
 
 # Notes
 
-Please be aware that this project is an after-hours passion of mine. I do my best to accomodate requests the best I can, but I receive no $$$ for any of the work I do here.
+Please be aware that this project is an after-hours passion of mine. I do my best
+to accomodate requests, but I receive no $$$ for any of the work I do here.
