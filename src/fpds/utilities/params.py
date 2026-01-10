@@ -6,7 +6,7 @@ last_updated: 12/14/2024
 """
 
 import re
-from typing import Any, Dict, List, Optional, TypedDict, cast
+from typing import Any, Dict, List, TypedDict, cast
 
 from fpds.config import FPDS_FIELDS_CONFIG as FIELDS
 from fpds.errors import (

@@ -1,3 +1,9 @@
+"""Github utilities.
+
+author: derek663@gmail.com
+last_updated: 2025-01-10
+"""
+
 import os
 
 
