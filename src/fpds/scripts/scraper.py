@@ -36,7 +36,6 @@ def configure_driver(url: str) -> webdriver.Chrome:
 
 
 def update_fields_json(dropdown_fields: list[str]) -> None:
-
     config = FPDS_FIELDS_CONFIG
     current_field_options = [field["name"] for field in config]
     new_options = [
@@ -134,14 +133,16 @@ def scrape_ezsearch() -> list[str]:
 
             except:
                 print(f"Failed on element {element.text}")
-                match = next((f for f in FPDS_FIELDS_CONFIG if f["name"] == element.text), None)
+                match = next(
+                    (f for f in FPDS_FIELDS_CONFIG if f["name"] == element.text), None
+                )
                 status = "✅" if match else "❌"
                 failures.append([element.get_attribute("value"), element.text, status])
 
     grid = tabulate(
         tabular_data=failures,
         headers=["Name", "Description", "Exists"],
-        tablefmt="github"
+        tablefmt="github",
     )
     set_github_output(grid=grid)
 
