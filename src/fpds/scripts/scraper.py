@@ -144,5 +144,5 @@ def scrape_ezsearch() -> list[str]:
 
 if __name__ == "__main__":
     scrape_latest_data_dictionary()
-    # dropdown_fields = scrape_ezsearch()
-    # update_fields_json(dropdown_fields=dropdown_fields)
+    dropdown_fields = scrape_ezsearch()
+    update_fields_json(dropdown_fields=dropdown_fields)
