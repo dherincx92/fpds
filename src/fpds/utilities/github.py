@@ -5,4 +5,7 @@ def set_github_output(**kwargs) -> None:
     if github_output:
         with open(github_output, "a") as f:
             for key, value in kwargs.items():
-                f.write(f"{key}={value}\n")
+                if "\n" in value:
+                    f.write(f"{key}<<EOF\n{value}\nEOF\n")
+                else:
+                    f.write(f"{key}={value}\n")
