@@ -1,4 +1,4 @@
-"""Scrapes fields from FPDS ezSearch page.
+"""Scrapers for FPDS website.
 
 author: derek663@gmail.com
 last_updated: 2026-01-10
