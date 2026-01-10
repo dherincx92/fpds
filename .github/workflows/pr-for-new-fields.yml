@@ -2,7 +2,7 @@ name: New fpds search fields PR
 
 on:
   schedule:
-     - cron: "0 0 * * *"
+     - cron: "0 5 * * *"
   pull_request: # TODO: fully remove once done testing
   workflow_dispatch:
 
