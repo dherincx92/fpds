@@ -74,7 +74,6 @@ def scrape_latest_data_dictionary() -> str:
     )
     data_dict_url = tag.get_attribute("href")
 
-
     github_output = os.environ.get("GITHUB_OUTPUT")
     if github_output:
         with open(github_output, "a") as f:
