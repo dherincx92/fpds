@@ -2,7 +2,7 @@
 XML classes for parsing FPDS content.
 
 author: derek663@gmail.com
-last_updated: 2025-07-25
+last_updated: 2026-01-10
 """
 
 import re
@@ -195,9 +195,9 @@ class _ElementAttributes:
     ----------
     prefix: `str`
         Prefix to append to attribute dictionary. This will ensure that
-        duplicate tags like `PIID` are distinguished in the data.
+        duplicate tags like `PIID` are distinguished in data.
     element: `xml.etree.ElementTree.Element`
-        An lxml Element type.
+        An `Element` type.
     """
 
     def __init__(self, prefix: str, element: Element) -> None:
