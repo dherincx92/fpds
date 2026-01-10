@@ -1,8 +1,7 @@
-"""
-CLI command for retrieving FPDS federal contracts.
+"""CLI command for retrieving FPDS federal contracts.
 
 author: derek663@gmail.com
-last_updated: 2026-01-06
+last_updated: 2026-01-10
 """
 
 import asyncio
@@ -33,15 +32,25 @@ def parse(
     ] = FPDS_DATA_DATE_DIR,
     params: list[str] = typer.Argument(
         ...,
-        help="Positional parameters (variadic, like nargs=-1)",
+        help="Positional parameters (variadic, like nargs=-1 in click)",
     ),
 ) -> None:
-    """Sends ATOM feed request to FPDS."""
+    """Sends ATOM feed request to FPDS.
+
+    \b
+    Usage:
+        $ uv run fpds parse [PARAMS] [OPTIONS]
+
+    \b
+    Example(s):
+        $ uv run fpds parse "LAST_MOD_DATE=[2022/01/01, 2022/03/31]"
+
+    """
 
     output_dir_path: Path = Path(output_dir)
     output_dir_path.mkdir(parents=True, exist_ok=True)
 
-    split_params = [param.split("=") for param in params]  # List[Tuple[str, str]]
+    split_params = [param.split("=") for param in params]  # list[Tuple[str, str]]
 
     for _param in split_params:
         name, value = _param
