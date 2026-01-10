@@ -67,27 +67,6 @@ class TestFPDSRequest(TestCase):
         req = FPDSRequest(**FPDS_REQUEST_PARAMS_DICT)
         self.assertEqual(asyncio.run(req.fetch()), [])
 
-    # @mock.patch("fpds.core.parser.urlopen")
-    # def test_convert(self, mock_urlopen):
-    #     """Test that initial_request correctly returns the root XML tree from the initial request."""
-    #     mock_urlopen.return_value = MockHTTPResponse()
-    #     req = FPDSRequest(**FPDS_REQUEST_PARAMS_DICT)
-    #     mock_client = mock.AsyncMock()
-    #     mock_client.get.return_value = MockHTTPResponse(content=FULL_RESPONSE_DATA_BYTES)
-
-    #     from asyncio import Semaphore
-    #     semaphore = Semaphore(10)
-    #     result = asyncio.run(
-    #         req.convert(
-    #             client=mock_client,
-    #             link="https://example.com/fpds",
-    #             semaphore=semaphore,
-    #         )
-    #     )
-
-    #     # Assertions
-    #     self.assertIsInstance(result, fpdsSubTree)
-
     @mock.patch("fpds.core.parser.urlopen")
     def test_request_link_count(self, mock_urlopen):
         """Test that generated number of links from initial request is correct."""
