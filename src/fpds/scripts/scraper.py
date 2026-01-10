@@ -8,8 +8,8 @@ import json
 import os
 import re
 from pathlib import Path
-from packaging.version import Version
 
+from packaging.version import Version
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.common.by import By

@@ -1,5 +1,6 @@
 import os
 
+
 def set_github_output(**kwargs) -> None:
     github_output = os.environ.get("GITHUB_OUTPUT")
     if github_output:
